@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #13 — CR Cifrario WAIS-IV</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3347;--accent:#9b59b6;--ok:#2ecc71;--warn:#e67e22;--err:#e74c3c;--text:#e8eaf0;--muted:#8892a4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh}
+.shell{max-width:780px;margin:0 auto;padding:32px 20px 60px}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px}
+.hdr-badge{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.hdr h1{font-size:22px;font-weight:600}
+.hdr .cite{font-size:12px;color:var(--muted);margin-top:4px}
+.range-tag{display:inline-block;background:rgba(79,142,247,.12);border:1px solid var(--accent);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:6px}
+.sec-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;margin-top:24px}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.demo-grid{grid-template-columns:1fr 1fr}}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 10px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.age-warn{background:#2d1f0e;border:1px solid var(--warn);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--warn);margin-top:10px;display:none}
+.score-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-top:4px}
+.score-block .sb-title{font-size:14px;font-weight:500;margin-bottom:4px}
+.score-block .sb-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.score-row{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.score-row label{font-size:12px;color:var(--muted);font-family:var(--mono);min-width:80px}
+.score-row input{width:110px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:18px;padding:8px 10px;outline:none;text-align:center;transition:border-color .2s}
+.score-row input:focus{border-color:var(--accent)}
+.score-row .max{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.result-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-top:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.pp-display .num{font-size:42px;font-weight:500;color:var(--accent);line-height:1;font-family:var(--mono)}
+.pp-display .lbl{font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.verdict{flex:1;min-width:180px}
+.verdict .v-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.verdict .v-text{font-size:15px;font-weight:500}
+.v-ok{color:var(--ok)} .v-err{color:var(--err)} .v-na{color:var(--muted)}
+.norm-wrap{margin-top:16px;overflow-x:auto}
+.norm-table{border-collapse:collapse;font-family:var(--mono);font-size:11px}
+.norm-table th,.norm-table td{border:1px solid var(--border);padding:5px 8px;text-align:center}
+.norm-table th{background:var(--surface2);color:var(--muted)}
+.norm-table .hl-pp{background:#0d2e1a;color:var(--ok);font-weight:700}
+.norm-table .hl-band{background:#1b2a3b;color:var(--accent)}
+.report-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-report{flex:1;min-width:160px;padding:12px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s}
+.btn-report:hover:not(:disabled){opacity:.85}
+.btn-report:disabled{background:var(--surface2);color:var(--muted);cursor:default}
+.btn-report.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-report.secondary:hover:not(:disabled){border-color:var(--accent);color:var(--accent);opacity:1}
+.copy-feedback{font-family:var(--mono);font-size:11px;color:var(--ok);margin-top:8px;min-height:16px}
+.report-output{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:14px;font-family:var(--mono);font-size:12px;line-height:1.8;white-space:pre-wrap;display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="hdr">
+  <div class="hdr-badge">Test #13 · WAIS-IV</div>
+  <h1>CR — Cifrario</h1>
+  <div class="cite">Orsini A., Pezzuti L. (2013). <em>WAIS-IV. Contributo alla taratura italiana.</em> O.S. Organizzazioni Speciali, Firenze. — Tab. A-1.1 (16–69 aa), A-1.2 (70–74), A-1.3 (75–79), A-1.4 (80–84), A-1.5 (85–90).</div>
+  <div class="range-tag">Età: 16–90 anni</div>
+</div>
+<div class="sec-label">Dati paziente</div>
+<div class="demo-grid">
+  <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="16" max="90" placeholder="es. 68" oninput="checkAge();calcResult()"></div>
+  <div class="field"><label>Sesso</label><select id="p-sesso"><option value="">—</option><option value="M">M</option><option value="F">F</option></select></div>
+  <div class="field"><label>Scolarità (aa)</label><input type="number" id="p-scol" min="0" max="30" placeholder="es. 13" oninput="calcResult()"></div>
+  <div class="field"><label>Data valutazione</label><input type="date" id="p-data"></div>
+</div>
+<div class="age-warn" id="age-warn">⚠ Range normativo: 16–90 anni.</div>
+<div class="sec-label">Punteggio grezzo</div>
+<div class="score-block">
+  <div class="sb-title">CR — Cifrario</div>
+  <div class="sb-sub">Numero di simboli corretti in 120 secondi</div>
+  <div class="score-row">
+    <label>CR</label>
+    <input type="number" id="g-main" min="0" max="135" placeholder="0–135" oninput="calcResult()">
+    <span class="max">max = 135</span>
+  </div>
+</div>
+<div class="result-bar">
+  <div class="pp-display">
+    <div class="lbl">Pp CR</div>
+    <div class="num" id="pp-main">—</div>
+  </div>
+  <div class="verdict">
+    <div class="v-label">Fascia prestazionale</div>
+    <div class="v-text v-na" id="verdict-text">Inserire dati</div>
+  </div>
+  <div style="font-size:12px;color:var(--muted);font-family:var(--mono)" id="pp-info">—</div>
+</div>
+<div class="sec-label" style="margin-top:24px">Tabella normativa CR — grezzo → Pp per fascia d'età</div>
+<div class="norm-wrap" id="norm-wrap"></div>
+<div class="report-btns">
+  <button class="btn-report" id="btn-elenco" onclick="copyOutput('elenco')" disabled>📋 Copia come elenco</button>
+  <button class="btn-report secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>⊞ Copia come tabella</button>
+</div>
+<div class="copy-feedback" id="copy-feedback"></div>
+<div class="report-output" id="report-output"></div>
+</div>
+<script>
+const TABLES = {"16-69": [[0, 10], [11, 20], [21, 25], [26, 30], [31, 35], [36, 40], [41, 45], [46, 50], [51, 55], [56, 60], [61, 65], [66, 70], [71, 75], [76, 80], [81, 135], null, null, null, null], "70-74": [[0, 5], [6, 10], [11, 15], [16, 20], [21, 25], [26, 30], [31, 35], [36, 40], [41, 45], [46, 50], [51, 55], [56, 60], [61, 65], [66, 70], [71, 75], [76, 135], null, null, null], "75-79": [[0, 3], [4, 7], [8, 12], [13, 16], [17, 20], [21, 25], [26, 29], [30, 34], [35, 38], [39, 42], [43, 47], [48, 52], [53, 56], [57, 61], [62, 65], [66, 135], null, null, null], "80-84": [[0, 4], [5, 8], [9, 12], [13, 16], [17, 20], [21, 24], [25, 28], [29, 32], [33, 36], [37, 40], [41, 44], [45, 47], [48, 51], [52, 55], null, [56, 135], null, null, null], "85-90": [[0, 1], null, [2, 4], [5, 7], [8, 10], [11, 15], [16, 18], [19, 22], [23, 25], [26, 28], [29, 32], [33, 35], [36, 39], [40, 42], [43, 46], [47, 135], null, null, null]};
+
+function ageBand(eta) {
+  if (eta < 16) return null;
+  if (eta <= 69) return '16-69';
+  if (eta <= 74) return '70-74';
+  if (eta <= 79) return '75-79';
+  if (eta <= 84) return '80-84';
+  if (eta <= 90) return '85-90';
+  return null;
+}
+function grezzoToPp(g, tbl) {
+  for (let i=0;i<tbl.length;i++){ const r=tbl[i]; if(!r)continue; if(g>=r[0]&&g<=r[1])return i+1; } return null;
+}
+function ppLabel(pp) {
+  if(pp===null)return{text:'—',cls:'v-na'};
+  if(pp<=5)return{text:'Molto bassa',cls:'v-err'};
+  if(pp<=7)return{text:'Bassa',cls:'v-err'};
+  if(pp<=9)return{text:'Medio-bassa',cls:'v-na',col:'var(--warn)'};
+  if(pp<=11)return{text:'Media',cls:'v-ok'};
+  if(pp<=13)return{text:'Medio-alta',cls:'v-ok'};
+  return{text:'Alta / Molto alta',cls:'v-ok'};
+}
+function calcResult() {
+  const eta=parseInt(document.getElementById('p-eta').value);
+  const g=parseInt(document.getElementById('g-main').value);
+  const ppEl=document.getElementById('pp-main');
+  const verdEl=document.getElementById('verdict-text');
+  const infoEl=document.getElementById('pp-info');
+  const band=isNaN(eta)?null:ageBand(eta);
+  if(!band){ppEl.textContent='—';verdEl.className='v-text v-na';verdEl.textContent='Inserire età (16–90)';infoEl.textContent='';disableButtons();buildNormTable(null,null);return;}
+  const tbl=TABLES[band];
+  let pp=null;
+  if(!isNaN(g))pp=grezzoToPp(g,tbl);
+  ppEl.textContent=pp!==null?pp:'—';
+  if(pp!==null){
+    const lbl=ppLabel(pp);
+    verdEl.className='v-text '+lbl.cls;
+    if(lbl.col)verdEl.style.color=lbl.col; else verdEl.style.color='';
+    verdEl.textContent=lbl.text;
+  }else{verdEl.className='v-text v-na';verdEl.textContent=isNaN(g)?'Inserire punteggio':'Valore fuori range';}
+  infoEl.textContent='Fascia età: '+band+' aa';
+  if(!isNaN(eta)&&band)enableButtons(); else disableButtons();
+  buildNormTable(band,pp);
+}
+function buildNormTable(band,ppCur) {
+  const wrap=document.getElementById('norm-wrap');
+  const BANDS=['16-69','70-74','75-79','80-84','85-90'];
+  const curBandIdx=band?BANDS.indexOf(band):-1;
+  let html='<table class="norm-table"><thead><tr><th>Pp</th>';
+  BANDS.forEach((b,i)=>html+=`<th${i===curBandIdx?' class="hl-band"':''}>${b}</th>`);
+  html+='</tr></thead><tbody>';
+  for(let i=0;i<19;i++){
+    const pp=i+1;
+    const hlRow=(pp===ppCur)?' class="hl-pp"':'';
+    html+=`<tr${hlRow}><td>${pp}</td>`;
+    BANDS.forEach(b=>{
+      const r=TABLES[b][i];
+      const rng=r?(r[0]===r[1]?`${r[0]}`:`${r[0]}–${r[1]}`):'—';
+      const hlCell=(b===band&&pp===ppCur)?' class="hl-pp"':'';
+      html+=`<td${hlCell}>${rng}</td>`;
+    });
+    html+='</tr>';
+  }
+  html+='</tbody></table>';
+  html+='<div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">Pp 10 = media. Patologico convenzionalmente: Pp ≤ 7.</div>';
+  wrap.innerHTML=html;
+}
+function enableButtons(){document.getElementById('btn-elenco').disabled=false;document.getElementById('btn-tabella').disabled=false;}
+function disableButtons(){document.getElementById('btn-elenco').disabled=true;document.getElementById('btn-tabella').disabled=true;}
+function checkAge(){const a=parseInt(document.getElementById('p-eta').value);document.getElementById('age-warn').style.display=(a&&(a<16||a>90))?'block':'none';}
+function getResultData(){
+  const eta=parseInt(document.getElementById('p-eta').value);
+  const g=parseInt(document.getElementById('g-main').value);
+  const band=isNaN(eta)?null:ageBand(eta);
+  const tbl=band?TABLES[band]:null;
+  const pp=tbl&&!isNaN(g)?grezzoToPp(g,tbl):null;
+  const patol=pp!==null&&pp<=7;
+  return{eta,g,pp,band,patol,asterisco:patol?'*':'',max:135,codice:'CR',nome:'Cifrario'};
+}
+function buildElenco(){
+  const d=getResultData();
+  const gStr=!isNaN(d.g)?`${d.g}${d.asterisco}/${d.max}`:'—';
+  const ppStr=d.pp!==null?`Pp ${d.pp}`:'—';
+  return `Cifrario — CR (Orsini & Pezzuti, 2013): ${gStr} → ${ppStr}`;
+}
+function buildTabellaHTML(){
+  const d=getResultData();
+  const gStr=!isNaN(d.g)?`${d.g}${d.asterisco}/${d.max}`:'—';
+  const ppStr=d.pp!==null?`Pp ${d.pp}`:'—';
+  const esito=d.patol?'sotto media (Pp ≤ 7)':(d.pp!==null?'nella norma':'—');
+  return `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%"><thead><tr style="font-weight:bold;background:#f2f2f2"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>Punteggio ponderato (Pp)</b></td><td><b>Cut-off</b></td></tr></thead><tbody><tr><td><b>Cifrario — CR</b><br><i>(Orsini &amp; Pezzuti, 2013)</i></td><td>${gStr}</td><td>—</td><td>${ppStr}</td><td>Pp ≤ 7 (${esito})</td></tr></tbody></table>`;
+}
+function copyOutput(tipo){
+  const out=document.getElementById('report-output');
+  const fb=document.getElementById('copy-feedback');
+  if(tipo==='elenco'){
+    const t=buildElenco();out.textContent=t;out.style.display='block';
+    navigator.clipboard.writeText(t).then(()=>{fb.textContent='✓ Testo copiato — Ctrl+V';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{selectOutput(out);fb.textContent='⚠ Seleziona e Ctrl+C';});
+  }else{
+    const h=buildTabellaHTML();const d=getResultData();
+    out.textContent=`[Tabella] CR | ${!isNaN(d.g)?d.g+d.asterisco+'/'+d.max:'—'} | Pp ${d.pp??'—'}`;out.style.display='block';
+    try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([h],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata — Ctrl+V in Google Docs';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbHTML(h,fb));}catch(e){fbHTML(h,fb);}
+  }
+}
+function fbHTML(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+function selectOutput(el){const r=document.createRange();r.selectNodeContents(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+document.getElementById('p-data').value=new Date().toISOString().split('T')[0];
+buildNormTable(null,null);
+</script>
+</body>
+</html>

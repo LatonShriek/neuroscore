@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #15 — RAVLT (Ricci et al., 2022)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f1117;--surface:#1a1d27;--surface2:#232635;--accent:#4f8ef7;--accent2:#7eb3ff;
+    --text:#e8eaf0;--text2:#9ba3b8;--border:#2e3347;--ok:#4caf82;--warn:#f7a94f;--err:#f75f5f;
+    --ok-bg:rgba(76,175,130,0.08);--warn-bg:rgba(247,169,79,0.08);--err-bg:rgba(247,95,95,0.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6}
+  .container{max-width:900px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:18px;font-weight:600;color:var(--accent2);margin-bottom:4px}
+  .subtitle{font-size:12px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-bottom:24px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:14px}
+  .card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text2);margin-bottom:14px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px}
+  select,input[type=number],input[type=date]{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+    padding:7px 10px;border-radius:5px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;width:100%;outline:none;transition:border-color 0.2s}
+  select:focus,input:focus{border-color:var(--accent)}
+  .field{flex:1;min-width:100px}.field-sm{flex:0 0 90px}
+
+  /* trial grid */
+  .trial-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px}
+  .trial-table th{background:var(--surface2);color:var(--text2);padding:6px 8px;text-align:center;font-weight:500;border:1px solid var(--border)}
+  .trial-table td{border:1px solid var(--border);padding:4px 6px;text-align:center}
+  .trial-table input[type=number]{background:var(--surface2);border:none;color:var(--text);font-family:'IBM Plex Mono',monospace;
+    font-size:13px;width:52px;text-align:center;padding:4px;border-radius:3px}
+  .trial-table input[type=number]:focus{outline:2px solid var(--accent)}
+  .trial-table .lbl-cell{text-align:left;color:var(--text2);font-size:11px;padding-left:8px}
+
+  /* results */
+  .res-section{margin-bottom:18px}
+  .res-section h4{font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text2);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+  .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .res-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--surface2);border-radius:4px;border:1px solid var(--border)}
+  .res-name{font-size:12px;color:var(--text2)}
+  .res-vals{display:flex;gap:8px;align-items:center}
+  .res-raw{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text)}
+  .res-corr{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent2)}
+  .badge{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+  .b-ok{background:var(--ok-bg);color:var(--ok);border:1px solid rgba(76,175,130,0.3)}
+  .b-w{background:var(--warn-bg);color:var(--warn);border:1px solid rgba(247,169,79,0.3)}
+  .b-e{background:var(--err-bg);color:var(--err);border:1px solid rgba(247,95,95,0.3)}
+  .pe-chip{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--text2)}
+
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{padding:9px 18px;border-radius:5px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.18s;font-family:'IBM Plex Sans',sans-serif}
+  .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+  .btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+  .btn:disabled{opacity:0.35;cursor:not-allowed}
+  #report-output{margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;
+    padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text2);white-space:pre-wrap;display:none}
+  #copy-feedback{font-size:12px;color:var(--ok);margin-top:6px;min-height:18px}
+  .info-row{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-top:4px}
+  .formula-box{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:10px 14px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text2);margin-bottom:12px}
+  .formula-box b{color:var(--accent2)}
+  @media(max-width:600px){.res-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>RAVLT — Rey Auditory Verbal Learning Test</h1>
+  <div class="subtitle">Ricci, Ruggeri, Gnisci, Pizzoni, Gerace, Blundo (2022) · Archives of Clinical Neuropsychology</div>
+
+  <!-- dati paziente -->
+  <div class="card">
+    <div class="card-title">Dati paziente</div>
+    <div class="row">
+      <div class="field-sm"><label>Data</label><input type="date" id="p-data"></div>
+      <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="20" max="91" placeholder="es. 65" oninput="recalc()"></div>
+      <div class="field"><label>Sesso</label>
+        <select id="p-sesso" onchange="recalc()">
+          <option value="">—</option>
+          <option value="M">Maschio (1)</option>
+          <option value="F">Femmina (2)</option>
+        </select>
+      </div>
+      <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-scol" min="0" max="21" placeholder="es. 13" oninput="recalc()"></div>
+    </div>
+    <div id="norm-info" class="info-row"></div>
+  </div>
+
+  <!-- input trials -->
+  <div class="card">
+    <div class="card-title">Lista A — 5 trial di apprendimento (max 15/trial)</div>
+    <div class="row">
+      <div class="field"><label>Trial I</label><input type="number" id="t1" min="0" max="15" oninput="recalc()"></div>
+      <div class="field"><label>Trial II</label><input type="number" id="t2" min="0" max="15" oninput="recalc()"></div>
+      <div class="field"><label>Trial III</label><input type="number" id="t3" min="0" max="15" oninput="recalc()"></div>
+      <div class="field"><label>Trial IV</label><input type="number" id="t4" min="0" max="15" oninput="recalc()"></div>
+      <div class="field"><label>Trial V</label><input type="number" id="t5" min="0" max="15" oninput="recalc()"></div>
+      <div class="field" style="background:var(--surface2);border-radius:5px;padding:8px;border:1px solid var(--border)">
+        <label>Totale I–V (auto)</label>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--accent);padding-top:4px" id="tot5_disp">—</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div class="field"><label>Lista B (interferenza)</label><input type="number" id="listb" min="0" max="15" oninput="recalc()"></div>
+      <div class="field"><label>Lista A dopo B (rievoc. immediata)</label><input type="number" id="lafterb" min="0" max="15" oninput="recalc()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Richiamo differito 15 min</div>
+    <div class="row">
+      <div class="field"><label>Rievocazione differita (0–15)</label><input type="number" id="del15" min="0" max="15" oninput="recalc()"></div>
+      <div class="field"><label>Riconoscimento: Hits (0–15)</label><input type="number" id="hits15" min="0" max="15" oninput="recalc()"></div>
+      <div class="field"><label>Riconoscimento: Falsi positivi (0–30)</label><input type="number" id="fp15" min="0" max="30" oninput="recalc()"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Richiamo differito 1 settimana (opzionale)</div>
+    <div class="row">
+      <div class="field"><label>Rievocazione 1wk (0–15)</label><input type="number" id="del1wk" min="0" max="15" oninput="recalc()"></div>
+      <div class="field"><label>Riconoscimento Hits 1wk (0–15)</label><input type="number" id="hits1wk" min="0" max="15" oninput="recalc()"></div>
+      <div class="field"><label>Falsi positivi 1wk (0–30)</label><input type="number" id="fp1wk" min="0" max="30" oninput="recalc()"></div>
+    </div>
+  </div>
+
+  <!-- formule indici compositi -->
+  <div class="card">
+    <div class="card-title">Indici compositi — calcolo automatico</div>
+    <div class="formula-box">
+      <b>LOT</b> = Totale 5 trial − (Trial I × 5)<br>
+      <b>PI</b> = (Lista B / Trial I) × 100<br>
+      <b>RI</b> = (Lista A dopo B / Trial V) × 100<br>
+      <b>MEI-15</b> = (Del15/15)/(Tot5/75) + (Hits15/15) − (FP15/30)<br>
+      <b>MEI-1wk</b> = (Del1wk/15)/(Tot5/75) + (Hits1wk/15) − (FP1wk/30)<br>
+      <b>Hits-FP 15</b> = Hits15/15 − FP15/30 · <b>Hits-FP 1wk</b> = Hits1wk/15 − FP1wk/30<br>
+      <b>ALF Recall</b> = [(Del15 − Del1wk)/Del15] × 100 · <b>ALF Hits-FP</b> = (HFP15 − HFP1wk)×100
+    </div>
+    <div class="row" style="gap:6px">
+      <div class="field" style="background:var(--surface2);border-radius:5px;padding:8px;border:1px solid var(--border)"><label>LOT</label><div class="val-disp" id="lot_disp">—</div></div>
+      <div class="field" style="background:var(--surface2);border-radius:5px;padding:8px;border:1px solid var(--border)"><label>PI (%)</label><div class="val-disp" id="pi_disp">—</div></div>
+      <div class="field" style="background:var(--surface2);border-radius:5px;padding:8px;border:1px solid var(--border)"><label>RI (%)</label><div class="val-disp" id="ri_disp">—</div></div>
+      <div class="field" style="background:var(--surface2);border-radius:5px;padding:8px;border:1px solid var(--border)"><label>MEI-15min</label><div class="val-disp" id="mei15_disp">—</div></div>
+      <div class="field" style="background:var(--surface2);border-radius:5px;padding:8px;border:1px solid var(--border)"><label>MEI-1wk</label><div class="val-disp" id="mei1wk_disp">—</div></div>
+      <div class="field" style="background:var(--surface2);border-radius:5px;padding:8px;border:1px solid var(--border)"><label>HFP-15</label><div class="val-disp" id="hfp15_disp">—</div></div>
+      <div class="field" style="background:var(--surface2);border-radius:5px;padding:8px;border:1px solid var(--border)"><label>HFP-1wk</label><div class="val-disp" id="hfp1wk_disp">—</div></div>
+      <div class="field" style="background:var(--surface2);border-radius:5px;padding:8px;border:1px solid var(--border)"><label>ALF Recall</label><div class="val-disp" id="alfr_disp">—</div></div>
+      <div class="field" style="background:var(--surface2);border-radius:5px;padding:8px;border:1px solid var(--border)"><label>ALF HFP</label><div class="val-disp" id="alfhfp_disp">—</div></div>
+    </div>
+  </div>
+
+  <!-- results -->
+  <div class="card" id="result-panel">
+    <div class="card-title">Risultati — Misure singole</div>
+    <div class="res-section">
+      <div class="res-grid" id="grid-singles"></div>
+    </div>
+    <div class="card-title" style="margin-top:16px">Risultati — Indici compositi</div>
+    <div class="res-section">
+      <div class="res-grid" id="grid-composites"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-elenco" onclick="copyOutput('elenco')" disabled>Copia come elenco</button>
+    <button class="btn btn-secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>Copia come tabella</button>
+  </div>
+  <pre id="report-output"></pre>
+  <div id="copy-feedback"></div>
+</div>
+
+<script>
+// ============================================================
+// RAVLT — Ricci et al. 2022
+// Griglie correzione (Tab.4 e Tab.5 del PDF)
+// ============================================================
+
+// SINGLE SCORES — Tab. 4
+// Colonne: età 20-30, 31-40, 41-50, 51-60, 61-70, ≥71
+// Total 5 trials: differenziato M/F
+const C_TOT5 = {
+  '5-8': {M:[3.24,2.79,3.93,6.84,9.55,13.16], F:[-4.95,6.69,7.95,12.31,15.39,null]},
+  '9-13':{M:[-2.13,-0.11,1.65,4.04,5.90,8.03],F:[-4.40,-2.28,0.05,1.98,3.83,6.69]},
+  '>13': {M:[-4.59,-3.58,-0.66,0.69,2.54,4.91],F:[-6.86,-5.32,-3.31,-1.19,-0.32,1.93]}
+};
+// List B (no gender)
+const C_LISTB = {'5-8':[0.21,0.47,0.70,1.01,1.52,2.04],'9-13':[-0.55,-0.22,0.10,0.43,0.72,1.10],'>13':[-0.88,-0.66,-0.29,0,0.20,0.59]};
+// List A after B (gender)
+const C_LAFTERB = {
+  '5-8': {M:[0.53,1.07,1.60,2.02,3.19,4.17],F:[-0.53,0.53,0.89,1.72,2.52,3.55]},
+  '9-13':{M:[-0.78,-0.17,0.40,1.14,1.72,2.38],F:[-1.36,-0.68,0.03,0.63,1.21,2.07]},
+  '>13': {M:[-1.33,-0.97,-0.09,0.37,0.94,1.63],F:[-1.90,-1.39,-0.76,-0.09,0.21,0.90]}
+};
+// 15-min delayed recall (gender)
+const C_DEL15 = {
+  '5-8': {M:[0.93,0.71,1.03,1.70,2.61,3.40],F:[1.41,1.90,2.27,3.48,4.36,null]},
+  '9-13':{M:[-0.46,0.30,0.52,1.14,1.46,2.33],F:[-1.08,-0.69,0,0.44,1.04,1.85]},
+  '>13': {M:[-1.07,-0.77,-0.06,0.27,0.80,0.59],F:[-1.41,-1.10,-0.77,-0.32,-0.10,0.54]}
+};
+// 15-min recognition hits (no gender)
+const C_HITS15 = {'5-8':[0,0.16,0.15,0.54,0.96,1.30],'9-13':[-0.07,-0.06,0.03,0.20,0.40,0.66],'>13':[-0.19,-0.13,-0.04,0,0.10,0]};
+// 15-min recognition FP (no gender) — alta = peggio
+const C_FP15 = {'5-8':[0,0,-0.30,-0.66,-1.01,-1.12],'9-13':[0.04,0.02,0,-0.14,-0.31,-0.52],'>13':[0.18,0.12,0.05,0,0,-0.10]};
+// 1wk delayed recall (no gender)
+const C_DEL1WK = {'5-8':[-0.36,0.27,0.71,1.54,2.52,3.52],'9-13':[-1.39,-0.65,0.14,0.94,1.69,2.58],'>13':[-1.75,-1.12,-0.22,0.50,1.03,1.16]};
+// 1wk recognition hits (no gender)
+const C_HITS1WK = {'5-8':[-0.20,0.09,0.29,0.63,1.03,1.48],'9-13':[-0.34,-0.17,0.04,0.31,0.61,1.16],'>13':[-0.37,-0.22,-0.04,0.17,0.37,0.27]};
+// 1wk recognition FP (no gender)
+const C_FP1WK = {'5-8':[-0.31,-0.46,-0.63,-1.89,-2.89,-3.35],'9-13':[0.55,0.34,-0.13,-0.71,-1.27,-2.47],'>13':[0.86,0.72,0.27,-0.06,-0.52,-0.41]};
+
+// COMPOSITE INDICES — Tab. 5
+const C_LOT = {'5-8':[0.65,0.98,1.28,1.70,2.46,3.19],'9-13':[-0.68,-0.24,0.16,0.59,0.97,1.48],'>13':[-1.31,-1.06,-0.58,-0.21,0.02,0.57]};
+const C_RI  = {'5-8':[1.17,2.75,4.19,6.10,9.18,12.40],'9-13':[-3.45,-1.39,0.58,2.65,4.47,6.82],'>13':[-5.39,-3.40,-1.75,0.08,1.32,3.74]};
+const C_MEI15 = {'5-8':[0.03,0.06,0.09,0.13,0.20,0.27],'9-13':[-0.07,-0.03,0.01,0.06,0.10,0.15],'>13':[-0.12,-0.09,-0.04,0,0.03,0.08]};
+const C_MEI1WK= {'5-8':[-0.07,0.01,0.07,0.15,0.27,0.40],'9-13':[-0.17,-0.08,0.01,0.11,0.20,0.30],'>13':[-0.20,-0.12,-0.01,0.07,0.14,0.24]};
+const C_HFP15 = {'5-8':[0,0,0.01,0.03,0.06,0.09],'9-13':[-0.01,-0.01,0.01,0.01,0.04,0.08],'>13':[-0.02,-0.10,0,0.01,0.03,0.07]};
+const C_HFP1WK= {'5-8':[-0.06,-0.02,0.01,0.06,0.11,0.17],'9-13':[-0.07,-0.04,0,0.07,0.09,0.15],'>13':[-0.05,-0.03,0,0.05,0.09,0.04]};
+// ALF (solo età, col: 20-30,31-40,41-50,51-60,61-70,≥71)
+const C_ALF_R  = [2.57,0,null,-2.97,-5.95,-8.26]; // NB: tab ha 5 col ma intestazione 6; 41-50=null/missing
+const C_ALF_HFP= [3,2,null,0,-3,-5]; // idem (valori da Tab5, alcune celle mancanti)
+
+// ES Tables — Tab 6 Singles
+// Per misure "più alto = meglio" tabella ES discendente
+const ES_SING = {
+  tot5:   [{max:35.18,es:0},{max:40.17,es:1},{max:45.15,es:2},{max:50.13,es:3},{max:Infinity,es:4}],
+  listb:  [{max:2.16,es:0},{max:3.24,es:1},{max:4.32,es:2},{max:5.40,es:3},{max:Infinity,es:4}],
+  lafterb:[{max:5.45,es:0},{max:7.27,es:1},{max:9.10,es:2},{max:10.90,es:3},{max:Infinity,es:4}],
+  del15:  [{max:6.44,es:0},{max:7.97,es:1},{max:9.49,es:2},{max:11.01,es:3},{max:Infinity,es:4}],
+  hits15: [{max:12.11,es:0},{max:12.82,es:1},{max:13.53,es:2},{max:14.24,es:3},{max:Infinity,es:4}],
+  // FP: inversione (più alto = peggio)
+  fp15:   [{min:2.77,max:Infinity,es:0},{min:2.03,max:2.77,es:1},{min:1.31,max:2.03,es:2},{min:0.60,max:1.31,es:3},{min:-Infinity,max:0.60,es:4}],
+  del1wk: [{max:3.05,es:0},{max:4.82,es:1},{max:6.57,es:2},{max:8.32,es:3},{max:Infinity,es:4}],
+  hits1wk:[{max:10.56,es:0},{max:11.58,es:1},{max:12.57,es:2},{max:13.56,es:3},{max:Infinity,es:4}],
+  fp1wk:  [{min:7.11,max:Infinity,es:0},{min:5.56,max:7.11,es:1},{min:4.01,max:5.56,es:2},{min:2.46,max:4.01,es:3},{min:-Infinity,max:2.46,es:4}],
+};
+// ES Compositi — Tab 7
+const ES_COMP = {
+  lot:    [{max:5.76,es:0},{max:9.82,es:1},{max:13.88,es:2},{max:17.93,es:3},{max:Infinity,es:4}],
+  // PI: no norme significative (p n.s.)
+  ri:     [{max:61.82,es:0},{max:70.44,es:1},{max:79.04,es:2},{max:87.64,es:3},{max:Infinity,es:4}],
+  mei15:  [{max:1.38,es:0},{max:1.59,es:1},{max:1.79,es:2},{max:2.00,es:3},{max:Infinity,es:4}],
+  mei1wk: [{max:0.98,es:0},{max:1.48,es:1},{max:1.53,es:2},{max:1.58,es:3},{max:Infinity,es:4}],
+  hfp15:  [{max:0.72,es:0},{max:0.79,es:1},{max:0.85,es:2},{max:0.92,es:3},{max:Infinity,es:4}],
+  hfp1wk: [{max:0.52,es:0},{max:0.63,es:1},{max:0.72,es:2},{max:0.82,es:3},{max:Infinity,es:4}],
+  // ALF: inversione (più alto = peggio)
+  alfr:   [{min:57.40,max:Infinity,es:0},{min:46.32,max:57.40,es:1},{min:35.04,max:46.32,es:2},{min:24.00,max:35.04,es:3},{min:-Infinity,max:24.00,es:4}],
+  alfhfp: [{min:40,max:Infinity,es:0},{min:30,max:40,es:1},{min:20,max:30,es:2},{min:11,max:20,es:3},{min:-Infinity,max:11,es:4}],
+};
+
+const AGE_IDX = (eta) => {
+  if (eta < 20 || eta > 91) return -1;
+  if (eta <= 30) return 0;
+  if (eta <= 40) return 1;
+  if (eta <= 50) return 2;
+  if (eta <= 60) return 3;
+  if (eta <= 70) return 4;
+  return 5;
+};
+
+const SCOL_KEY = (scol) => {
+  if (scol <= 8)  return '5-8';
+  if (scol <= 13) return '9-13';
+  return '>13';
+};
+
+function calcESScore(val, table, invert) {
+  if (val === null || isNaN(val)) return null;
+  if (!invert) {
+    for (const row of table) {
+      if (val <= row.max) return row.es;
+    }
+    return 4;
+  } else {
+    for (const row of table) {
+      if (val >= row.min) return row.es;
+    }
+    return 4;
+  }
+}
+
+function applyCorr(raw, corrTable, ageIdx, scolKey, genderCode, hasGender) {
+  if (raw === null || isNaN(raw) || ageIdx < 0) return null;
+  const row = corrTable[scolKey];
+  if (!row) return null;
+  let corr;
+  if (hasGender) {
+    const g = genderCode === 'M' ? 'M' : 'F';
+    corr = row[g]?.[ageIdx] ?? null;
+  } else {
+    corr = Array.isArray(row) ? row[ageIdx] : null;
+  }
+  if (corr === null || corr === undefined) return null;
+  return Math.round((raw + corr) * 1000) / 1000;
+}
+
+function getVal(id) {
+  const v = parseFloat(document.getElementById(id).value);
+  return isNaN(v) ? null : v;
+}
+
+function esBadge(es) {
+  if (es === null) return '<span class="badge" style="background:var(--surface);color:var(--text2)">—</span>';
+  if (es === 0) return '<span class="badge b-e">Patol.</span>';
+  if (es === 1) return '<span class="badge b-w">Border.</span>';
+  return '<span class="badge b-ok">Norma</span>';
+}
+
+function fmt(v, dec=2) { return v === null || isNaN(v) ? '—' : v.toFixed(dec); }
+
+let lastResults = {};
+
+function recalc() {
+  const eta  = parseInt(document.getElementById('p-eta').value);
+  const sesso = document.getElementById('p-sesso').value;
+  const scol = parseInt(document.getElementById('p-scol').value);
+
+  // raw inputs
+  const t1=getVal('t1'),t2=getVal('t2'),t3=getVal('t3'),t4=getVal('t4'),t5=getVal('t5');
+  const listb=getVal('listb'), lafterb=getVal('lafterb');
+  const del15=getVal('del15'), hits15=getVal('hits15'), fp15=getVal('fp15');
+  const del1wk=getVal('del1wk'), hits1wk=getVal('hits1wk'), fp1wk=getVal('fp1wk');
+
+  // tot5
+  const tot5 = (t1!==null&&t2!==null&&t3!==null&&t4!==null&&t5!==null) ? t1+t2+t3+t4+t5 : null;
+  document.getElementById('tot5_disp').textContent = tot5 !== null ? tot5 : '—';
+
+  // indici compositi raw
+  const lot = tot5 !== null && t1 !== null ? tot5 - t1*5 : null;
+  const pi  = (listb !== null && t1 !== null && t1 > 0) ? Math.round(listb/t1*100*10)/10 : null;
+  const ri  = (lafterb !== null && t5 !== null && t5 > 0) ? Math.round(lafterb/t5*100*10)/10 : null;
+  const hfp15_raw = (hits15 !== null && fp15 !== null) ? Math.round((hits15/15 - fp15/30)*1000)/1000 : null;
+  const mei15_raw = (del15 !== null && tot5 !== null && tot5 > 0 && hfp15_raw !== null) ?
+    Math.round(((del15/15)/(tot5/75) + hfp15_raw)*1000)/1000 : null;
+  const hfp1wk_raw = (hits1wk !== null && fp1wk !== null) ? Math.round((hits1wk/15 - fp1wk/30)*1000)/1000 : null;
+  const mei1wk_raw = (del1wk !== null && tot5 !== null && tot5 > 0 && hfp1wk_raw !== null) ?
+    Math.round(((del1wk/15)/(tot5/75) + hfp1wk_raw)*1000)/1000 : null;
+  const alfr_raw  = (del15 !== null && del1wk !== null && del15 > 0) ?
+    Math.round((del15-del1wk)/del15*100*10)/10 : null;
+  const alfhfp_raw = (hfp15_raw !== null && hfp1wk_raw !== null) ?
+    Math.round((hfp15_raw - hfp1wk_raw)*100*10)/10 : null;
+
+  // display compositi
+  ['lot','pi','ri','mei15','mei1wk','hfp15','hfp1wk','alfr','alfhfp'].forEach((k,i) => {
+    const vals = [lot,pi,ri,mei15_raw,mei1wk_raw,hfp15_raw,hfp1wk_raw,alfr_raw,alfhfp_raw];
+    const el = document.getElementById(k+'_disp');
+    if (el) el.textContent = vals[i] !== null ? vals[i].toFixed(2) : '—';
+    if (el) el.style.fontFamily = "'IBM Plex Mono', monospace";
+    if (el) el.style.fontSize = '14px';
+    if (el) el.style.color = 'var(--accent)';
+    if (el) el.style.paddingTop = '4px';
+  });
+
+  // demographic check
+  const ageIdx  = AGE_IDX(eta);
+  const scolKey = SCOL_KEY(scol);
+  const demoOk  = ageIdx >= 0 && sesso && !isNaN(scol);
+
+  document.getElementById('btn-elenco').disabled = !demoOk;
+  document.getElementById('btn-tabella').disabled = !demoOk;
+  document.getElementById('norm-info').textContent = demoOk
+    ? `Fascia età: ${['20-30','31-40','41-50','51-60','61-70','≥71'][ageIdx]} · Scolarità: ${scolKey} anni`
+    : 'Inserisci età, sesso e scolarità per la correzione demografica';
+
+  if (!demoOk) {
+    document.getElementById('grid-singles').innerHTML = '<div style="color:var(--text2);font-size:12px;padding:8px">Inserisci i dati demografici per vedere i risultati corretti.</div>';
+    document.getElementById('grid-composites').innerHTML = '';
+    return;
+  }
+
+  const gCode = sesso;
+
+  // ---- correct singles ----
+  const corrTot5   = applyCorr(tot5, C_TOT5, ageIdx, scolKey, gCode, true);
+  const corrListB  = applyCorr(listb, C_LISTB, ageIdx, scolKey, gCode, false);
+  const corrLAfterB= applyCorr(lafterb, C_LAFTERB, ageIdx, scolKey, gCode, true);
+  const corrDel15  = applyCorr(del15, C_DEL15, ageIdx, scolKey, gCode, true);
+  const corrHits15 = applyCorr(hits15, C_HITS15, ageIdx, scolKey, gCode, false);
+  const corrFP15   = applyCorr(fp15, C_FP15, ageIdx, scolKey, gCode, false);
+  const corrDel1wk = applyCorr(del1wk, C_DEL1WK, ageIdx, scolKey, gCode, false);
+  const corrHits1wk= applyCorr(hits1wk, C_HITS1WK, ageIdx, scolKey, gCode, false);
+  const corrFP1wk  = applyCorr(fp1wk, C_FP1WK, ageIdx, scolKey, gCode, false);
+
+  // ES singles
+  const esTot5   = calcESScore(corrTot5, ES_SING.tot5, false);
+  const esListB  = calcESScore(corrListB, ES_SING.listb, false);
+  const esLAfterB= calcESScore(corrLAfterB, ES_SING.lafterb, false);
+  const esDel15  = calcESScore(corrDel15, ES_SING.del15, false);
+  const esHits15 = calcESScore(corrHits15, ES_SING.hits15, false);
+  const esFP15   = calcESScore(corrFP15, ES_SING.fp15, true);
+  const esDel1wk = calcESScore(corrDel1wk, ES_SING.del1wk, false);
+  const esHits1wk= calcESScore(corrHits1wk, ES_SING.hits1wk, false);
+  const esFP1wk  = calcESScore(corrFP1wk, ES_SING.fp1wk, true);
+
+  // ---- correct composites ----
+  const corrLOT = applyCorr(lot, C_LOT, ageIdx, scolKey, gCode, false);
+  const corrRI  = applyCorr(ri, C_RI, ageIdx, scolKey, gCode, false);
+  const corrMEI15 = applyCorr(mei15_raw, C_MEI15, ageIdx, scolKey, gCode, false);
+  const corrMEI1wk= applyCorr(mei1wk_raw, C_MEI1WK, ageIdx, scolKey, gCode, false);
+  const corrHFP15 = applyCorr(hfp15_raw, C_HFP15, ageIdx, scolKey, gCode, false);
+  const corrHFP1wk= applyCorr(hfp1wk_raw, C_HFP1WK, ageIdx, scolKey, gCode, false);
+  // ALF: solo età
+  const alfR_corr_val  = C_ALF_R[ageIdx] ?? null;
+  const corrALFR  = alfr_raw !== null && alfR_corr_val !== null ? Math.round((alfr_raw + alfR_corr_val)*1000)/1000 : null;
+  const alfHFP_corr_val = C_ALF_HFP[ageIdx] ?? null;
+  const corrALFHFP= alfhfp_raw !== null && alfHFP_corr_val !== null ? Math.round((alfhfp_raw + alfHFP_corr_val)*1000)/1000 : null;
+
+  const esLOT  = calcESScore(corrLOT, ES_COMP.lot, false);
+  const esRI_c = calcESScore(corrRI,  ES_COMP.ri,  false);
+  const esMEI15= calcESScore(corrMEI15, ES_COMP.mei15, false);
+  const esMEI1wk=calcESScore(corrMEI1wk,ES_COMP.mei1wk, false);
+  const esHFP15= calcESScore(corrHFP15, ES_COMP.hfp15, false);
+  const esHFP1wk=calcESScore(corrHFP1wk,ES_COMP.hfp1wk, false);
+  const esALFR = calcESScore(corrALFR, ES_COMP.alfr, true);
+  const esALFHFP=calcESScore(corrALFHFP,ES_COMP.alfhfp, true);
+
+  // save for output
+  lastResults = {
+    tot5, corrTot5, esTot5,
+    listb, corrListB, esListB,
+    lafterb, corrLAfterB, esLAfterB,
+    del15, corrDel15, esDel15,
+    hits15, corrHits15, esHits15,
+    fp15, corrFP15, esFP15,
+    del1wk, corrDel1wk, esDel1wk,
+    hits1wk, corrHits1wk, esHits1wk,
+    fp1wk, corrFP1wk, esFP1wk,
+    lot, corrLOT, esLOT,
+    pi,
+    ri, corrRI, esRI_c,
+    mei15_raw, corrMEI15, esMEI15,
+    mei1wk_raw, corrMEI1wk, esMEI1wk,
+    hfp15_raw, corrHFP15, esHFP15,
+    hfp1wk_raw, corrHFP1wk, esHFP1wk,
+    alfr_raw, corrALFR, esALFR,
+    alfhfp_raw, corrALFHFP, esALFHFP,
+  };
+
+  // render singles grid
+  const singlesData = [
+    {name:'Totale I–V trial', raw:tot5, corr:corrTot5, es:esTot5, co:'≥35.18'},
+    {name:'Lista B', raw:listb, corr:corrListB, es:esListB, co:'≥2.16'},
+    {name:'Lista A dopo B', raw:lafterb, corr:corrLAfterB, es:esLAfterB, co:'≥5.45'},
+    {name:'Rievoc. differita 15min', raw:del15, corr:corrDel15, es:esDel15, co:'≥6.44'},
+    {name:'Riconoscimento Hits 15min', raw:hits15, corr:corrHits15, es:esHits15, co:'≥12.11'},
+    {name:'Falsi positivi 15min ↑', raw:fp15, corr:corrFP15, es:esFP15, co:'≤2.77'},
+    {name:'Rievoc. differita 1wk', raw:del1wk, corr:corrDel1wk, es:esDel1wk, co:'≥3.05'},
+    {name:'Riconoscimento Hits 1wk', raw:hits1wk, corr:corrHits1wk, es:esHits1wk, co:'≥10.56'},
+    {name:'Falsi positivi 1wk ↑', raw:fp1wk, corr:corrFP1wk, es:esFP1wk, co:'≤7.11'},
+  ];
+
+  document.getElementById('grid-singles').innerHTML = singlesData.map(d => {
+    const ast = (d.es !== null && d.es <= 1) ? '*' : '';
+    return `<div class="res-row">
+      <span class="res-name">${d.name}</span>
+      <div class="res-vals">
+        <span class="res-raw">${fmt(d.raw,1)}${ast}</span>
+        <span style="color:var(--text2)">→</span>
+        <span class="res-corr">${fmt(d.corr,2)}${ast}</span>
+        <span class="pe-chip">PE ${d.es??'—'}</span>
+        ${esBadge(d.es)}
+      </div>
+    </div>`;
+  }).join('');
+
+  const compData = [
+    {name:'LOT', raw:lot, corr:corrLOT, es:esLOT, co:'≥5.76'},
+    {name:'PI (%)', raw:pi, corr:pi, es:null, co:'n.s.'},
+    {name:'RI (%)', raw:ri, corr:corrRI, es:esRI_c, co:'≥61.82'},
+    {name:'MEI-15min', raw:mei15_raw, corr:corrMEI15, es:esMEI15, co:'≥1.38'},
+    {name:'MEI-1wk', raw:mei1wk_raw, corr:corrMEI1wk, es:esMEI1wk, co:'≥0.98'},
+    {name:'Hits-FP 15min', raw:hfp15_raw, corr:corrHFP15, es:esHFP15, co:'≥0.72'},
+    {name:'Hits-FP 1wk', raw:hfp1wk_raw, corr:corrHFP1wk, es:esHFP1wk, co:'≥0.52'},
+    {name:'ALF Recall ↑', raw:alfr_raw, corr:corrALFR, es:esALFR, co:'≤57.40'},
+    {name:'ALF Hits-FP ↑', raw:alfhfp_raw, corr:corrALFHFP, es:esALFHFP, co:'≤40'},
+  ];
+
+  document.getElementById('grid-composites').innerHTML = compData.map(d => {
+    const ast = (d.es !== null && d.es <= 1) ? '*' : '';
+    const noNorm = d.co === 'n.s.';
+    return `<div class="res-row">
+      <span class="res-name">${d.name}</span>
+      <div class="res-vals">
+        <span class="res-raw">${fmt(d.raw,2)}${ast}</span>
+        <span style="color:var(--text2)">→</span>
+        <span class="res-corr">${noNorm ? '—' : fmt(d.corr,2)}${ast}</span>
+        <span class="pe-chip">${noNorm ? 'n.s.' : 'PE '+(d.es??'—')}</span>
+        ${noNorm ? '<span class="badge" style="background:var(--surface2);color:var(--text2)">no norme</span>' : esBadge(d.es)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildElenco() {
+  const r = lastResults;
+  const esitoStr = (es) => es === 0 ? 'Patologico' : es === 1 ? 'Borderline' : 'nella norma';
+  const line = (name, raw, corr, es, dec=2) => {
+    if (raw === null) return null;
+    const ast = (es !== null && es <= 1) ? '*' : '';
+    const corrStr = corr !== null ? `${fmt(corr,dec)}${ast}` : 'N/D';
+    return `  ${name}: ${fmt(raw,dec)}${ast} → ${corrStr} (PE ${es??'—'} — ${es!==null?esitoStr(es):'—'})`;
+  };
+  const lines = [
+    'RAVLT (Ricci et al., 2022):',
+    line('Totale I-V trial', r.tot5, r.corrTot5, r.esTot5, 0),
+    line('Lista B', r.listb, r.corrListB, r.esListB, 0),
+    line('Lista A dopo B', r.lafterb, r.corrLAfterB, r.esLAfterB, 0),
+    line('Rievocazione differita 15min', r.del15, r.corrDel15, r.esDel15, 0),
+    line('Riconoscimento Hits 15min', r.hits15, r.corrHits15, r.esHits15, 0),
+    line('Falsi positivi 15min', r.fp15, r.corrFP15, r.esFP15, 0),
+    r.del1wk !== null ? line('Rievocazione differita 1wk', r.del1wk, r.corrDel1wk, r.esDel1wk, 0) : null,
+    r.hits1wk !== null ? line('Riconoscimento Hits 1wk', r.hits1wk, r.corrHits1wk, r.esHits1wk, 0) : null,
+    r.fp1wk !== null ? line('Falsi positivi 1wk', r.fp1wk, r.corrFP1wk, r.esFP1wk, 0) : null,
+    '  — Indici —',
+    line('LOT', r.lot, r.corrLOT, r.esLOT),
+    r.pi !== null ? `  PI: ${fmt(r.pi,1)}% (n.s., no norme)` : null,
+    line('RI', r.ri, r.corrRI, r.esRI_c),
+    line('MEI-15min', r.mei15_raw, r.corrMEI15, r.esMEI15),
+    line('MEI-1wk', r.mei1wk_raw, r.corrMEI1wk, r.esMEI1wk),
+    line('Hits-FP 15min', r.hfp15_raw, r.corrHFP15, r.esHFP15),
+    line('Hits-FP 1wk', r.hfp1wk_raw, r.corrHFP1wk, r.esHFP1wk),
+    r.alfr_raw !== null ? line('ALF Recall', r.alfr_raw, r.corrALFR, r.esALFR) : null,
+    r.alfhfp_raw !== null ? line('ALF Hits-FP', r.alfhfp_raw, r.corrALFHFP, r.esALFHFP) : null,
+  ].filter(l => l !== null);
+  return lines.join('\n');
+}
+
+function buildTabellaHTML() {
+  const r = lastResults;
+  const esitoStr = (es) => es === 0 ? 'Patol.' : es === 1 ? 'Border.' : 'Norma';
+  const row = (test, raw, corr, es, co, dec=2) => {
+    if (raw === null) return '';
+    const ast = (es !== null && es <= 1) ? '*' : '';
+    return `<tr><td>${test}</td><td>${fmt(raw,dec)}${ast}</td><td>${corr !== null ? fmt(corr,dec)+ast : '—'}</td><td>${es !== null ? 'PE '+es : '—'}</td><td>${co}</td></tr>`;
+  };
+  const rows = [
+    row('Totale I-V trial',r.tot5,r.corrTot5,r.esTot5,'≥35.18',0),
+    row('Lista B',r.listb,r.corrListB,r.esListB,'≥2.16',0),
+    row('Lista A dopo B',r.lafterb,r.corrLAfterB,r.esLAfterB,'≥5.45',0),
+    row('Rievoc. diff. 15min',r.del15,r.corrDel15,r.esDel15,'≥6.44',0),
+    row('Riconoscim. Hits 15min',r.hits15,r.corrHits15,r.esHits15,'≥12.11',0),
+    row('Falsi positivi 15min',r.fp15,r.corrFP15,r.esFP15,'≤2.77',0),
+    r.del1wk!==null?row('Rievoc. diff. 1wk',r.del1wk,r.corrDel1wk,r.esDel1wk,'≥3.05',0):'',
+    r.hits1wk!==null?row('Riconoscim. Hits 1wk',r.hits1wk,r.corrHits1wk,r.esHits1wk,'≥10.56',0):'',
+    r.fp1wk!==null?row('Falsi positivi 1wk',r.fp1wk,r.corrFP1wk,r.esFP1wk,'≤7.11',0):'',
+    row('LOT',r.lot,r.corrLOT,r.esLOT,'≥5.76'),
+    r.pi!==null?`<tr><td>PI (%)</td><td>${fmt(r.pi,1)}</td><td>—</td><td>n.s.</td><td>—</td></tr>`:'',
+    row('RI (%)',r.ri,r.corrRI,r.esRI_c,'≥61.82'),
+    row('MEI-15min',r.mei15_raw,r.corrMEI15,r.esMEI15,'≥1.38'),
+    row('MEI-1wk',r.mei1wk_raw,r.corrMEI1wk,r.esMEI1wk,'≥0.98'),
+    row('Hits-FP 15min',r.hfp15_raw,r.corrHFP15,r.esHFP15,'≥0.72'),
+    row('Hits-FP 1wk',r.hfp1wk_raw,r.corrHFP1wk,r.esHFP1wk,'≥0.52'),
+    r.alfr_raw!==null?row('ALF Recall',r.alfr_raw,r.corrALFR,r.esALFR,'≤57.40'):'',
+    r.alfhfp_raw!==null?row('ALF Hits-FP',r.alfhfp_raw,r.corrALFHFP,r.esALFHFP,'≤40'):'',
+  ].join('');
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>RAVLT (Ricci et al., 2022)</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE (0–4)</b></td><td><b>Cut-off</b></td></tr>
+  </thead><tbody>${rows}</tbody></table>`;
+}
+
+function copyOutput(tipo) {
+  const out = document.getElementById('report-output');
+  const fb  = document.getElementById('copy-feedback');
+  if (tipo === 'elenco') {
+    const t = buildElenco(); out.textContent = t; out.style.display = 'block';
+    navigator.clipboard.writeText(t).then(() => {
+      fb.textContent = '✓ Testo copiato'; setTimeout(() => fb.textContent = '', 4000);
+    }).catch(() => { selOut(out); fb.textContent = '⚠ Seleziona e Ctrl+C'; });
+  } else {
+    const h = buildTabellaHTML();
+    out.textContent = '[Tabella] RAVLT — ' + Object.keys(lastResults).filter(k=>lastResults[k]!==null).length + ' misure';
+    out.style.display = 'block';
+    try {
+      navigator.clipboard.write([new ClipboardItem({'text/html': new Blob([h],{type:'text/html'})})]).then(() => {
+        fb.textContent = '✓ Tabella copiata — incolla in Google Docs con Ctrl+V'; setTimeout(() => fb.textContent='',5000);
+      }).catch(() => fallbackHTML(h, fb));
+    } catch(e) { fallbackHTML(h, fb); }
+  }
+}
+function fallbackHTML(h,fb){const tmp=document.createElement('div');tmp.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';tmp.innerHTML=h;document.body.appendChild(tmp);const r=document.createRange();r.selectNodeContents(tmp);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(tmp);setTimeout(()=>fb.textContent='',5000);}
+function selOut(el){const r=document.createRange();r.selectNodeContents(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

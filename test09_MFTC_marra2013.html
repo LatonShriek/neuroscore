@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MFTC — Marra et al. (2013)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#222536;--border:#2e3348;--accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8eaf0;--text2:#9da3b8;--text3:#6b7190;--ok:#34d399;--warn:#fbbf24;--err:#f87171;--font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;padding:2rem 1rem}
+  .container{max-width:720px;margin:0 auto}
+  header{border-bottom:1px solid var(--border);padding-bottom:1.25rem;margin-bottom:2rem}
+  .test-num{font-family:var(--mono);font-size:.75rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+  h1{font-size:1.4rem;font-weight:600;line-height:1.3}
+  .ref{font-size:.8rem;color:var(--text3);margin-top:.3rem;font-style:italic}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.25rem}
+  .section-title{font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+  .field-row.triple{grid-template-columns:1fr 1fr 1fr}
+  .field{display:flex;flex-direction:column;gap:.35rem}
+  label{font-size:.78rem;color:var(--text2)}
+  input,select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:.95rem;padding:.5rem .75rem;outline:none;transition:border-color .15s}
+  input:focus,select:focus{border-color:var(--accent)}
+  .score-table{width:100%;border-collapse:collapse;margin-top:.75rem}
+  .score-table th,.score-table td{padding:.5rem .75rem;border:1px solid var(--border);font-size:.82rem;text-align:left}
+  .score-table th{background:var(--surface2);color:var(--text2);font-weight:500}
+  .score-table td.mono{font-family:var(--mono);color:var(--accent2)}
+  .score-table td.cutoff{font-family:var(--mono);color:var(--text3)}
+  .result-box{border:1px solid var(--border);border-radius:10px;padding:1.25rem;background:var(--surface)}
+  .ok-badge{display:inline-block;padding:.15rem .5rem;border-radius:4px;font-size:.78rem;font-family:var(--mono)}
+  .ok-norm{background:rgba(52,211,153,.1);color:var(--ok)}
+  .ok-patol{background:rgba(248,113,113,.12);color:var(--err)}
+  .ok-nd{background:var(--surface2);color:var(--text3)}
+  .pe-badge{display:inline-flex;align-items:center;padding:.25rem .75rem;border-radius:20px;font-family:var(--mono);font-weight:600;font-size:.85rem}
+  .pe-0{background:rgba(248,113,113,.15);color:var(--err)}
+  .pe-4{background:rgba(52,211,153,.15);color:var(--ok)}
+  .pe-none{background:var(--surface2);color:var(--text3)}
+  .btn-row{display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap}
+  button{padding:.55rem 1.1rem;border-radius:7px;font-family:var(--font);font-size:.85rem;font-weight:500;cursor:pointer;border:none;transition:opacity .15s}
+  button:disabled{opacity:.35;cursor:not-allowed}
+  button:not(:disabled):hover{opacity:.85}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .note{font-size:.76rem;color:var(--text3);margin-top:.6rem;padding:.6rem .75rem;background:var(--surface2);border-radius:6px;border-left:3px solid var(--border)}
+  .flash{animation:flash .4s}
+  @keyframes flash{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="test-num">Test #09 · Attenzione Visiva</div>
+    <h1>MFTC — Multiple Features Target Cancellation</h1>
+    <div class="ref">Marra C., Gainotti G., Scaricamazza E., Piccininni C., Ferraccioli M., Quaranta D. (2013) · Neurol Sci 34:173–180</div>
+  </header>
+
+  <div class="section">
+    <div class="section-title">Dati demografici</div>
+    <div class="field-row triple">
+      <div class="field"><label>Età (anni)</label><input type="number" id="eta" min="20" max="92" placeholder="es. 68" oninput="calcola()"></div>
+      <div class="field"><label>Scolarità (anni)</label><input type="number" id="scol" min="3" max="17" placeholder="3–17" oninput="calcola()"></div>
+      <div class="field"><label>Sesso</label>
+        <select id="sesso" onchange="calcola()">
+          <option value="">—</option>
+          <option value="M">Maschio</option>
+          <option value="F">Femmina</option>
+        </select>
+      </div>
+    </div>
+    <div class="note">Range normativo: 20–92 anni · N=465 · Scolarità ≥3 anni</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Scoring</div>
+    <div class="field-row">
+      <div class="field"><label>Item corretti — Hits (su 13)</label><input type="number" id="hits" min="0" max="13" placeholder="0–13" oninput="calcola()"></div>
+      <div class="field"><label>Falsi Allarmi — FA (su 67)</label><input type="number" id="fa" min="0" max="67" placeholder="0–67" oninput="calcola()"></div>
+    </div>
+    <div class="field" style="max-width:240px">
+      <label>Tempo di esecuzione (secondi)</label>
+      <input type="number" id="tempo" min="0" max="999" placeholder="es. 85" oninput="calcola()">
+    </div>
+    <div class="note" style="margin-top:.75rem;font-family:var(--mono)">
+      Accuratezza = { (Hits/13) + [(67−FA)/67] } / 2
+    </div>
+  </div>
+
+  <div class="result-box">
+    <div class="section-title" style="margin-bottom:.75rem">Risultato</div>
+    <table class="score-table">
+      <thead>
+        <tr><th>Misura</th><th>Grezzo</th><th>Corretto</th><th>Cut-off</th><th>Esito</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Accuratezza</td><td class="mono" id="acc-g">—</td><td class="cutoff">(no correz.)</td><td class="cutoff">≥0.838 (sc.≤5) / ≥0.869 (sc.>5)</td><td id="acc-esito"><span class="ok-badge ok-nd">—</span></td></tr>
+        <tr><td>Falsi Allarmi</td><td class="mono" id="fa-g">—</td><td class="mono" id="fa-c">—</td><td class="cutoff">≤2.77</td><td id="fa-esito"><span class="ok-badge ok-nd">—</span></td></tr>
+        <tr><td>Tempo (sec)</td><td class="mono" id="tempo-g">—</td><td class="mono" id="tempo-c">—</td><td class="cutoff">≤135.73</td><td id="tempo-esito"><span class="ok-badge ok-nd">—</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copiaElenco()">Copia come elenco</button>
+    <button class="btn-secondary" id="btn-tabella" disabled onclick="copiaTabella()">Copia come tabella</button>
+  </div>
+  <div class="note" id="copy-msg" style="display:none"></div>
+</div>
+
+<script>
+let state={};
+
+function calcola(){
+  const eta=parseFloat(document.getElementById('eta').value);
+  const scol=parseFloat(document.getElementById('scol').value);
+  const sesso=document.getElementById('sesso').value;
+  const hits=parseFloat(document.getElementById('hits').value);
+  const fa=parseFloat(document.getElementById('fa').value);
+  const tempo=parseFloat(document.getElementById('tempo').value);
+  const demoOk=!isNaN(eta)&&!isNaN(scol)&&sesso;
+  updateButtons(demoOk);
+
+  // Accuratezza — cut-off per scolarità, nessuna correzione regressione
+  let acc=null,accEsito=null;
+  if(!isNaN(hits)&&!isNaN(fa)){
+    acc=((hits/13)+((67-fa)/67))/2;
+    const cutA=(!isNaN(scol)&&scol<=5)?0.838:0.869;
+    accEsito=acc>=cutA?'norm':'patol';
+  }
+  v('acc-g',acc!==null?acc.toFixed(3):'—');
+  esito('acc-esito',accEsito);
+
+  // Falsi Allarmi — correzione con formula regressione (Tabella 4 paper)
+  // Modello: FA_corretto = FA + correz, dove correz = −[−0.428*(ln(100−età)−3.48)+1.667*(1/scol−0.16)]
+  // Il paper riporta: FA_atteso = 0.585−0.428*(ln(100−età)−3.48)+1.667*(1/scol−0.16)
+  // FA_corretto = FA − FA_atteso + mediana_campione(0.52)
+  let faCorr=null,faEsito=null;
+  if(!isNaN(fa)&&demoOk){
+    const faAtteso=0.585-0.428*(Math.log(100-eta)-3.48)+1.667*(1/scol-0.16);
+    faCorr=fa-faAtteso+0.52; // media campione come riferimento
+    faEsito=faCorr<=2.77?'norm':'patol';
+  }
+  v('fa-g',!isNaN(fa)?fa:'—');
+  v('fa-c',faCorr!==null?faCorr.toFixed(3):'—');
+  esito('fa-esito',faEsito);
+
+  // Tempo — correzione con formula regressione (Tabella 4)
+  // Modello: Tempo_atteso = 70.298−12.284*gender(M=1,F=0)+0.006*età²−14.422*(√scol−2.84)
+  let tempoCorr=null,tempoEsito=null;
+  if(!isNaN(tempo)&&demoOk){
+    const g=sesso==='M'?1:0;
+    const tempoAtteso=70.298-12.284*g+0.006*eta*eta-14.422*(Math.sqrt(scol)-2.84);
+    tempoCorr=tempo-tempoAtteso+80.95; // media campione come riferimento
+    tempoEsito=tempoCorr<=135.73?'norm':'patol';
+  }
+  v('tempo-g',!isNaN(tempo)?tempo:'—');
+  v('tempo-c',tempoCorr!==null?tempoCorr.toFixed(1):'—');
+  esito('tempo-esito',tempoEsito);
+
+  state={acc,faCorr,tempoCorr,accEsito,faEsito,tempoEsito,
+         fa_raw:isNaN(fa)?null:fa, tempo_raw:isNaN(tempo)?null:tempo, scol, eta, sesso};
+}
+
+function v(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function esito(id,e){
+  const el=document.getElementById(id);if(!el)return;
+  if(!e){el.innerHTML='<span class="ok-badge ok-nd">—</span>';return;}
+  el.innerHTML=e==='norm'?'<span class="ok-badge ok-norm">Nella norma</span>':'<span class="ok-badge ok-patol">Patologico</span>';
+}
+function updateButtons(ok){
+  document.getElementById('btn-elenco').disabled=!ok;
+  document.getElementById('btn-tabella').disabled=!ok;
+}
+
+function copiaElenco(){
+  const {acc,faCorr,tempoCorr,accEsito,faEsito,tempoEsito,fa_raw,tempo_raw}=state;
+  let lines=['MFTC (Marra et al., 2013):'];
+  if(acc!==null)lines.push(`  Accuratezza: ${acc.toFixed(3)}${accEsito==='patol'?'*':''} (${accEsito==='norm'?'nella norma':'patologica'})`);
+  if(faCorr!==null)lines.push(`  Falsi Allarmi: ${fa_raw} → ${faCorr.toFixed(3)}${faEsito==='patol'?'*':''} (cut-off ≤2.77 — ${faEsito==='norm'?'nella norma':'patologico'})`);
+  if(tempoCorr!==null)lines.push(`  Tempo: ${tempo_raw} → ${tempoCorr.toFixed(1)}${tempoEsito==='patol'?'*':''} sec (cut-off ≤135.73 — ${tempoEsito==='norm'?'nella norma':'patologico'})`);
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>showMsg('✓ Copiato come elenco'));
+}
+
+function copiaTabella(){
+  const {acc,faCorr,tempoCorr,accEsito,faEsito,tempoEsito,fa_raw,tempo_raw,scol}=state;
+  const row=(t,g,c,pe,cut)=>`<tr><td>${t}</td><td>${g}</td><td>${c}</td><td>${pe}</td><td>${cut}</td></tr>`;
+  let rows='';
+  const cutA=scol<=5?'≥0.838':'≥0.869';
+  if(acc!==null)rows+=row('MFTC Accuratezza',acc.toFixed(3)+(accEsito==='patol'?'*':''),'(no correz.)','—',cutA);
+  if(faCorr!==null)rows+=row('MFTC Falsi Allarmi',String(fa_raw)+(faEsito==='patol'?'*':''),faCorr.toFixed(3)+(faEsito==='patol'?'*':''),'—','≤2.77');
+  if(tempoCorr!==null)rows+=row('MFTC Tempo (sec)',String(tempo_raw)+(tempoEsito==='patol'?'*':''),tempoCorr.toFixed(1)+(tempoEsito==='patol'?'*':''),'—','≤135.73');
+  const html=`<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:13px"><tr style="background:#1a1d27;color:#4f8ef7"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>PE</th><th>Cut-off</th></tr>${rows}</table>`;
+  const blob=new Blob([html],{type:'text/html'});
+  navigator.clipboard.write([new ClipboardItem({'text/html':blob})]).then(()=>showMsg('✓ Copiato come tabella'));
+}
+
+function showMsg(msg){
+  const el=document.getElementById('copy-msg');
+  el.textContent=msg;el.style.display='block';
+  el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+  setTimeout(()=>el.style.display='none',3000);
+}
+</script>
+</body>
+</html>

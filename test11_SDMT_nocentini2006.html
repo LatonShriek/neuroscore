@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDMT Orale — Nocentini et al. (2006)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#222536;--border:#2e3348;--accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8eaf0;--text2:#9da3b8;--text3:#6b7190;--ok:#34d399;--warn:#fbbf24;--err:#f87171;--font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;padding:2rem 1rem}
+  .container{max-width:720px;margin:0 auto}
+  header{border-bottom:1px solid var(--border);padding-bottom:1.25rem;margin-bottom:2rem}
+  .test-num{font-family:var(--mono);font-size:.75rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+  h1{font-size:1.4rem;font-weight:600;line-height:1.3}
+  .ref{font-size:.8rem;color:var(--text3);margin-top:.3rem;font-style:italic}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.25rem}
+  .section-title{font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+  .field{display:flex;flex-direction:column;gap:.35rem}
+  label{font-size:.78rem;color:var(--text2)}
+  input,select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:.95rem;padding:.5rem .75rem;outline:none;transition:border-color .15s}
+  input:focus{border-color:var(--accent)}
+
+  /* Griglia simboli SDMT */
+  .sdmt-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin:.75rem 0}
+  .sdmt-cell{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .sdmt-sym{background:var(--surface2);border:1px solid var(--border);border-radius:4px;height:32px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--text2)}
+  .sdmt-in{width:100%;height:28px;text-align:center;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:var(--mono);font-size:.8rem;padding:0}
+  .sdmt-in:focus{border-color:var(--accent);outline:none}
+  .sdmt-in.correct{border-color:var(--ok);background:rgba(52,211,153,.08)}
+  .sdmt-in.wrong{border-color:var(--err);background:rgba(248,113,113,.08)}
+
+  .score-display{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;background:var(--surface2);border-radius:8px;padding:.85rem;margin-top:.75rem}
+  .score-item{display:flex;flex-direction:column;gap:.25rem}
+  .score-label{font-size:.72rem;color:var(--text3)}
+  .score-val{font-family:var(--mono);font-size:1.15rem;font-weight:500}
+
+  /* Griglia correzione (Nocentini 2006 — da immagine) */
+  /* età × scolarità, valori da aggiungere al grezzo */
+  .corr-preview{font-size:.78rem;color:var(--text2);font-family:var(--mono);background:var(--surface2);border-radius:6px;padding:.65rem .85rem;margin-top:.6rem}
+
+  .result-box{border:1px solid var(--border);border-radius:10px;padding:1.25rem;background:var(--surface)}
+  .result-row{display:flex;justify-content:space-between;align-items:center;padding:.45rem 0;border-bottom:1px solid var(--border)}
+  .result-row:last-child{border-bottom:none}
+  .result-label{font-size:.82rem;color:var(--text2)}
+  .result-val{font-family:var(--mono);font-size:.95rem;font-weight:500}
+  .pe-badge{display:inline-flex;align-items:center;padding:.25rem .75rem;border-radius:20px;font-family:var(--mono);font-weight:600;font-size:.9rem}
+  .pe-0{background:rgba(248,113,113,.15);color:var(--err)}
+  .pe-1{background:rgba(251,191,36,.12);color:var(--warn)}
+  .pe-2{background:rgba(251,191,36,.08);color:#e0a820}
+  .pe-3{background:rgba(52,211,153,.1);color:var(--ok)}
+  .pe-4{background:rgba(52,211,153,.15);color:var(--ok)}
+  .pe-none{background:var(--surface2);color:var(--text3)}
+
+  .btn-row{display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap}
+  button{padding:.55rem 1.1rem;border-radius:7px;font-family:var(--font);font-size:.85rem;font-weight:500;cursor:pointer;border:none;transition:opacity .15s}
+  button:disabled{opacity:.35;cursor:not-allowed}
+  button:not(:disabled):hover{opacity:.85}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .note{font-size:.76rem;color:var(--text3);margin-top:.6rem;padding:.6rem .75rem;background:var(--surface2);border-radius:6px;border-left:3px solid var(--border)}
+  .flash{animation:flash .4s}
+  @keyframes flash{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="test-num">Test #11 · Velocità di Elaborazione</div>
+    <h1>SDMT — Symbol Digit Modalities Test (Versione Orale)</h1>
+    <div class="ref">Nocentini U., Giordano A., Di Vincenzo S., Panella M., Pasqualetti P. (2006) · Kit del Neuropsicologo Italiano (Barletta-Rodolfi et al., 2011)</div>
+  </header>
+
+  <div class="section">
+    <div class="section-title">Dati demografici</div>
+    <div class="field-row">
+      <div class="field"><label>Età (anni)</label><input type="number" id="eta" min="18" max="90" placeholder="es. 68" oninput="calcola()"></div>
+      <div class="field"><label>Scolarità (anni)</label><input type="number" id="scol" min="0" max="30" placeholder="es. 8" oninput="calcola()"></div>
+    </div>
+    <div class="note">Somministrazione: prime 3 associazioni = esaminatore, successive 7 = prova, dall'11ª = conteggio. Tempo max: 90 sec.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Scoring rapido</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Punteggio grezzo (risposte corrette su 110)</label>
+        <input type="number" id="grezzo" min="0" max="110" placeholder="0–110" oninput="calcola()">
+      </div>
+      <div class="field">
+        <label>Errori</label>
+        <input type="number" id="errori" min="0" max="110" placeholder="0" oninput="calcola()">
+      </div>
+    </div>
+    <div class="score-display">
+      <div class="score-item"><div class="score-label">Punteggio grezzo</div><div class="score-val" id="g-disp">—</div></div>
+      <div class="score-item"><div class="score-label">Correzione</div><div class="score-val" id="corr-disp">—</div></div>
+      <div class="score-item"><div class="score-label">Punteggio corretto</div><div class="score-val" id="c-disp">—</div></div>
+    </div>
+  </div>
+
+  <!-- Griglia correzione SDMT (Nocentini 2006, da immagine Copia_di_A-SDMT-Norm.png) -->
+  <!-- Età × Scolarità: 5(5-7), 8(8-12), 13(13-15), 16(≥16) -->
+  <!-- Età: 20, 30, 40, 50, 60, 70, 80 (per decade) -->
+  <!-- Nota: valori da aggiungere al grezzo (negativo = prestazione attesa peggiore → correzione positiva) -->
+
+  <div class="result-box">
+    <div class="section-title" style="margin-bottom:.75rem">Risultato</div>
+    <div class="result-row"><span class="result-label">Punteggio grezzo</span><span class="result-val" id="r-grezzo">—</span></div>
+    <div class="result-row"><span class="result-label">Correzione demografica (età × scolarità)</span><span class="result-val" id="r-corr">—</span></div>
+    <div class="result-row"><span class="result-label">Punteggio corretto</span><span class="result-val" id="r-corretto">—</span></div>
+    <div class="result-row"><span class="result-label">Cut-off</span><span class="result-val">34.20</span></div>
+    <div class="result-row">
+      <span class="result-label">Punteggio Equivalente</span>
+      <span class="result-val"><span class="pe-badge pe-none" id="r-pe">—</span></span>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copiaElenco()">Copia come elenco</button>
+    <button class="btn-secondary" id="btn-tabella" disabled onclick="copiaTabella()">Copia come tabella</button>
+  </div>
+  <div class="note" id="copy-msg" style="display:none"></div>
+</div>
+
+<script>
+// Griglia correzione Nocentini 2006
+// Dalla immagine Copia_di_A-SDMT-Norm.png
+// Colonne scolarità: 5(≤7), 8(8-12), 13(13-15), 16(≥16)
+// Righe età: 20(20-29), 30(30-39), 40(40-49), 50(50-59), 60(60-69), 70(70-79), 80(≥80)
+// Valori = correzione da sommare al grezzo (segno negativo = il demografico "sottrae" alla prestazione attesa → si aggiunge al grezzo per ottenere corretto)
+const GRID = {
+  20: [-3.60, -7.10,  -13,    -16.50],
+  30: [  0.80, -2.70,  -8.60, -12.10],
+  40: [  5.20,  1.70,  -4.20,  -7.70],
+  50: [  9.60,  6.10,   0.20,  -3.30],
+  60: [ 14,    10.50,   4.60,   1.10],
+  70: [ 18.40, 14.90,   9,      5.50],
+};
+
+function getScolaritaIdx(s) {
+  if (s <= 7)  return 0;
+  if (s <= 12) return 1;
+  if (s <= 15) return 2;
+  return 3;
+}
+
+function getCorrezione(eta, scol) {
+  const ages = [20,30,40,50,60,70];
+  const si = getScolaritaIdx(scol);
+  if (eta < 20) return GRID[20][si];
+  if (eta >= 80) return GRID[70][si]; // extrapolazione: usa 70
+  for (let i = 0; i < ages.length - 1; i++) {
+    if (eta >= ages[i] && eta < ages[i+1]) {
+      const a1 = ages[i], a2 = ages[i+1];
+      const c1 = GRID[a1][si], c2 = GRID[a2][si];
+      return c1 + (c2 - c1) * (eta - a1) / (a2 - a1);
+    }
+  }
+  return GRID[70][si];
+}
+
+// ES tabella (da Copia_di_A-SDMT-Norm.png / standard Nocentini)
+// Range punteggi corretti → PE
+// ≤23.9 (cut-off per SDMT è 34.20, non 23.9 — questo è standard Capitani)
+// Tabella PE SDMT non è nella pubblicazione standard → usiamo solo cut-off
+// Cut-off = 34.20 (punteggio corretto)
+function getPE(corretto) {
+  // Nocentini 2006 fornisce solo cut-off, non griglia ES completa
+  // Per coerenza con altri test usiamo cut-off come soglia PE 0/1+
+  if (corretto === null) return null;
+  if (corretto <= 34.20) return 0;
+  return null; // solo cut-off disponibile
+}
+
+let state = {};
+
+function calcola() {
+  const eta  = parseFloat(document.getElementById('eta').value);
+  const scol = parseFloat(document.getElementById('scol').value);
+  const grezzo = parseFloat(document.getElementById('grezzo').value);
+  const demoOk = !isNaN(eta) && !isNaN(scol);
+  updateButtons(demoOk);
+
+  const gStr = !isNaN(grezzo) ? grezzo : '—';
+  document.getElementById('g-disp').textContent = gStr;
+  document.getElementById('r-grezzo').textContent = gStr;
+
+  if (!demoOk || isNaN(grezzo)) {
+    document.getElementById('corr-disp').textContent = '—';
+    document.getElementById('c-disp').textContent = '—';
+    document.getElementById('r-corr').textContent = '—';
+    document.getElementById('r-corretto').textContent = '—';
+    setPE(null, null, null);
+    state = { grezzo: isNaN(grezzo)?null:grezzo, corretto: null };
+    return;
+  }
+
+  const correzione = getCorrezione(eta, scol);
+  const corretto = grezzo + correzione;
+
+  document.getElementById('corr-disp').textContent = (correzione >= 0 ? '+' : '') + correzione.toFixed(2);
+  document.getElementById('c-disp').textContent = corretto.toFixed(2);
+  document.getElementById('r-corr').textContent = (correzione >= 0 ? '+' : '') + correzione.toFixed(2);
+  document.getElementById('r-corretto').textContent = corretto.toFixed(2);
+
+  const esito = corretto > 34.20 ? 'nella norma' : 'patologico';
+  if (corretto <= 34.20) {
+    document.getElementById('r-pe').className = 'pe-badge pe-0';
+    document.getElementById('r-pe').textContent = 'PE 0 — Patologico';
+  } else {
+    document.getElementById('r-pe').className = 'pe-badge pe-4';
+    document.getElementById('r-pe').textContent = 'Nella norma (cut-off 34.20)';
+  }
+
+  state = { grezzo, corretto, correzione, eta, scol, patol: corretto <= 34.20 };
+}
+
+function updateButtons(ok) {
+  document.getElementById('btn-elenco').disabled = !ok;
+  document.getElementById('btn-tabella').disabled = !ok;
+}
+
+function setPE(pe, corretto, grezzo) {
+  const el = document.getElementById('r-pe');
+  el.className = 'pe-badge pe-none'; el.textContent = '—';
+}
+
+function copiaElenco() {
+  const {grezzo, corretto, patol} = state;
+  const ast = patol ? '*' : '';
+  const c = corretto !== null ? corretto.toFixed(2) + ast : '—';
+  const g = grezzo !== null ? String(grezzo) : '—';
+  const esito = patol ? 'patologico' : 'nella norma';
+  const txt = `SDMT orale (Nocentini et al., 2006): ${g} → ${c} (cut-off 34.20 — ${esito})`;
+  navigator.clipboard.writeText(txt).then(() => showMsg('✓ Copiato come elenco'));
+}
+
+function copiaTabella() {
+  const {grezzo, corretto, patol} = state;
+  const ast = patol ? '*' : '';
+  const g = grezzo !== null ? String(grezzo) : '—';
+  const c = corretto !== null ? corretto.toFixed(2) + ast : '—';
+  const html = `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:13px">
+<tr style="background:#1a1d27;color:#4f8ef7"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>PE</th><th>Cut-off</th></tr>
+<tr><td>SDMT orale (Nocentini et al., 2006)</td><td>${g}</td><td>${c}</td><td>${patol?'0':'—'}</td><td>34.20</td></tr>
+</table>`;
+  const blob = new Blob([html], {type:'text/html'});
+  navigator.clipboard.write([new ClipboardItem({'text/html':blob})]).then(() => showMsg('✓ Copiato come tabella'));
+}
+
+function showMsg(msg) {
+  const el = document.getElementById('copy-msg');
+  el.textContent = msg; el.style.display = 'block';
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAB — Aiello et al., 2022</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3050;--accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8ecf8;--muted:#7a84a0;--ok:#3ddc84;--warn:#f7b731;--err:#ff5c5c}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.6;padding:24px;max-width:980px;margin:0 auto}
+h1{font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.subtitle{font-size:.82rem;color:var(--muted);margin-bottom:20px;font-family:'IBM Plex Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none;transition:border .2s}
+input[type=number]:focus{border-color:var(--accent)}
+.result-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);gap:8px}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:.82rem;color:var(--muted)}
+.result-val{font-family:'IBM Plex Mono',monospace;font-size:.92rem;font-weight:600;text-align:right}
+.es0{color:var(--err)}.es1{color:#ff9a3c}.es2{color:var(--warn)}.es3{color:var(--ok)}.es4{color:var(--ok)}
+.alert{background:#1e1830;border:1px solid #5b4af7;border-radius:8px;padding:12px 16px;font-size:.82rem;color:#b8aaff;display:none;margin-top:10px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{padding:10px 20px;border-radius:7px;border:none;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2);color:#0f1117}
+.btn-primary:disabled,.btn-sec:disabled{opacity:.35;cursor:not-allowed}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-sec:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.output-area{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;white-space:pre-wrap;display:none;margin-top:10px}
+.feedback{font-size:.8rem;color:var(--ok);margin-top:6px;min-height:1.2em}
+.section-note{background:#0d1a2e;border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.8rem;color:#8ab4f8;margin-bottom:14px}
+table.norm-info{width:100%;border-collapse:collapse;font-size:.74rem;margin-top:8px}
+table.norm-info th{background:var(--surface2);color:var(--muted);padding:5px 6px;text-align:center;font-weight:600;border:1px solid var(--border)}
+table.norm-info td{padding:4px 6px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:.72rem;text-align:center}
+.subtest-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
+.sub-card{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px}
+.sub-card h3{font-size:.75rem;font-weight:700;color:var(--accent);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.score-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.9rem;cursor:pointer;transition:all .15s;margin:2px}
+.score-btn:hover{border-color:var(--accent);color:var(--accent)}
+.score-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-family:'IBM Plex Mono',monospace;font-weight:700}
+.pill-0{background:#3a1515;color:var(--err)}.pill-1{background:#3a2510;color:#ff9a3c}
+.pill-2{background:#3a3010;color:var(--warn)}.pill-3{background:#1a3a2a;color:var(--ok)}.pill-4{background:#1a3a2a;color:var(--ok)}
+</style>
+</head>
+<body>
+<h1>Frontal Assessment Battery (FAB)</h1>
+<div class="subtitle">Dubois et al., 2000 · Norma italiana: Aiello, Esposito et al. — Neurological Sciences, 2022</div>
+
+<div class="card">
+  <h2>Dati paziente</h2>
+  <div class="grid4">
+    <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="21" max="96" placeholder="es. 65" oninput="calcola()"></div>
+    <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-sco" min="1" max="25" placeholder="es. 13" oninput="calcola()"></div>
+    <div class="field"><label>Data</label><input type="date" id="p-data"></div>
+    <div class="field"><label>Codice</label><input type="text" id="p-code" placeholder="opzionale" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none"></div>
+  </div>
+  <div id="nota-norma" class="alert"></div>
+</div>
+
+<div class="card">
+  <h2>Somministrazione — 6 items (0–3 ciascuno)</h2>
+  <div class="section-note">Clicca sul punteggio per ogni item. Il totale viene calcolato automaticamente.<br>
+  FAB-1 (EF linguisticamente mediata): Somiglianze + Fluenza S &nbsp;|&nbsp; FAB-2 (Pianificazione): Serie motorie + Istruzioni contrastanti &nbsp;|&nbsp; FAB-3 (Inibizione): Go-No Go + Prensione</div>
+  <div class="subtest-grid">
+    <div class="sub-card">
+      <h3>A. Somiglianze (0–3)</h3>
+      <div id="btns-A"></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Solo risposte categoriali = corrette</div>
+    </div>
+    <div class="sub-card">
+      <h3>B. Fluenza fonemica S (0–3)</h3>
+      <div id="btns-B"></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px">3=≥10 parole; 2=6-9; 1=3-5; 0=&lt;3</div>
+    </div>
+    <div class="sub-card">
+      <h3>C. Serie motorie (0–3)</h3>
+      <div id="btns-C"></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px">3=6 serie da solo; 2=3 serie; 1=con E.; 0=no</div>
+    </div>
+    <div class="sub-card">
+      <h3>D. Istruzioni contrastanti (0–3)</h3>
+      <div id="btns-D"></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px">3=0 errori; 2=1-2; 1=3; 0=&gt;3</div>
+    </div>
+    <div class="sub-card">
+      <h3>E. Go-No Go (0–3)</h3>
+      <div id="btns-E"></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px">3=0 errori; 2=1-2; 1=3; 0=&gt;3</div>
+    </div>
+    <div class="sub-card">
+      <h3>F. Comportamento di prensione (0–3)</h3>
+      <div id="btns-F"></div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px">3=non afferra; 2=esita; 1=afferra; 0=dopo divieto</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:.92rem">Totale grezzo: <span id="tot-grezzo" style="color:var(--accent);font-weight:700">—</span>/18</div>
+    <div style="font-size:.78rem;color:var(--muted)">FAB-1 (A+B): <span id="sub1">—</span> &nbsp;|&nbsp; FAB-2 (C+D): <span id="sub2">—</span> &nbsp;|&nbsp; FAB-3 (E+F): <span id="sub3">—</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Risultati</h2>
+  <div id="results-area"><p style="color:var(--muted);font-size:.85rem">Inserisci età, scolarità e seleziona i punteggi dei 6 item.</p></div>
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copyOutput('elenco')">Copia come elenco</button>
+    <button class="btn-sec" id="btn-tabella" disabled onclick="copyOutput('tabella')">Copia come tabella</button>
+  </div>
+  <div id="output-area" class="output-area"></div>
+  <div id="copy-feedback" class="feedback"></div>
+</div>
+
+<div class="card">
+  <h2>Formule di correzione (Aiello 2022, Tabelle 4–5)</h2>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Punteggio corretto = grezzo + fattore. N=475, età media 61.08, scol. media 11.67.</p>
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:.76rem;background:var(--surface2);padding:10px;border-radius:6px;line-height:2">
+    <b>FAB totale:</b> +0.000004*(età³−269630.55) −1.565729*(ln(scol)−2.366383)<br>
+    <b>FAB-1:</b> +0.000001*(età³−269630.55) −0.607345*(ln(scol)−2.366383)<br>
+    <b>FAB-2:</b> +0.000002*(età³−269630.55) +2.527494*(1/scol−0.105356)<br>
+    <b>FAB-3:</b> +0.000103*(età²−3958.63) −0.640471*(ln(scol)−2.366383)
+  </div>
+  <p style="font-size:.78rem;color:var(--muted);margin-top:10px;font-weight:700">ES cut-off (Tabella 6):</p>
+  <table class="norm-info" style="max-width:600px;margin-top:6px">
+    <tr><th>Scala</th><th>oTL (ES=0)</th><th>ES=0</th><th>ES=1</th><th>ES=2</th><th>ES=3</th><th>ES=4</th></tr>
+    <tr><td>FAB Totale</td><td>12.02</td><td>≤12.02</td><td>12.03–13.71</td><td>13.72–15.10</td><td>15.11–16.24</td><td>≥16.25</td></tr>
+    <tr><td>FAB-1</td><td>3.49</td><td>≤3.49</td><td>3.50–4.35</td><td>4.36–4.76</td><td>4.77–5.49</td><td>≥5.50</td></tr>
+    <tr><td>FAB-2</td><td>2.74</td><td>≤2.74</td><td>2.75–4.45</td><td>4.46–5.41</td><td>5.42–5.69</td><td>≥5.70</td></tr>
+    <tr><td>FAB-3</td><td>2.80</td><td>≤2.80</td><td>2.81–3.57</td><td>3.58–5.09</td><td>5.10–5.65</td><td>≥5.66</td></tr>
+  </table>
+</div>
+
+<script>
+const scores = {A:null,B:null,C:null,D:null,E:null,F:null};
+
+function buildBtns() {
+  ['A','B','C','D','E','F'].forEach(k => {
+    const div = document.getElementById('btns-'+k);
+    let html = '';
+    for (let v=0;v<=3;v++) html += `<button class="score-btn" id="btn-${k}-${v}" onclick="setScore('${k}',${v})">${v}</button>`;
+    div.innerHTML = html;
+  });
+}
+
+function setScore(key, val) {
+  scores[key] = val;
+  ['A','B','C','D','E','F'].forEach(k => {
+    for (let v=0;v<=3;v++) {
+      const b = document.getElementById(`btn-${k}-${v}`);
+      b.className = 'score-btn' + (scores[k]===v?' active':'');
+    }
+  });
+  updateTot();
+  calcola();
+}
+
+function updateTot() {
+  const vals = ['A','B','C','D','E','F'].map(k=>scores[k]);
+  const allFilled = vals.every(v=>v!==null);
+  if (allFilled) {
+    const tot = vals.reduce((a,b)=>a+b,0);
+    document.getElementById('tot-grezzo').textContent = tot;
+    document.getElementById('sub1').textContent = scores.A+scores.B;
+    document.getElementById('sub2').textContent = scores.C+scores.D;
+    document.getElementById('sub3').textContent = scores.E+scores.F;
+  }
+}
+
+// ── FORMULE AIELLO 2022 ──────────────────────────────────────────
+const M_LN_SCO = 2.366383; // ln(11.67)
+const M_AGE3 = 269630.547368; // mean_age^3 (61.08^3 = corrected)
+const M_AGE2 = 3958.627368;   // mean_age^2
+const M_INV_SCO = 0.105356;   // 1/mean_edu
+
+function cfFAB(age, edu) {
+  return 0.000004*(Math.pow(age,3)-M_AGE3) - 1.565729*(Math.log(edu)-M_LN_SCO);
+}
+function cfFAB1(age, edu) {
+  return 0.000001*(Math.pow(age,3)-M_AGE3) - 0.607345*(Math.log(edu)-M_LN_SCO);
+}
+function cfFAB2(age, edu) {
+  return 0.000002*(Math.pow(age,3)-M_AGE3) + 2.527494*((1/edu)-M_INV_SCO);
+}
+function cfFAB3(age, edu) {
+  return 0.000103*(Math.pow(age,2)-M_AGE2) - 0.640471*(Math.log(edu)-M_LN_SCO);
+}
+
+function getES(pc, oTL, e1, e2, e3, e4) {
+  if (pc <= oTL) return 0;
+  if (pc <= e1) return 1;
+  if (pc <= e2) return 2;
+  if (pc <= e3) return 3;
+  return 4;
+}
+// FAB totale: ES0≤12.02, ES1≤13.71, ES2≤15.10, ES3≤16.24, ES4≥16.25
+// FAB-1: ES0≤3.49, ES1≤4.35, ES2≤4.76, ES3≤5.49, ES4≥5.50
+// FAB-2: ES0≤2.74, ES1≤4.45, ES2≤5.41, ES3≤5.69, ES4≥5.70
+// FAB-3: ES0≤2.80, ES1≤3.57, ES2≤5.09, ES3≤5.65, ES4≥5.66
+
+const ES_CUTS = {
+  tot: {oTL:12.02, e1:13.71, e2:15.10, e3:16.24},
+  f1:  {oTL:3.49, e1:4.35, e2:4.76, e3:5.49},
+  f2:  {oTL:2.74, e1:4.45, e2:5.41, e3:5.69},
+  f3:  {oTL:2.80, e1:3.57, e2:5.09, e3:5.65},
+};
+function esScore(pc, key) {
+  const c = ES_CUTS[key];
+  return getES(pc, c.oTL, c.e1, c.e2, c.e3);
+}
+const ES_LABELS = {0:'Deficitario',1:'Borderline',2:'Basso',3:'Nella norma',4:'Nella norma'};
+const ES_CLS = {0:'es0',1:'es1',2:'es2',3:'es3',4:'es4'};
+
+let lastData = null;
+
+function calcola() {
+  const age = parseFloat(document.getElementById('p-eta').value);
+  const edu = parseFloat(document.getElementById('p-sco').value);
+  const nota = document.getElementById('nota-norma');
+  const resArea = document.getElementById('results-area');
+  const btnE = document.getElementById('btn-elenco');
+  const btnT = document.getElementById('btn-tabella');
+
+  if (isNaN(age)||isNaN(edu)) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci età e scolarità.</p>';
+    btnE.disabled=true;btnT.disabled=true;return;
+  }
+  if (age<21||age>96||edu<1||edu>25) {
+    nota.style.display='block';
+    nota.textContent=`⚠ Range campione: età 21–96, scolarità 1–25 anni.`;
+  } else {nota.style.display='none';}
+
+  const vals = ['A','B','C','D','E','F'].map(k=>scores[k]);
+  if (vals.some(v=>v===null)) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Seleziona il punteggio per tutti e 6 gli item.</p>';
+    btnE.disabled=true;btnT.disabled=true;return;
+  }
+
+  const pg = vals.reduce((a,b)=>a+b,0);
+  const pg1 = scores.A+scores.B, pg2=scores.C+scores.D, pg3=scores.E+scores.F;
+
+  const pc  = pg + cfFAB(age,edu);
+  const pc1 = pg1 + cfFAB1(age,edu);
+  const pc2 = pg2 + cfFAB2(age,edu);
+  const pc3 = pg3 + cfFAB3(age,edu);
+
+  const es  = esScore(pc,'tot'),  es1=esScore(pc1,'f1'), es2=esScore(pc2,'f2'), es3=esScore(pc3,'f3');
+  const ast = es<=1?'*':'', ast1=es1<=1?'*':'', ast2=es2<=1?'*':'', ast3=es3<=1?'*':'';
+
+  resArea.innerHTML = `<div class="result-box">
+    <div class="result-row"><span class="result-label">FAB Totale</span>
+      <span class="result-val">grezzo <b>${pg}</b>/18 → corretto <b>${pc.toFixed(2)}${ast}</b> <span class="pill pill-${es}">ES ${es} — ${ES_LABELS[es]}</span></span></div>
+    <div class="result-row"><span class="result-label">FAB-1 (Somiglianze+Fluenza)</span>
+      <span class="result-val">grezzo <b>${pg1}</b>/6 → <b>${pc1.toFixed(2)}${ast1}</b> <span class="pill pill-${es1}">ES ${es1}</span></span></div>
+    <div class="result-row"><span class="result-label">FAB-2 (Serie motorie+Istr.contrastanti)</span>
+      <span class="result-val">grezzo <b>${pg2}</b>/6 → <b>${pc2.toFixed(2)}${ast2}</b> <span class="pill pill-${es2}">ES ${es2}</span></span></div>
+    <div class="result-row"><span class="result-label">FAB-3 (Go-No Go+Prensione)</span>
+      <span class="result-val">grezzo <b>${pg3}</b>/6 → <b>${pc3.toFixed(2)}${ast3}</b> <span class="pill pill-${es3}">ES ${es3}</span></span></div>
+    <div class="result-row" style="color:var(--muted);font-size:.75rem"><span>cut-off FAB totale: ≤12.02</span><span>Range campione: età 21–96, N=475</span></div>
+  </div>`;
+
+  lastData = {pg,pc,es,ast,pg1,pc1,es1,ast1,pg2,pc2,es2,ast2,pg3,pc3,es3,ast3};
+  btnE.disabled=false;btnT.disabled=false;
+}
+
+function buildElenco(){
+  if(!lastData)return'';
+  const d=lastData;
+  const c=document.getElementById('p-code').value;
+  const hdr=c?`${c} — `:'';
+  return `${hdr}FAB (Aiello et al., 2022): ${d.pg}${d.ast}/18 → ${d.pc.toFixed(2)}${d.ast} (ES ${d.es} — ${ES_LABELS[d.es]}) | FAB-1: ${d.pg1}→${d.pc1.toFixed(1)}${d.ast1} ES${d.es1} | FAB-2: ${d.pg2}→${d.pc2.toFixed(1)}${d.ast2} ES${d.es2} | FAB-3: ${d.pg3}→${d.pc3.toFixed(1)}${d.ast3} ES${d.es3}`;
+}
+
+function buildTabella(){
+  const d=lastData;
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>FAB — Frontal Assessment Battery (Aiello et al., 2022)</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>ES (0–4)</b></td><td><b>Cut-off</b></td></tr>
+  </thead>
+  <tbody>
+    <tr><td>FAB Totale</td><td>${d.pg}${d.ast}/18</td><td>${d.pc.toFixed(2)}${d.ast}</td><td>ES ${d.es}${d.ast} — ${ES_LABELS[d.es]}</td><td>&gt; 12.02</td></tr>
+    <tr><td>FAB-1 (EF linguistica)</td><td>${d.pg1}${d.ast1}/6</td><td>${d.pc1.toFixed(2)}${d.ast1}</td><td>ES ${d.es1}${d.ast1}</td><td>&gt; 3.49</td></tr>
+    <tr><td>FAB-2 (Pianificazione)</td><td>${d.pg2}${d.ast2}/6</td><td>${d.pc2.toFixed(2)}${d.ast2}</td><td>ES ${d.es2}${d.ast2}</td><td>&gt; 2.74</td></tr>
+    <tr><td>FAB-3 (Inibizione)</td><td>${d.pg3}${d.ast3}/6</td><td>${d.pc3.toFixed(2)}${d.ast3}</td><td>ES ${d.es3}${d.ast3}</td><td>&gt; 2.80</td></tr>
+  </tbody>
+</table>`;
+}
+
+function copyOutput(tipo){
+  const out=document.getElementById('output-area'),fb=document.getElementById('copy-feedback');
+  if(tipo==='elenco'){const txt=buildElenco();out.textContent=txt;out.style.display='block';navigator.clipboard.writeText(txt).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{fb.textContent='⚠ Ctrl+C';});}
+  else{const html=buildTabella();out.textContent='[Tabella FAB]';out.style.display='block';try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(html,fb));}catch(e){fbH(html,fb);}}
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+
+buildBtns();
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #6 — LN Riordinamento Lettere e Numeri WAIS-IV</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3347;--accent:#4f8ef7;--ok:#2ecc71;--warn:#e67e22;--err:#e74c3c;--text:#e8eaf0;--muted:#8892a4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh}
+.shell{max-width:780px;margin:0 auto;padding:32px 20px 60px}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px}
+.hdr-badge{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.hdr h1{font-size:22px;font-weight:600}
+.hdr .cite{font-size:12px;color:var(--muted);margin-top:4px}
+.range-tag{display:inline-block;background:rgba(79,142,247,.12);border:1px solid var(--accent);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:6px}
+.warn-tag{display:inline-block;background:rgba(231,76,60,.12);border:1px solid var(--err);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--err);font-family:var(--mono);margin-top:6px;margin-left:6px}
+.sec-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;margin-top:24px}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.demo-grid{grid-template-columns:1fr 1fr}}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 10px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.age-warn{background:#2d1f0e;border:1px solid var(--warn);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--warn);margin-top:10px;display:none}
+.not-adm{background:#1a0d0d;border:1px solid var(--err);border-radius:6px;padding:10px 14px;font-size:13px;color:var(--err);margin-top:12px;display:none}
+
+.score-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-top:4px}
+.score-block .sb-title{font-size:14px;font-weight:500;margin-bottom:4px}
+.score-block .sb-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.score-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.score-row label{font-size:12px;color:var(--muted);font-family:var(--mono);min-width:60px}
+.score-row input{width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:16px;padding:7px 10px;outline:none;text-align:center;transition:border-color .2s}
+.score-row input:focus{border-color:var(--accent)}
+.score-row .max{font-size:11px;color:var(--muted);font-family:var(--mono)}
+
+.result-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-top:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.pp-display .num{font-size:42px;font-weight:500;color:var(--accent);line-height:1;font-family:var(--mono)}
+.pp-display .lbl{font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.verdict{flex:1;min-width:180px}
+.verdict .v-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.verdict .v-text{font-size:15px;font-weight:500}
+.v-ok{color:var(--ok)} .v-err{color:var(--err)} .v-na{color:var(--muted)}
+
+.norm-wrap{margin-top:16px;overflow-x:auto}
+.norm-table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:12px}
+.norm-table th,.norm-table td{border:1px solid var(--border);padding:5px 10px;text-align:center}
+.norm-table th{background:var(--surface2);color:var(--muted)}
+.norm-table .hl-pp{background:#0d2e1a;color:var(--ok);font-weight:700}
+
+.report-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-report{flex:1;min-width:160px;padding:12px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s}
+.btn-report:hover:not(:disabled){opacity:.85}
+.btn-report:disabled{background:var(--surface2);color:var(--muted);cursor:default}
+.btn-report.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-report.secondary:hover:not(:disabled){border-color:var(--accent);color:var(--accent);opacity:1}
+.copy-feedback{font-family:var(--mono);font-size:11px;color:var(--ok);margin-top:8px;min-height:16px}
+.report-output{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:14px;font-family:var(--mono);font-size:12px;line-height:1.8;white-space:pre-wrap;display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="hdr">
+  <div class="hdr-badge">Test #6 · WAIS-IV</div>
+  <h1>LN — Riordinamento Lettere e Numeri</h1>
+  <div class="cite">Orsini A., Pezzuti L. (2013). <em>WAIS-IV. Contributo alla taratura italiana.</em> O.S. Organizzazioni Speciali, Firenze. — Tabella A-1.1 (16–69 aa). Nota: non somministrare a età ≥ 70 anni.</div>
+  <div class="range-tag">Età: 16–69 anni</div>
+  <div class="warn-tag">Non somministrare ≥ 70 aa</div>
+</div>
+
+<div class="sec-label">Dati paziente</div>
+<div class="demo-grid">
+  <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="16" max="90" placeholder="es. 45" oninput="checkAge();calcResult()"></div>
+  <div class="field"><label>Sesso</label><select id="p-sesso"><option value="">—</option><option value="M">M</option><option value="F">F</option></select></div>
+  <div class="field"><label>Scolarità (aa)</label><input type="number" id="p-scol" min="0" max="30" placeholder="es. 13" oninput="calcResult()"></div>
+  <div class="field"><label>Data valutazione</label><input type="date" id="p-data"></div>
+</div>
+<div class="age-warn" id="age-warn">⚠ Range normativo: 16–69 anni.</div>
+<div class="not-adm" id="not-adm">⛔ LN non somministrabile a età ≥ 70 anni (Orsini & Pezzuti, 2013). Nessuna norma disponibile per questa fascia.</div>
+
+<div class="sec-label">Punteggio grezzo</div>
+<div class="score-block">
+  <div class="sb-title">LN — Riordinamento Lettere e Numeri</div>
+  <div class="sb-sub">Punteggio totale (somma dei punti item)</div>
+  <div class="score-row">
+    <label>LN totale</label>
+    <input type="number" id="g-ln" min="0" max="30" placeholder="0–30" oninput="calcResult()">
+    <span class="max">max = 30</span>
+  </div>
+  <div class="score-row">
+    <label>SLN (span)</label>
+    <input type="number" id="g-sln" min="0" max="8" placeholder="0–8" oninput="calcResult()">
+    <span class="max">max = 8 (punteggio di processo)</span>
+  </div>
+</div>
+
+<div class="result-bar">
+  <div class="pp-display">
+    <div class="lbl">Pp LN</div>
+    <div class="num" id="pp-ln">—</div>
+  </div>
+  <div class="verdict">
+    <div class="v-label">Fascia</div>
+    <div class="v-text v-na" id="verdict-text">Inserire dati</div>
+  </div>
+  <div style="font-size:12px;color:var(--muted);font-family:var(--mono)" id="pp-info">—</div>
+</div>
+
+<div class="sec-label" style="margin-top:24px">Tabella normativa LN (16–69 aa)</div>
+<div class="norm-wrap" id="norm-wrap"></div>
+
+<div class="report-btns">
+  <button class="btn-report" id="btn-elenco" onclick="copyOutput('elenco')" disabled>📋 Copia come elenco</button>
+  <button class="btn-report secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>⊞ Copia come tabella</button>
+</div>
+<div class="copy-feedback" id="copy-feedback"></div>
+<div class="report-output" id="report-output"></div>
+
+</div>
+<script>
+// LN — Tabella A-1.1 (16-69 aa) — Orsini & Pezzuti 2013
+// Pp 1–19, ogni elemento [min, max] grezzo
+// Nota: Pp 1-5 non definiti nella tabella originale per LN
+const LN_TABLE = [
+  null,      // Pp 1
+  null,      // Pp 2
+  null,      // Pp 3
+  null,      // Pp 4
+  null,      // Pp 5
+  [0,7],     // Pp 6
+  [8,8],     // Pp 7
+  [9,10],    // Pp 8
+  [11,12],   // Pp 9
+  [13,13],   // Pp 10
+  [14,15],   // Pp 11
+  [16,17],   // Pp 12
+  [18,18],   // Pp 13
+  [19,20],   // Pp 14
+  [21,22],   // Pp 15
+  [23,24],   // Pp 16
+  [25,26],   // Pp 17
+  [27,28],   // Pp 18
+  [29,30]    // Pp 19
+];
+
+function grezzoToPp(grezzo, table) {
+  for (let i = 0; i < table.length; i++) {
+    const r = table[i];
+    if (!r) continue;
+    if (grezzo >= r[0] && grezzo <= r[1]) return i + 1;
+  }
+  return null;
+}
+
+function ppLabel(pp) {
+  if (pp === null) return {text:'—', cls:'v-na'};
+  if (pp <= 5)  return {text:'Molto bassa', cls:'v-err'};
+  if (pp <= 7)  return {text:'Bassa', cls:'v-err'};
+  if (pp <= 9)  return {text:'Medio-bassa', cls:'v-warn', style:'color:var(--warn)'};
+  if (pp <= 11) return {text:'Media', cls:'v-ok'};
+  return {text:'Alta / Molto alta', cls:'v-ok'};
+}
+
+function calcResult() {
+  const eta = parseInt(document.getElementById('p-eta').value);
+  const gLN = parseInt(document.getElementById('g-ln').value);
+  const ppEl    = document.getElementById('pp-ln');
+  const verdEl  = document.getElementById('verdict-text');
+  const infoEl  = document.getElementById('pp-info');
+  const notAdm  = document.getElementById('not-adm');
+
+  if (!isNaN(eta) && eta >= 70) {
+    notAdm.style.display = 'block';
+    ppEl.textContent = '—'; verdEl.className='v-text v-err';
+    verdEl.textContent = 'Non somministrabile'; infoEl.textContent='';
+    disableButtons(); buildNormTable(null); return;
+  } else { notAdm.style.display = 'none'; }
+
+  if (isNaN(eta) || eta < 16) {
+    ppEl.textContent='—'; verdEl.className='v-text v-na';
+    verdEl.textContent='Inserire età (16–69)'; infoEl.textContent='';
+    disableButtons(); buildNormTable(null); return;
+  }
+
+  let ppLN = null;
+  if (!isNaN(gLN)) ppLN = grezzoToPp(gLN, LN_TABLE);
+  ppEl.textContent = ppLN !== null ? ppLN : '—';
+
+  if (ppLN !== null) {
+    const lbl = ppLabel(ppLN);
+    verdEl.className = 'v-text ' + lbl.cls;
+    if (lbl.style) verdEl.style.color = lbl.style.replace('color:','');
+    else verdEl.style.color = '';
+    verdEl.textContent = lbl.text;
+    infoEl.textContent = 'Fascia età: 16–69 aa';
+    enableButtons();
+  } else {
+    verdEl.className = 'v-text v-na';
+    verdEl.textContent = isNaN(gLN) ? 'Inserire punteggio LN' : 'Valore fuori range';
+    infoEl.textContent = 'Fascia età: 16–69 aa';
+    enableButtons();
+  }
+  buildNormTable(ppLN);
+}
+
+function buildNormTable(ppLN) {
+  const wrap = document.getElementById('norm-wrap');
+  let html = '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">Tabella A-1.1 (16–69 aa) — Orsini &amp; Pezzuti, 2013</div>';
+  html += '<table class="norm-table"><thead><tr><th>Pp</th><th>Grezzo LN</th></tr></thead><tbody>';
+  for (let i = 0; i < 19; i++) {
+    const r = LN_TABLE[i];
+    const pp = i + 1;
+    const rng = r ? (r[0]===r[1] ? `${r[0]}` : `${r[0]}–${r[1]}`) : '—';
+    const hl = (pp === ppLN) ? ' class="hl-pp"' : '';
+    html += `<tr><td${hl}>${pp}</td><td${hl}>${rng}</td></tr>`;
+  }
+  html += '</tbody></table>';
+  html += '<div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">Pp 10 = media. Patologico: Pp ≤ 7. Non somministrare a età ≥ 70 anni.</div>';
+  wrap.innerHTML = html;
+}
+
+function enableButtons()  { document.getElementById('btn-elenco').disabled=false; document.getElementById('btn-tabella').disabled=false; }
+function disableButtons() { document.getElementById('btn-elenco').disabled=true;  document.getElementById('btn-tabella').disabled=true; }
+
+function checkAge() {
+  const a = parseInt(document.getElementById('p-eta').value);
+  document.getElementById('age-warn').style.display = (a && (a < 16 || a > 90)) ? 'block' : 'none';
+}
+
+function getResultData() {
+  const eta = parseInt(document.getElementById('p-eta').value);
+  const gLN = parseInt(document.getElementById('g-ln').value);
+  const gSLN = parseInt(document.getElementById('g-sln').value);
+  const ppLN = (!isNaN(gLN) && !isNaN(eta) && eta < 70) ? grezzoToPp(gLN, LN_TABLE) : null;
+  const patol = ppLN !== null && ppLN <= 7;
+  const notAdm = !isNaN(eta) && eta >= 70;
+  return { eta, gLN, gSLN, ppLN, patol, asterisco: patol?'*':'', notAdm };
+}
+
+function buildElenco() {
+  const d = getResultData();
+  if (d.notAdm) return 'Riordinamento Lettere e Numeri — LN (Orsini & Pezzuti, 2013): non somministrabile (età ≥ 70 aa)';
+  const gStr = !isNaN(d.gLN) ? `${d.gLN}${d.asterisco}/30` : '—';
+  const ppStr = d.ppLN !== null ? `Pp ${d.ppLN}` : '—';
+  return `Riordinamento Lettere e Numeri — LN (Orsini & Pezzuti, 2013): ${gStr} → ${ppStr}`;
+}
+
+function buildTabellaHTML() {
+  const d = getResultData();
+  const gStr  = !isNaN(d.gLN) ? `${d.gLN}${d.asterisco}/30` : '—';
+  const ppStr = d.ppLN !== null ? `Pp ${d.ppLN}` : '—';
+  const esito = d.notAdm ? 'non somministrabile' : d.patol ? 'sotto media (Pp ≤ 7)' : (d.ppLN !== null ? 'nella norma' : '—');
+  return `
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%">
+  <thead><tr style="font-weight:bold;background:#f2f2f2">
+    <td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>Punteggio ponderato (Pp)</b></td><td><b>Cut-off</b></td>
+  </tr></thead>
+  <tbody><tr>
+    <td><b>Riordinamento Lettere e Numeri — LN</b><br><i>(Orsini &amp; Pezzuti, 2013)</i></td>
+    <td>${gStr}</td><td>—</td><td>${ppStr}</td><td>Pp ≤ 7 (${esito})</td>
+  </tr></tbody>
+</table>`;
+}
+
+function copyOutput(tipo) {
+  const out = document.getElementById('report-output');
+  const fb  = document.getElementById('copy-feedback');
+  if (tipo === 'elenco') {
+    const testo = buildElenco();
+    out.textContent = testo; out.style.display='block';
+    navigator.clipboard.writeText(testo).then(() => { fb.textContent='✓ Testo copiato — Ctrl+V per incollare'; setTimeout(()=>fb.textContent='',4000); })
+    .catch(() => { selectOutput(out); fb.textContent='⚠ Seleziona e copia con Ctrl+C'; });
+  } else {
+    const html = buildTabellaHTML();
+    const d = getResultData();
+    out.textContent = `[Tabella] LN | ${!isNaN(d.gLN)?d.gLN+d.asterisco+'/30':'—'} | Pp ${d.ppLN??'—'}`;
+    out.style.display='block';
+    try {
+      navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]).then(()=>{
+        fb.textContent='✓ Tabella copiata — incolla in Google Docs con Ctrl+V'; setTimeout(()=>fb.textContent='',5000);
+      }).catch(()=>fallbackHTML(html,fb));
+    } catch(e){fallbackHTML(html,fb);}
+  }
+}
+function fallbackHTML(html,fb){
+  const tmp=document.createElement('div'); tmp.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';
+  tmp.innerHTML=html; document.body.appendChild(tmp);
+  const r=document.createRange(); r.selectNodeContents(tmp);
+  window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
+  try{document.execCommand('copy'); fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}
+  window.getSelection().removeAllRanges(); document.body.removeChild(tmp);
+  setTimeout(()=>fb.textContent='',5000);
+}
+function selectOutput(el){const r=document.createRange();r.selectNodeContents(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+buildNormTable(null);
+</script>
+</body>
+</html>

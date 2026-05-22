@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raven CPM — Caffarra et al., 2002</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3050;--accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8ecf8;--muted:#7a84a0;--ok:#3ddc84;--warn:#f7b731;--err:#ff5c5c}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.6;padding:24px;max-width:900px;margin:0 auto}
+h1{font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.subtitle{font-size:.82rem;color:var(--muted);margin-bottom:20px;font-family:'IBM Plex Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none;transition:border .2s}
+input[type=number]:focus{border-color:var(--accent)}
+select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:.92rem;padding:8px 12px;width:100%;outline:none;cursor:pointer}
+select:focus{border-color:var(--accent)}
+.result-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:.82rem;color:var(--muted)}
+.result-val{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:600}
+.es0{color:var(--err)}.es1{color:#ff9a3c}.es2{color:var(--warn)}.es3{color:var(--ok)}.es4{color:var(--ok)}
+.alert{background:#1e1830;border:1px solid #5b4af7;border-radius:8px;padding:12px 16px;font-size:.82rem;color:#b8aaff;display:none;margin-top:10px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{padding:10px 20px;border-radius:7px;border:none;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2);color:#0f1117}
+.btn-primary:disabled,.btn-sec:disabled{opacity:.35;cursor:not-allowed}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-sec:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.output-area{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;white-space:pre-wrap;display:none;margin-top:10px}
+.feedback{font-size:.8rem;color:var(--ok);margin-top:6px;min-height:1.2em}
+.section-note{background:#0d1a2e;border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.8rem;color:#8ab4f8;margin-bottom:14px}
+table.norm-info{width:100%;border-collapse:collapse;font-size:.76rem;margin-top:8px}
+table.norm-info th{background:var(--surface2);color:var(--muted);padding:5px 8px;text-align:center;font-weight:600;border:1px solid var(--border)}
+table.norm-info td{padding:5px 8px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:.74rem;text-align:center}
+
+/* Raven grid - item entry */
+.raven-sets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:12px}
+.raven-set h3{font-size:.78rem;font-weight:700;color:var(--accent);margin-bottom:8px;letter-spacing:.06em}
+.item-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.item-lbl{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--muted);min-width:28px}
+.item-corr{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--ok);min-width:20px;text-align:center}
+.ans-btns{display:flex;gap:3px;flex-wrap:wrap}
+.ans-btn{width:24px;height:24px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.68rem;cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center}
+.ans-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ans-btn.correct{background:#1a4a2a;border-color:var(--ok);color:var(--ok)}
+.ans-btn.wrong{background:#3a1a1a;border-color:var(--err);color:var(--err)}
+.ans-btn.selected-neutral{background:var(--accent);border-color:var(--accent);color:#fff}
+.score-tot{font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--accent);margin-top:8px}
+</style>
+</head>
+<body>
+<h1>Matrici Progressive di Raven a Colori (CPM)</h1>
+<div class="subtitle">Caffarra et al., 2002 — norma storica | Protocollo: Raven 47 (versione colore)</div>
+
+<div class="card">
+  <h2>Dati paziente</h2>
+  <div class="grid3">
+    <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="20" max="80" placeholder="es. 65" oninput="onDemoChange()"></div>
+    <div class="field"><label>Scolarità (anni)</label>
+      <select id="p-sco" onchange="onDemoChange()">
+        <option value="">— seleziona —</option>
+        <option value="5">5 anni</option>
+        <option value="8">8 anni</option>
+        <option value="13">13 anni</option>
+        <option value="17">17 anni</option>
+      </select>
+    </div>
+    <div class="field"><label>Data</label><input type="date" id="p-data"></div>
+  </div>
+  <div id="nota-norma" class="alert"></div>
+</div>
+
+<div class="card">
+  <h2>Somministrazione — 36 item (Set A, Ab, B)</h2>
+  <div class="section-note">Clicca la risposta data dal paziente per ogni item. Verde = corretto, rosso = errore. Il totale viene calcolato automaticamente. In alternativa inserisci direttamente il punteggio grezzo sotto.</div>
+  <div class="raven-sets">
+    <div class="raven-set">
+      <h3>Set A</h3>
+      <div id="set-A"></div>
+      <div class="score-tot">Totale A: <span id="tot-A">0</span>/12</div>
+    </div>
+    <div class="raven-set">
+      <h3>Set Ab</h3>
+      <div id="set-Ab"></div>
+      <div class="score-tot">Totale Ab: <span id="tot-Ab">0</span>/12</div>
+    </div>
+    <div class="raven-set">
+      <h3>Set B</h3>
+      <div id="set-B"></div>
+      <div class="score-tot">Totale B: <span id="tot-B">0</span>/12</div>
+    </div>
+  </div>
+  <div style="margin-top:14px;display:flex;align-items:center;gap:16px">
+    <div class="field" style="max-width:180px">
+      <label>Punteggio grezzo totale (0–36)</label>
+      <input type="number" id="pg-direct" min="0" max="36" placeholder="oppure inserisci qui" oninput="onDirectScore()">
+    </div>
+    <button class="btn-sec" style="margin-top:16px;font-size:.8rem" onclick="clearAll()">Azzera item</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Risultati</h2>
+  <div id="results-area"><p style="color:var(--muted);font-size:.85rem">Inserisci età, scolarità e punteggio.</p></div>
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copyOutput('elenco')">Copia come elenco</button>
+    <button class="btn-sec" id="btn-tabella" disabled onclick="copyOutput('tabella')">Copia come tabella</button>
+  </div>
+  <div id="output-area" class="output-area"></div>
+  <div id="copy-feedback" class="feedback"></div>
+</div>
+
+<div class="card">
+  <h2>Griglia correzione demografica (Caffarra 2002)</h2>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Il fattore di correzione va <b>sottratto</b> dal grezzo se positivo, <b>aggiunto</b> se negativo (valore già con segno).</p>
+  <table class="norm-info">
+    <tr><th>Età</th><th>Scol. 5</th><th>Scol. 8</th><th>Scol. 13</th><th>Scol. 17</th></tr>
+    <tr><td>20</td><td>−0.30</td><td>−2.20</td><td>−4.80</td><td>−6.40</td></tr>
+    <tr><td>25</td><td>0.10</td><td>−1.90</td><td>−4.40</td><td>−6.10</td></tr>
+    <tr><td>30</td><td>0.50</td><td>−1.50</td><td>−4.00</td><td>−5.70</td></tr>
+    <tr><td>35</td><td>0.90</td><td>−1.10</td><td>−3.60</td><td>−5.30</td></tr>
+    <tr><td>40</td><td>1.30</td><td>−0.70</td><td>−3.20</td><td>−4.80</td></tr>
+    <tr><td>45</td><td>1.80</td><td>−0.20</td><td>−2.70</td><td>−4.40</td></tr>
+    <tr><td>50</td><td>2.20</td><td>0.30</td><td>−2.20</td><td>−3.90</td></tr>
+    <tr><td>55</td><td>2.80</td><td>0.80</td><td>−1.70</td><td>−3.40</td></tr>
+    <tr><td>60</td><td>3.30</td><td>1.40</td><td>−1.20</td><td>−2.80</td></tr>
+    <tr><td>65</td><td>3.90</td><td>2.00</td><td>−0.60</td><td>−2.30</td></tr>
+    <tr><td>70</td><td>4.50</td><td>2.60</td><td>0.10</td><td>−1.60</td></tr>
+    <tr><td>75</td><td>5.20</td><td>3.30</td><td>0.80</td><td>−0.90</td></tr>
+    <tr><td>80</td><td>6.00</td><td>4.10</td><td>1.50</td><td>−0.20</td></tr>
+  </table>
+  <p style="font-size:.78rem;color:var(--muted);margin-top:10px;font-weight:700">Punteggi Equivalenti (PE) — punteggio corretto:</p>
+  <table class="norm-info" style="max-width:400px;margin-top:6px">
+    <tr><th>Range punteggio corretto</th><th>PE</th></tr>
+    <tr><td>&lt; 18.96</td><td style="color:var(--err);font-weight:700">0</td></tr>
+    <tr><td>18.96 – 21.20</td><td style="color:#ff9a3c;font-weight:700">1</td></tr>
+    <tr><td>21.21 – 25.13</td><td style="color:var(--warn);font-weight:700">2</td></tr>
+    <tr><td>25.14 – 28.08</td><td style="color:var(--ok);font-weight:700">3</td></tr>
+    <tr><td>&gt; 28.08</td><td style="color:var(--ok);font-weight:700">4</td></tr>
+  </table>
+</div>
+
+<script>
+// Risposte corrette Raven CPM 47
+const CORRECT = {
+  A: [4,5,1,2,6,3,6,2,1,3,4,5],
+  Ab:[4,5,1,6,2,1,3,4,6,3,5,2],
+  B: [2,6,1,2,1,3,5,6,4,3,4,5]
+};
+
+const itemResponses = {A: new Array(12).fill(null), Ab: new Array(12).fill(null), B: new Array(12).fill(null)};
+
+function buildSets() {
+  ['A','Ab','B'].forEach(set => {
+    const div = document.getElementById('set-'+set);
+    let html = '';
+    for (let i = 0; i < 12; i++) {
+      const corr = CORRECT[set][i];
+      html += `<div class="item-row">
+        <span class="item-lbl">${i+1}</span>
+        <span class="item-corr">${corr}</span>
+        <div class="ans-btns" id="btns-${set}-${i}">`;
+      for (let a = 1; a <= 6; a++) {
+        html += `<button class="ans-btn" onclick="setAns('${set}',${i},${a})">${a}</button>`;
+      }
+      html += `</div></div>`;
+    }
+    div.innerHTML = html;
+  });
+}
+
+function setAns(set, idx, ans) {
+  itemResponses[set][idx] = ans;
+  renderSet(set);
+  calcFromItems();
+}
+
+function renderSet(set) {
+  for (let i = 0; i < 12; i++) {
+    const btns = document.querySelectorAll(`#btns-${set}-${i} .ans-btn`);
+    const sel = itemResponses[set][i];
+    const corr = CORRECT[set][i];
+    btns.forEach((btn, bidx) => {
+      btn.className = 'ans-btn';
+      const val = bidx + 1;
+      if (sel === val) {
+        btn.classList.add(val === corr ? 'correct' : 'wrong');
+      }
+    });
+  }
+  let tot = 0;
+  for (let i = 0; i < 12; i++) if (itemResponses[set][i] === CORRECT[set][i]) tot++;
+  document.getElementById('tot-'+set).textContent = tot;
+}
+
+function calcFromItems() {
+  let tot = 0;
+  ['A','Ab','B'].forEach(set => {
+    for (let i = 0; i < 12; i++) if (itemResponses[set][i] === CORRECT[set][i]) tot++;
+  });
+  const inp = document.getElementById('pg-direct');
+  inp.value = tot;
+  calcola();
+}
+
+function onDirectScore() {
+  // Se si inserisce direttamente, azzera item
+  calcola();
+}
+
+function clearAll() {
+  ['A','Ab','B'].forEach(set => {
+    itemResponses[set] = new Array(12).fill(null);
+    renderSet(set);
+  });
+  document.getElementById('pg-direct').value = '';
+  calcola();
+}
+
+// ── CORREZIONE DEMOGRAFICA ──────────────────────────────────────
+const ETA_VALS = [20,25,30,35,40,45,50,55,60,65,70,75,80];
+const SCO_VALS = [5,8,13,17];
+// Tabella correzione (da immagini): positivo = da sottrarre, negativo = da aggiungere
+// Punteggio corretto = grezzo − fattore
+const CORR_TABLE = [
+  [-0.30,-2.20,-4.80,-6.40], // 20
+  [0.10,-1.90,-4.40,-6.10],  // 25
+  [0.50,-1.50,-4.00,-5.70],  // 30
+  [0.90,-1.10,-3.60,-5.30],  // 35
+  [1.30,-0.70,-3.20,-4.80],  // 40
+  [1.80,-0.20,-2.70,-4.40],  // 45
+  [2.20,0.30,-2.20,-3.90],   // 50
+  [2.80,0.80,-1.70,-3.40],   // 55
+  [3.30,1.40,-1.20,-2.80],   // 60
+  [3.90,2.00,-0.60,-2.30],   // 65
+  [4.50,2.60,0.10,-1.60],    // 70
+  [5.20,3.30,0.80,-0.90],    // 75
+  [6.00,4.10,1.50,-0.20],    // 80
+];
+
+function getScoIdx(sco) {
+  const s = parseInt(sco);
+  if (s <= 6) return 0;
+  if (s <= 10) return 1;
+  if (s <= 14) return 2;
+  return 3;
+}
+
+function interp(eta, scoIdx) {
+  if (eta <= ETA_VALS[0]) return CORR_TABLE[0][scoIdx];
+  if (eta >= ETA_VALS[ETA_VALS.length-1]) return CORR_TABLE[ETA_VALS.length-1][scoIdx];
+  for (let i = 0; i < ETA_VALS.length-1; i++) {
+    if (eta >= ETA_VALS[i] && eta <= ETA_VALS[i+1]) {
+      const t = (eta - ETA_VALS[i]) / (ETA_VALS[i+1] - ETA_VALS[i]);
+      return CORR_TABLE[i][scoIdx] + t * (CORR_TABLE[i+1][scoIdx] - CORR_TABLE[i][scoIdx]);
+    }
+  }
+  return 0;
+}
+
+function getPE(corr) {
+  if (corr < 18.96) return 0;
+  if (corr <= 21.20) return 1;
+  if (corr <= 25.13) return 2;
+  if (corr <= 28.08) return 3;
+  return 4;
+}
+
+const PE_LABELS = ['Deficitario','Borderline','Basso','Nella norma','Nella norma'];
+const PE_CLS = ['es0','es1','es2','es3','es4'];
+
+let lastData = null;
+
+function onDemoChange() { calcola(); }
+
+function calcola() {
+  const eta = parseFloat(document.getElementById('p-eta').value);
+  const scoVal = document.getElementById('p-sco').value;
+  const pgVal = document.getElementById('pg-direct').value;
+  const nota = document.getElementById('nota-norma');
+  const resArea = document.getElementById('results-area');
+  const btnE = document.getElementById('btn-elenco');
+  const btnT = document.getElementById('btn-tabella');
+
+  if (isNaN(eta) || !scoVal) {
+    resArea.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Inserisci età e scolarità.</p>';
+    btnE.disabled=true; btnT.disabled=true; return;
+  }
+  if (eta < 20 || eta > 80) {
+    nota.style.display='block';
+    nota.textContent='⚠ Età fuori range normativo (20–80). Correzione per interpolazione/estrapolazione approssimata.';
+  } else { nota.style.display='none'; }
+
+  const pg = parseFloat(pgVal);
+  if (isNaN(pg)) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci punteggio grezzo o completa gli item.</p>';
+    btnE.disabled=true; btnT.disabled=true; return;
+  }
+
+  const scoIdx = getScoIdx(scoVal);
+  const cf = interp(eta, scoIdx);
+  const pc = pg - cf;
+  const pe = getPE(pc);
+  const ast = pe <= 1 ? '*' : '';
+
+  resArea.innerHTML = `<div class="result-box">
+    <div class="result-row"><span class="result-label">Punteggio grezzo</span><span class="result-val">${pg}/36${ast}</span></div>
+    <div class="result-row"><span class="result-label">Fattore correzione (età ${Math.round(eta)}, scol. ${SCO_VALS[scoIdx]})</span><span class="result-val">${cf.toFixed(2)}</span></div>
+    <div class="result-row"><span class="result-label">Punteggio corretto</span><span class="result-val">${pc.toFixed(2)}${ast}</span></div>
+    <div class="result-row"><span class="result-label">PE (0–4)</span><span class="result-val ${PE_CLS[pe]}">PE ${pe}${ast} — ${PE_LABELS[pe]}</span></div>
+  </div>`;
+
+  lastData = {pg, cf, pc, pe, ast, scoIdx};
+  btnE.disabled=false; btnT.disabled=false;
+}
+
+function buildElenco() {
+  if(!lastData) return '';
+  const d = lastData;
+  const c = document.getElementById('p-code')?.value||'';
+  const hdr = c?`${c} — `:'';
+  return `${hdr}Raven CPM (Caffarra et al., 2002): ${d.pg}${d.ast}/36 → ${d.pc.toFixed(2)}${d.ast} (PE ${d.pe} — ${PE_LABELS[d.pe]})`;
+}
+
+function buildTabella() {
+  const d = lastData;
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>Matrici Progressive di Raven (Caffarra et al., 2002)</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE (0–4)</b></td><td><b>Cut-off</b></td></tr>
+  </thead>
+  <tbody>
+    <tr><td>Raven CPM</td><td>${d.pg}${d.ast}/36</td><td>${d.pc.toFixed(2)}${d.ast}</td><td>PE ${d.pe}${d.ast} — ${PE_LABELS[d.pe]}</td><td>&gt; 18.96</td></tr>
+  </tbody>
+</table>`;
+}
+
+function copyOutput(tipo) {
+  const out=document.getElementById('output-area'), fb=document.getElementById('copy-feedback');
+  if(tipo==='elenco'){
+    const txt=buildElenco(); out.textContent=txt; out.style.display='block';
+    navigator.clipboard.writeText(txt).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{fb.textContent='⚠ Ctrl+C';});
+  } else {
+    const html=buildTabella(); out.textContent='[Tabella]'; out.style.display='block';
+    try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(html,fb));}catch(e){fbH(html,fb);}
+  }
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+
+buildSets();
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stroop Breve (30 item) — Caffarra et al., 2002</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3050;
+  --accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8ecf8;--muted:#7a84a0;
+  --ok:#3ddc84;--warn:#f7b731;--err:#ff5c5c;
+}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.6;padding:24px;max-width:960px;margin:0 auto}
+h1{font-size:1.25rem;font-weight:700;color:var(--accent);letter-spacing:.01em;margin-bottom:4px}
+.subtitle{font-size:.82rem;color:var(--muted);margin-bottom:20px;font-family:'IBM Plex Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none;transition:border .2s}
+input[type=number]:focus{border-color:var(--accent)}
+input[type=number]:disabled{opacity:.4;cursor:not-allowed}
+.result-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:.82rem;color:var(--muted)}
+.result-val{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:600}
+.es0{color:var(--err)}.es1{color:#ff9a3c}.es2{color:var(--warn)}.es3{color:var(--ok)}.es4{color:var(--ok)}
+.alert{background:#1e1830;border:1px solid #5b4af7;border-radius:8px;padding:12px 16px;font-size:.82rem;color:#b8aaff;display:none}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{padding:10px 20px;border-radius:7px;border:none;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2);color:#0f1117}
+.btn-primary:disabled,.btn-sec:disabled{opacity:.35;cursor:not-allowed}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-sec:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.output-area{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;white-space:pre-wrap;display:none;margin-top:10px}
+.feedback{font-size:.8rem;color:var(--ok);margin-top:6px;min-height:1.2em}
+.section-note{background:#0d1a2e;border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.8rem;color:#8ab4f8;margin-bottom:14px}
+table.norm-info{width:100%;border-collapse:collapse;font-size:.76rem;margin-top:8px}
+table.norm-info th{background:var(--surface2);color:var(--muted);padding:5px 8px;text-align:center;font-weight:600;border:1px solid var(--border)}
+table.norm-info td{padding:5px 8px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:.74rem;text-align:center}
+.hl-row td{background:#1a2040}
+select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:.92rem;padding:8px 12px;width:100%;outline:none;cursor:pointer}
+select:focus{border-color:var(--accent)}
+select:disabled{opacity:.4;cursor:not-allowed}
+</style>
+</head>
+<body>
+<h1>Test di Stroop — Versione Breve (30 item)</h1>
+<div class="subtitle">Caffarra, Vezzadini, Dieci, Zonato & Venneri — Nuova Rivista di Neurologia, 2002</div>
+
+<div class="card">
+  <h2>Dati paziente</h2>
+  <div class="grid3">
+    <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="15" max="90" placeholder="es. 65" oninput="onDemoChange()"></div>
+    <div class="field"><label>Scolarità (anni)</label>
+      <select id="p-sco" onchange="onDemoChange()">
+        <option value="">— seleziona —</option>
+        <option value="5">5 anni</option>
+        <option value="8">8 anni</option>
+        <option value="13">13 anni</option>
+        <option value="17">17 anni</option>
+      </select>
+    </div>
+    <div class="field"><label>Data</label><input type="date" id="p-data"></div>
+  </div>
+  <div id="nota-norma" class="alert" style="margin-top:10px"></div>
+</div>
+
+<div class="card">
+  <h2>Punteggi grezzi</h2>
+  <div class="section-note">
+    Prova 1 (W): lettura parole — Prova 2 (C): denominazione colori — Prova 3 (CW): interferenza.<br>
+    Effetto Interferenza Errori = E3 − [(E1+E2)/2] &nbsp;|&nbsp; Effetto Interferenza Tempo = T3 − [(T1+T2)/2]
+  </div>
+  <div class="grid3">
+    <div>
+      <p style="font-size:.78rem;color:var(--accent);margin-bottom:8px;font-weight:700">PROVA 1 — Lettura (W)</p>
+      <div class="field" style="margin-bottom:8px"><label>Errori E1 (/30)</label><input type="number" id="e1" min="0" max="30" placeholder="0" oninput="calcola()"></div>
+      <div class="field"><label>Tempo T1 (sec)</label><input type="number" id="t1" min="0" max="600" placeholder="es. 25" oninput="calcola()"></div>
+    </div>
+    <div>
+      <p style="font-size:.78rem;color:var(--accent);margin-bottom:8px;font-weight:700">PROVA 2 — Colori (C)</p>
+      <div class="field" style="margin-bottom:8px"><label>Errori E2 (/30)</label><input type="number" id="e2" min="0" max="30" placeholder="0" oninput="calcola()"></div>
+      <div class="field"><label>Tempo T2 (sec)</label><input type="number" id="t2" min="0" max="600" placeholder="es. 38" oninput="calcola()"></div>
+    </div>
+    <div>
+      <p style="font-size:.78rem;color:var(--accent);margin-bottom:8px;font-weight:700">PROVA 3 — Interferenza (CW)</p>
+      <div class="field" style="margin-bottom:8px"><label>Errori E3 (/30)</label><input type="number" id="e3" min="0" max="30" placeholder="0" oninput="calcola()"></div>
+      <div class="field"><label>Tempo T3 (sec)</label><input type="number" id="t3" min="0" max="600" placeholder="es. 65" oninput="calcola()"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Risultati</h2>
+  <div id="results-area"><p style="color:var(--muted);font-size:.85rem">Inserisci età, scolarità e punteggi per vedere i risultati.</p></div>
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copyOutput('elenco')">Copia come elenco</button>
+    <button class="btn-sec" id="btn-tabella" disabled onclick="copyOutput('tabella')">Copia come tabella</button>
+  </div>
+  <div id="output-area" class="output-area"></div>
+  <div id="copy-feedback" class="feedback"></div>
+</div>
+
+<div class="card">
+  <h2>Correzione demografica — Effetto Interferenza Tempo</h2>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Fattori di correzione addizionali per età × scolarità (sottrarre dal grezzo per ottenere punteggio corretto).</p>
+  <table class="norm-info">
+    <tr><th>Età</th><th>Scol. 5</th><th>Scol. 8</th><th>Scol. 13</th><th>Scol. 17</th></tr>
+    <tr><td>20</td><td>12.25</td><td>10</td><td>7.50</td><td>5.25</td></tr>
+    <tr><td>25</td><td>13.50</td><td>11.25</td><td>8.75</td><td>6.50</td></tr>
+    <tr><td>30</td><td>15.75</td><td>11</td><td>8.75</td><td>6.50</td></tr>
+    <tr><td>35</td><td>8.75</td><td>6.50</td><td>6.50</td><td>6.25</td></tr>
+    <tr><td>40</td><td>17.50</td><td>12.50</td><td>8.75</td><td>6.25</td></tr>
+    <tr><td>45</td><td>0.50</td><td>1.75</td><td>4</td><td>5.75</td></tr>
+    <tr><td>50</td><td>−2</td><td>−0.50</td><td>1.75</td><td>3.50</td></tr>
+    <tr><td>55</td><td>−4.25</td><td>−3</td><td>−0.75</td><td>1</td></tr>
+    <tr><td>60</td><td>−6.50</td><td>−3.25</td><td>−3</td><td>−1.85</td></tr>
+    <tr><td>65</td><td>−9</td><td>−7.50</td><td>−5.50</td><td>−3.75</td></tr>
+    <tr><td>70</td><td>−11.25</td><td>−10</td><td>−7.75</td><td>−6</td></tr>
+    <tr><td>75</td><td>−13.75</td><td>−12.50</td><td>−10</td><td>−8.25</td></tr>
+    <tr><td>80</td><td>−16</td><td>−14.75</td><td>−12.50</td><td>−10.75</td></tr>
+    <tr><td>90</td><td>−20.75</td><td>−19.25</td><td>−17.25</td><td>−15.50</td></tr>
+  </table>
+
+  <p style="font-size:.78rem;color:var(--muted);margin-top:12px;margin-bottom:8px">Correzione demografica — Effetto Interferenza Errori:</p>
+  <table class="norm-info">
+    <tr><th>Età</th><th>Scol. 5</th><th>Scol. 8</th><th>Scol. 13</th><th>Scol. 17</th></tr>
+    <tr><td>20</td><td>1.25</td><td>0.75</td><td>0.25</td><td>0</td></tr>
+    <tr><td>25</td><td>1.50</td><td>1.25</td><td>0.50</td><td>0</td></tr>
+    <tr><td>30</td><td>1.50</td><td>1</td><td>0.50</td><td>0.25</td></tr>
+    <tr><td>35</td><td>1.50</td><td>1.25</td><td>1</td><td>0.75</td></tr>
+    <tr><td>40</td><td>2</td><td>1.25</td><td>0.75</td><td>1.25</td></tr>
+    <tr><td>45</td><td>−0.25</td><td>0</td><td>0.50</td><td>1</td></tr>
+    <tr><td>50</td><td>−0.25</td><td>−0.25</td><td>0</td><td>0.75</td></tr>
+    <tr><td>55</td><td>−1</td><td>−0.50</td><td>0</td><td>0.25</td></tr>
+    <tr><td>60</td><td>−1.25</td><td>−0.75</td><td>−0.25</td><td>0.25</td></tr>
+    <tr><td>65</td><td>−1.25</td><td>−1.25</td><td>−0.50</td><td>−0.25</td></tr>
+    <tr><td>70</td><td>−1.50</td><td>−1.50</td><td>−0.75</td><td>−0.50</td></tr>
+    <tr><td>75</td><td>−2</td><td>−1.75</td><td>−1.25</td><td>−0.75</td></tr>
+    <tr><td>80</td><td>−2.25</td><td>−2</td><td>−1.50</td><td>−1</td></tr>
+    <tr><td>90</td><td>−2.50</td><td>−2.25</td><td>−1.75</td><td>−1.25</td></tr>
+  </table>
+
+  <p style="font-size:.78rem;color:var(--muted);margin-top:10px">Cut-off: Effetto Interferenza Tempo corretto ≥ 36.92 | Effetto Interferenza Errori corretto ≥ 4.24</p>
+  <p style="font-size:.73rem;color:var(--muted);margin-top:4px">ES: see Table in image — range ES 0–4. Punteggio equivalente 0 = deficitario (sotto cut-off), 4 = normale.</p>
+  
+  <!-- ES table from image -->
+  <p style="font-size:.78rem;color:var(--muted);margin-top:12px;font-weight:700">Tabella PE — Effetto Interferenza Tempo (punteggio corretto):</p>
+  <table class="norm-info">
+    <tr><th>Range punteggi corretti</th><th>PE</th></tr>
+    <tr><td>≥ 36.92</td><td style="color:var(--err);font-weight:700">0</td></tr>
+    <tr><td>Da 36.91 a 31.66</td><td style="color:#ff9a3c;font-weight:700">1</td></tr>
+    <tr><td>Da 31.65 a 26.40</td><td style="color:var(--warn);font-weight:700">2</td></tr>
+    <tr><td>Da 26.39 a 21.14</td><td style="color:var(--ok);font-weight:700">3</td></tr>
+    <tr><td>≤ 21.13</td><td style="color:var(--ok);font-weight:700">4</td></tr>
+  </table>
+
+  <p style="font-size:.78rem;color:var(--muted);margin-top:8px;font-weight:700">Tabella PE — Effetto Interferenza Errori (punteggio corretto):</p>
+  <table class="norm-info">
+    <tr><th>Range punteggi corretti</th><th>PE</th></tr>
+    <tr><td>≥ 4.24</td><td style="color:var(--err);font-weight:700">0</td></tr>
+    <tr><td>Da 4.23 a 2.83</td><td style="color:#ff9a3c;font-weight:700">1</td></tr>
+    <tr><td>Da 2.82 a 1.42</td><td style="color:var(--warn);font-weight:700">2</td></tr>
+    <tr><td>Da 1.41 a 0.10</td><td style="color:var(--ok);font-weight:700">3</td></tr>
+    <tr><td>≤ 0</td><td style="color:var(--ok);font-weight:700">4</td></tr>
+  </table>
+</div>
+
+<script>
+// ── CORREZIONE DEMOGRAFICA ──────────────────────────────────────
+// Tabella età × scolarità per Effetto Interferenza TEMPO
+// Scolarità: 5, 8, 13, 17 → index 0,1,2,3
+// Età: 20,25,30,35,40,45,50,55,60,65,70,75,80,90
+const ETA_VALS = [20,25,30,35,40,45,50,55,60,65,70,75,80,90];
+const CORR_TEMPO = [
+  [12.25,10,7.50,5.25],   // 20
+  [13.50,11.25,8.75,6.50],// 25
+  [15.75,11,8.75,6.50],   // 30
+  [8.75,6.50,6.50,6.25],  // 35
+  [17.50,12.50,8.75,6.25],// 40
+  [0.50,1.75,4,5.75],     // 45
+  [-2,-0.50,1.75,3.50],   // 50
+  [-4.25,-3,-0.75,1],     // 55
+  [-6.50,-3.25,-3,-1.85], // 60
+  [-9,-7.50,-5.50,-3.75], // 65
+  [-11.25,-10,-7.75,-6],  // 70
+  [-13.75,-12.50,-10,-8.25],// 75
+  [-16,-14.75,-12.50,-10.75],// 80
+  [-20.75,-19.25,-17.25,-15.50],// 90
+];
+const CORR_ERR = [
+  [1.25,0.75,0.25,0],
+  [1.50,1.25,0.50,0],
+  [1.50,1,0.50,0.25],
+  [1.50,1.25,1,0.75],
+  [2,1.25,0.75,1.25],
+  [-0.25,0,0.50,1],
+  [-0.25,-0.25,0,0.75],
+  [-1,-0.50,0,0.25],
+  [-1.25,-0.75,-0.25,0.25],
+  [-1.25,-1.25,-0.50,-0.25],
+  [-1.50,-1.50,-0.75,-0.50],
+  [-2,-1.75,-1.25,-0.75],
+  [-2.25,-2,-1.50,-1],
+  [-2.50,-2.25,-1.75,-1.25],
+];
+
+const SCO_IDX = {5:0, 8:1, 13:2, 17:3};
+const SCO_VALS = [5, 8, 13, 17];
+
+function interp(eta, scoIdx, table) {
+  // Interpolazione lineare tra fasce d'età
+  if (eta <= ETA_VALS[0]) return table[0][scoIdx];
+  if (eta >= ETA_VALS[ETA_VALS.length-1]) return table[ETA_VALS.length-1][scoIdx];
+  for (let i = 0; i < ETA_VALS.length-1; i++) {
+    if (eta >= ETA_VALS[i] && eta <= ETA_VALS[i+1]) {
+      const t = (eta - ETA_VALS[i]) / (ETA_VALS[i+1] - ETA_VALS[i]);
+      return table[i][scoIdx] + t * (table[i+1][scoIdx] - table[i][scoIdx]);
+    }
+  }
+  return 0;
+}
+
+function getScoIdx(sco) {
+  // Trova scolarità più vicina
+  const s = parseInt(sco);
+  if (s <= 6) return 0;
+  if (s <= 10) return 1;
+  if (s <= 14) return 2;
+  return 3;
+}
+
+function getEST(corr) {
+  // Effetto Interferenza Tempo — PE (più alto = peggio)
+  if (corr >= 36.92) return 0;
+  if (corr >= 31.66) return 1;
+  if (corr >= 26.40) return 2;
+  if (corr >= 21.14) return 3;
+  return 4;
+}
+
+function getESE(corr) {
+  // Effetto Interferenza Errori — PE
+  if (corr >= 4.24) return 0;
+  if (corr >= 2.83) return 1;
+  if (corr >= 1.42) return 2;
+  if (corr >= 0.10) return 3;
+  return 4;
+}
+
+const ES_LABELS = ['Deficitario','Borderline','Basso','Nella norma','Nella norma'];
+const ES_CLS = ['es0','es1','es2','es3','es4'];
+
+let lastData = null;
+
+function onDemoChange() { calcola(); }
+
+function calcola() {
+  const eta = parseFloat(document.getElementById('p-eta').value);
+  const scoVal = document.getElementById('p-sco').value;
+  const e1 = parseFloat(document.getElementById('e1').value)||0;
+  const e2 = parseFloat(document.getElementById('e2').value)||0;
+  const e3 = parseFloat(document.getElementById('e3').value);
+  const t1 = parseFloat(document.getElementById('t1').value);
+  const t2 = parseFloat(document.getElementById('t2').value);
+  const t3 = parseFloat(document.getElementById('t3').value);
+  const nota = document.getElementById('nota-norma');
+  const resArea = document.getElementById('results-area');
+  const btnE = document.getElementById('btn-elenco');
+  const btnT = document.getElementById('btn-tabella');
+
+  if (isNaN(eta) || !scoVal) {
+    btnE.disabled = true; btnT.disabled = true;
+    resArea.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Inserisci età e scolarità.</p>';
+    return;
+  }
+  if (isNaN(e3) || isNaN(t1) || isNaN(t2) || isNaN(t3)) {
+    btnE.disabled = true; btnT.disabled = true;
+    resArea.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Completa tutti i punteggi delle 3 prove.</p>';
+    return;
+  }
+  nota.style.display='none';
+
+  const scoIdx = getScoIdx(scoVal);
+  const corrFactorT = interp(eta, scoIdx, CORR_TEMPO);
+  const corrFactorE = interp(eta, scoIdx, CORR_ERR);
+
+  const eintGrezzo = e3 - (e1+e2)/2;
+  const tintGrezzo = t3 - (t1+t2)/2;
+  const eintCorr = eintGrezzo - corrFactorE;
+  const tintCorr = tintGrezzo - corrFactorT;
+
+  const esT = getEST(tintCorr);
+  const esE = getESE(eintCorr);
+
+  const astT = esT <= 1 ? '*' : '';
+  const astE = esE <= 1 ? '*' : '';
+
+  resArea.innerHTML = `
+  <div class="result-box">
+    <div class="result-row"><span class="result-label">Effetto Interferenza Tempo grezzo</span><span class="result-val">${tintGrezzo.toFixed(2)} sec</span></div>
+    <div class="result-row"><span class="result-label">Fattore correzione (età ${Math.round(eta)}, scol. ${SCO_VALS[scoIdx]})</span><span class="result-val">${corrFactorT.toFixed(2)}</span></div>
+    <div class="result-row"><span class="result-label">EIT corretto</span><span class="result-val">${tintCorr.toFixed(2)}${astT}</span></div>
+    <div class="result-row"><span class="result-label">PE Interferenza Tempo</span><span class="result-val ${ES_CLS[esT]}">PE ${esT}${astT} — ${ES_LABELS[esT]}</span></div>
+    <hr style="border-color:var(--border);margin:6px 0">
+    <div class="result-row"><span class="result-label">Effetto Interferenza Errori grezzo</span><span class="result-val">${eintGrezzo.toFixed(2)}</span></div>
+    <div class="result-row"><span class="result-label">Fattore correzione errori</span><span class="result-val">${corrFactorE.toFixed(2)}</span></div>
+    <div class="result-row"><span class="result-label">EIE corretto</span><span class="result-val">${eintCorr.toFixed(2)}${astE}</span></div>
+    <div class="result-row"><span class="result-label">PE Interferenza Errori</span><span class="result-val ${ES_CLS[esE]}">PE ${esE}${astE} — ${ES_LABELS[esE]}</span></div>
+  </div>`;
+
+  lastData = {eta, scoIdx, tintGrezzo, eintGrezzo, tintCorr, eintCorr, esT, esE, astT, astE};
+  btnE.disabled = false; btnT.disabled = false;
+}
+
+function buildElenco() {
+  if(!lastData) return '';
+  const d = lastData;
+  const c = document.getElementById('p-code')?.value || '';
+  const hdr = c ? `${c} — ` : '';
+  return `${hdr}Stroop Breve (Caffarra et al., 2002): EI Tempo ${d.tintGrezzo.toFixed(1)} → ${d.tintCorr.toFixed(1)}${d.astT} (PE ${d.esT} — ${ES_LABELS[d.esT]}) | EI Errori ${d.eintGrezzo.toFixed(1)} → ${d.eintCorr.toFixed(1)}${d.astE} (PE ${d.esE} — ${ES_LABELS[d.esE]})`;
+}
+const ES_LABELS = ['Deficitario','Borderline','Basso','Nella norma','Nella norma'];
+
+function buildTabella() {
+  const d = lastData;
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>Test di Stroop Breve (Caffarra et al., 2002)</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE (0–4)</b></td><td><b>Cut-off</b></td></tr>
+  </thead>
+  <tbody>
+    <tr><td>EI Tempo</td><td>${d.tintGrezzo.toFixed(2)}${d.astT}</td><td>${d.tintCorr.toFixed(2)}${d.astT}</td><td>PE ${d.esT}${d.astT} — ${ES_LABELS[d.esT]}</td><td>&lt; 36.92</td></tr>
+    <tr><td>EI Errori</td><td>${d.eintGrezzo.toFixed(2)}${d.astE}</td><td>${d.eintCorr.toFixed(2)}${d.astE}</td><td>PE ${d.esE}${d.astE} — ${ES_LABELS[d.esE]}</td><td>&lt; 4.24</td></tr>
+  </tbody>
+</table>`;
+}
+
+function copyOutput(tipo) {
+  const out = document.getElementById('output-area');
+  const fb = document.getElementById('copy-feedback');
+  if (tipo === 'elenco') {
+    const txt = buildElenco();
+    out.textContent = txt; out.style.display = 'block';
+    navigator.clipboard.writeText(txt).then(() => { fb.textContent = '✓ Testo copiato'; setTimeout(() => fb.textContent='',4000); }).catch(() => { fb.textContent='⚠ Ctrl+C'; });
+  } else {
+    const html = buildTabella();
+    out.textContent='[Tabella Stroop Breve]'; out.style.display='block';
+    try { navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(html,fb)); } catch(e){fbH(html,fb);}
+  }
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

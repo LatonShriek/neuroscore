@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#36 Denominazione Visiva — Sartori et al., 1988/1992</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#222536;
+    --border:#2e3347; --accent:#4f8ef7; --accent-dim:rgba(79,142,247,0.15);
+    --text:#e8eaf0; --text-dim:#8b91a8;
+    --ok:#34d399; --warn:#fbbf24; --bad:#f87171;
+    --bad-dim:rgba(248,113,113,0.15);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:15px; min-height:100vh; padding:32px 20px 60px; }
+  .container { max-width:780px; margin:0 auto; }
+  .header { margin-bottom:28px; }
+  .test-tag { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:.12em; text-transform:uppercase; margin-bottom:6px; }
+  h1 { font-size:22px; font-weight:600; line-height:1.3; }
+  .authors { font-size:13px; color:var(--text-dim); margin-top:4px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:22px 24px; margin-bottom:16px; }
+  .card-title { font-size:11px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:16px; }
+  label { font-size:12px; color:var(--text-dim); display:block; margin-bottom:5px; }
+  input[type="number"], select { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:14px; padding:8px 12px; outline:none; transition:border-color .2s; }
+  input:focus, select:focus { border-color:var(--accent); }
+  select option { background:var(--surface2); }
+  .score-row { display:flex; align-items:center; gap:14px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .score-row:last-child { border-bottom:none; }
+  .score-label { flex:1; font-size:14px; }
+  .score-label small { display:block; font-size:11px; color:var(--text-dim); margin-top:1px; }
+  .score-input-wrap { width:90px; }
+  .result-block { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-top:8px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .result-label { font-size:12px; color:var(--text-dim); min-width:150px; }
+  .result-values { font-family:'IBM Plex Mono',monospace; font-size:13px; flex:1; }
+  .norm-range { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-dim); }
+  .outcome-badge { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; padding:4px 12px; border-radius:5px; text-align:center; white-space:nowrap; }
+  .ok    { background:rgba(52,211,153,.15); color:var(--ok); border:1px solid var(--ok); }
+  .patol { background:var(--bad-dim); color:var(--bad); border:1px solid var(--bad); }
+  .warn  { background:rgba(251,191,36,.12); color:var(--warn); border:1px solid var(--warn); }
+  .alert-box { background:var(--bad-dim); border:1px solid var(--bad); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--bad); margin-top:10px; display:none; }
+  .info-box { background:var(--accent-dim); border:1px solid var(--accent); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--accent); margin-bottom:14px; line-height:1.6; }
+  .note { font-size:12px; color:var(--text-dim); line-height:1.6; padding:12px 0 0; border-top:1px solid var(--border); margin-top:14px; }
+  .separator { height:1px; background:var(--border); margin:6px 0; }
+  .btn-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  button { font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:500; padding:10px 22px; border-radius:7px; border:none; cursor:pointer; transition:opacity .2s,transform .1s; }
+  button:hover:not(:disabled) { opacity:.85; }
+  button:active:not(:disabled) { transform:scale(.97); }
+  button:disabled { opacity:.35; cursor:not-allowed; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  .asterisk { color:var(--bad); font-weight:700; }
+
+  /* TABELLA NORMATIVA */
+  .norm-table-wrap { overflow-x:auto; margin-top:8px; }
+  table.norm { width:100%; border-collapse:collapse; font-size:12px; }
+  table.norm th { background:var(--surface2); color:var(--text-dim); font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.06em; padding:6px 10px; border:1px solid var(--border); text-align:center; }
+  table.norm td { padding:6px 10px; border:1px solid var(--border); text-align:center; font-family:'IBM Plex Mono',monospace; font-size:12px; }
+  table.norm tr:hover td { background:var(--accent-dim); }
+  .highlight-row td { background:rgba(79,142,247,.12) !important; color:var(--accent); font-weight:600; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="test-tag">#36 · Linguaggio — Denominazione</div>
+    <h1>Denominazione Visiva</h1>
+    <div class="authors">Sartori, Job, Miozzo (1988/1992) · versione Kit del Neuropsicologo Italiano (Barletta-Rodolfi et al., 2011)</div>
+  </div>
+
+  <!-- INFO -->
+  <div class="card">
+    <div class="info-box">
+      ℹ Questo test valuta la denominazione di 64 stimoli (32 oggetti inanimati + 32 esseri viventi), suddivisi per frequenza (alta/bassa). La normativa disponibile è basata su fasce d'età (range normativo per fasce 20–29, 30–39, 40–49, 50–59, 60–69, ≥70) senza formula di correzione demografica continua. Non sono disponibili ES per questo test con questa normativa; viene fornito il confronto con il range normativo della fascia d'età.
+    </div>
+  </div>
+
+  <!-- ANAGRAFICA -->
+  <div class="card">
+    <div class="card-title">Dati demografici</div>
+    <div>
+      <label>Fascia d'età <span style="color:var(--accent)">*</span></label>
+      <select id="fascia" onchange="calcola()">
+        <option value="">— seleziona —</option>
+        <option value="20-29">20–29 anni</option>
+        <option value="30-39">30–39 anni</option>
+        <option value="40-49">40–49 anni</option>
+        <option value="50-59">50–59 anni</option>
+        <option value="60-69">60–69 anni</option>
+        <option value="70+">≥70 anni</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- PUNTEGGI -->
+  <div class="card">
+    <div class="card-title">Punteggi grezzi</div>
+
+    <div class="score-row">
+      <div class="score-label">Totale<small>Somma tutte le denominazioni corrette (0–64)</small></div>
+      <div class="score-input-wrap"><input type="number" id="tot" min="0" max="64" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">Esseri Viventi<small>Animali + vegetali (0–32)</small></div>
+      <div class="score-input-wrap"><input type="number" id="viv" min="0" max="32" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">Oggetti Inanimati<small>(0–32)</small></div>
+      <div class="score-input-wrap"><input type="number" id="inan" min="0" max="32" placeholder="—" oninput="calcola()"></div>
+    </div>
+  </div>
+
+  <!-- RISULTATI -->
+  <div class="card">
+    <div class="card-title">Risultati</div>
+    <div id="alert-demo" class="alert-box">⚠ Selezionare la fascia d'età per visualizzare i range normativi.</div>
+    <div id="results-content" style="display:none">
+
+      <div id="res_tot"></div>
+      <div class="separator"></div>
+      <div id="res_viv"></div>
+      <div class="separator"></div>
+      <div id="res_inan"></div>
+
+      <div class="note">
+        <strong>Normativa:</strong> Range normativi per fascia d'età da Barletta-Rodolfi et al. (2011) — Kit del Neuropsicologo Italiano. Versione Sartori et al. (1988, 1992).<br>
+        <strong>Metodo di confronto:</strong> il punteggio è considerato <em>nella norma</em> se ricade nel range normativo della fascia; <em>borderline</em> se è inferiore di 1 punto al limite inferiore; <em>patologico</em> se inferiore di ≥2 punti al limite inferiore.<br>
+        <strong>Nota:</strong> non sono disponibili ES né correzione demografica continua per questa versione del test. Il cut-off mostrato è il limite inferiore del range normativo della fascia.
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary"  id="btn-lista"    disabled onclick="copiaLista()">Copia come elenco</button>
+      <button class="btn-secondary" id="btn-tabella" disabled onclick="copiaTabella()">Copia come tabella</button>
+    </div>
+  </div>
+
+  <!-- TABELLA NORMATIVA DI RIFERIMENTO -->
+  <div class="card">
+    <div class="card-title">Tabella normativa di riferimento</div>
+    <div class="norm-table-wrap">
+      <table class="norm" id="norm-table">
+        <thead>
+          <tr>
+            <th>Sottoscala</th>
+            <th>20–29</th><th>30–39</th><th>40–49</th><th>50–59</th><th>60–69</th><th>≥70</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="row-viv">
+            <td style="text-align:left">Esseri Viventi (0–32)<br><small style="color:var(--text-dim)">Media / DS / Range</small></td>
+            <td>31.44 / 0.49<br><strong>31–32</strong></td>
+            <td>31.50 / 0.65<br><strong>30–32</strong></td>
+            <td>29.70 / 1.00<br><strong>28–31</strong></td>
+            <td>29.00 / 0.92<br><strong>28–30</strong></td>
+            <td>28.25 / 1.05<br><strong>27–30</strong></td>
+            <td>26.00 / 0.89<br><strong>25–27</strong></td>
+          </tr>
+          <tr id="row-inan">
+            <td style="text-align:left">Oggetti Inanimati (0–32)<br><small style="color:var(--text-dim)">Media / DS / Range</small></td>
+            <td>31.66 / 0.49<br><strong>31–32</strong></td>
+            <td>31.50 / 0.70<br><strong>30–32</strong></td>
+            <td>30.30 / 1.10<br><strong>28–31</strong></td>
+            <td>29.71 / 0.84<br><strong>28–30</strong></td>
+            <td>29.50 / 1.00<br><strong>27–30</strong></td>
+            <td>27.60 / 1.35<br><strong>25–29</strong></td>
+          </tr>
+          <tr id="row-tot">
+            <td style="text-align:left">Totale (0–64)<br><small style="color:var(--text-dim)">Media / DS / Range</small></td>
+            <td>63.10 / 0.67<br><strong>62–64</strong></td>
+            <td>62.75 / 0.96<br><strong>61–64</strong></td>
+            <td>60.00 / 1.48<br><strong>57–63</strong></td>
+            <td>58.71 / 1.25<br><strong>56–61</strong></td>
+            <td>57.75 / 1.45<br><strong>56–59</strong></td>
+            <td>53.60 / 1.62<br><strong>50–56</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Dati normativi (da immagine allegata + Kit del Neuropsicologo 2011)
+// [min_range, max_range] per fascia
+const NORME = {
+  viv: {
+    '20-29': [31,32], '30-39': [30,32], '40-49': [28,31],
+    '50-59': [28,30], '60-69': [27,30], '70+': [25,27]
+  },
+  inan: {
+    '20-29': [31,32], '30-39': [30,32], '40-49': [28,31],
+    '50-59': [28,30], '60-69': [27,30], '70+': [25,29]
+  },
+  tot: {
+    '20-29': [62,64], '30-39': [61,64], '40-49': [57,63],
+    '50-59': [56,61], '60-69': [56,59], '70+': [50,56]
+  }
+};
+
+const NOMI = { tot:'Totale', viv:'Esseri Viventi', inan:'Oggetti Inanimati' };
+let stato = {};
+
+function valuta(grezzo, range) {
+  if (grezzo >= range[0]) return { label:'nella norma', cls:'ok' };
+  if (grezzo === range[0]-1) return { label:'borderline', cls:'warn' };
+  return { label:'PATOLOGICO', cls:'patol' };
+}
+
+function calcola() {
+  const fascia = document.getElementById('fascia').value;
+  const alertBox = document.getElementById('alert-demo');
+  const content  = document.getElementById('results-content');
+
+  if (!fascia) {
+    alertBox.style.display = 'block';
+    content.style.display  = 'none';
+    disableButtons();
+    stato = {};
+    return;
+  }
+  alertBox.style.display = 'none';
+  content.style.display  = 'block';
+
+  // Highlight row nella tabella
+  document.querySelectorAll('#norm-table tbody tr').forEach(r => r.classList.remove('highlight-row'));
+  // non si applica a righe per sottoscala, ma la fascia è nelle colonne
+
+  stato = {};
+  let anyPresent = false;
+
+  ['tot','viv','inan'].forEach(key => {
+    const el = document.getElementById('res_' + key);
+    const val = parseFloat(document.getElementById(key).value);
+    const range = NORME[key][fascia];
+
+    if (isNaN(val)) {
+      el.innerHTML = `<div class="result-block"><span class="result-label">${NOMI[key]}</span><span style="color:var(--text-dim);font-size:13px;">— in attesa di punteggio —</span></div>`;
+      return;
+    }
+    anyPresent = true;
+    const v = valuta(val, range);
+    const alterato = v.cls === 'patol';
+    const ast = alterato ? '<sup class="asterisk">*</sup>' : '';
+
+    el.innerHTML = `<div class="result-block">
+      <span class="result-label">${NOMI[key]}</span>
+      <span class="result-values">${val.toFixed(0)}${ast}</span>
+      <span class="norm-range">Range norma fascia: ${range[0]}–${range[1]}</span>
+      <span class="outcome-badge ${v.cls}">${v.label}</span>
+    </div>`;
+
+    stato[key] = { nome:NOMI[key], grezzo:val, range, esito:v.label, alterato, cutoff:range[0] };
+  });
+
+  document.getElementById('btn-lista').disabled   = !anyPresent;
+  document.getElementById('btn-tabella').disabled = !anyPresent;
+}
+
+function disableButtons() {
+  document.getElementById('btn-lista').disabled   = true;
+  document.getElementById('btn-tabella').disabled = true;
+}
+
+function copiaLista() {
+  const fascia = document.getElementById('fascia').value;
+  const lines = Object.values(stato).map(r => {
+    const ast = r.alterato ? '*' : '';
+    return `Denominazione Visiva — ${r.nome} (Sartori et al., 1992; fascia ${fascia}): ${r.grezzo.toFixed(0)}${ast} (range norma: ${r.range[0]}–${r.range[1]} — ${r.esito})`;
+  });
+  navigator.clipboard.writeText(lines.join('\n'));
+}
+
+function copiaTabella() {
+  const fascia = document.getElementById('fascia').value;
+  const html = `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
+<tr style="background:#e8eaf0"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>PE/Z/Ponderato</th><th>Cut-off</th></tr>
+${Object.values(stato).map(r => {
+  const ast = r.alterato ? '*' : '';
+  return `<tr><td>Den. Visiva — ${r.nome} (Sartori, fascia ${fascia})</td><td>${r.grezzo.toFixed(0)}${ast}</td><td>—</td><td>${r.esito}</td><td>≥${r.cutoff}</td></tr>`;
+}).join('\n')}
+</table>`;
+  const blob = new Blob([html], {type:'text/html'});
+  navigator.clipboard.write([new ClipboardItem({'text/html': blob})]);
+}
+</script>
+</body>
+</html>

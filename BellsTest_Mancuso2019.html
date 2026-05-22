@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test delle Campanelle — Mancuso et al., 2019</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#222536;
+    --border:#2e3347; --accent:#4f8ef7; --accent-dim:rgba(79,142,247,0.15);
+    --text:#e8eaf0; --text-dim:#8b91a8;
+    --ok:#34d399; --warn:#fbbf24; --bad:#f87171; --bad-dim:rgba(248,113,113,0.15);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:15px; min-height:100vh; padding:32px 20px 60px; }
+  .container { max-width:760px; margin:0 auto; }
+  .test-tag { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:.12em; text-transform:uppercase; margin-bottom:6px; }
+  h1 { font-size:22px; font-weight:600; }
+  .authors { font-size:13px; color:var(--text-dim); margin-top:4px; margin-bottom:28px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:22px 24px; margin-bottom:16px; }
+  .card-title { font-size:11px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:16px; }
+  label { font-size:12px; color:var(--text-dim); display:block; margin-bottom:5px; }
+  input[type="number"] { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:14px; padding:8px 12px; outline:none; transition:border-color .2s; }
+  input:focus { border-color:var(--accent); }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .score-row { display:flex; align-items:center; gap:14px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .score-row:last-child { border-bottom:none; }
+  .score-label { flex:1; font-size:14px; }
+  .score-label small { display:block; font-size:11px; color:var(--text-dim); margin-top:1px; }
+  .score-input-wrap { width:90px; }
+  .result-block { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-top:8px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .result-label { font-size:12px; color:var(--text-dim); min-width:160px; }
+  .result-values { font-family:'IBM Plex Mono',monospace; font-size:13px; flex:1; }
+  .outcome-badge { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; padding:4px 12px; border-radius:5px; white-space:nowrap; }
+  .ok   { background:rgba(52,211,153,.15); color:var(--ok); border:1px solid var(--ok); }
+  .patol{ background:var(--bad-dim); color:var(--bad); border:1px solid var(--bad); }
+  .separator { height:1px; background:var(--border); margin:6px 0; }
+  .alert-box { background:var(--bad-dim); border:1px solid var(--bad); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--bad); display:none; margin-bottom:10px; }
+  .info-box { background:var(--accent-dim); border:1px solid var(--accent); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--accent); margin-bottom:14px; line-height:1.6; }
+  .note { font-size:12px; color:var(--text-dim); line-height:1.6; padding:12px 0 0; border-top:1px solid var(--border); margin-top:14px; }
+  .btn-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  button { font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:500; padding:10px 22px; border-radius:7px; border:none; cursor:pointer; transition:opacity .2s,transform .1s; }
+  button:hover:not(:disabled) { opacity:.85; }
+  button:active:not(:disabled) { transform:scale(.97); }
+  button:disabled { opacity:.35; cursor:not-allowed; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  .asterisk { color:var(--bad); font-weight:700; }
+  /* colonne laterali */
+  .col-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:10px; }
+  .col-cell { background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:6px 4px; text-align:center; }
+  .col-cell label { font-size:10px; color:var(--text-dim); margin-bottom:3px; }
+  .col-cell input { font-size:13px; padding:5px 4px; text-align:center; }
+  .asym-display { font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:600; text-align:center; padding:10px; margin-top:8px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="test-tag">Attenzione visiva · Neglect</div>
+  <h1>Test delle Campanelle</h1>
+  <div class="authors">Mancuso, Damora, Abbruzzese, Navarrete et al. (2019) · Frontiers in Psychology</div>
+
+  <div class="card">
+    <div class="info-box">
+      ℹ 35 campanelle distribuite su 7 colonne (col. 1–3 sinistra, col. 4 centro, col. 5–7 destra). Tempo massimo 5 min.<br>
+      <strong>Punteggi:</strong> Asimmetria = (destra − sinistra) · Accuratezza = omissioni totali · Tempo = secondi.<br>
+      <strong>Genere:</strong> non influenza nessuno dei 3 punteggi (escluso dal modello).
+    </div>
+  </div>
+
+  <!-- ANAGRAFICA -->
+  <div class="card">
+    <div class="card-title">Dati demografici</div>
+    <div class="form-grid">
+      <div>
+        <label>Età (anni) <span style="color:var(--accent)">*</span></label>
+        <input type="number" id="eta" min="18" max="85" placeholder="es. 65" oninput="calcola()">
+      </div>
+      <div>
+        <label>Scolarità (anni) <span style="color:var(--accent)">*</span></label>
+        <input type="number" id="scol" min="0" max="30" placeholder="es. 13" oninput="calcola()">
+      </div>
+    </div>
+  </div>
+
+  <!-- PUNTEGGI PER COLONNA -->
+  <div class="card">
+    <div class="card-title">Campanelle barrate per colonna (opzionale per asimmetria)</div>
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">5 campanelle per colonna. Inserire il numero di campanelle barrate in ciascuna colonna (0–5).</div>
+    <div class="col-grid">
+      <div class="col-cell"><label>Col 1<br><small>SX</small></label><input type="number" id="c1" min="0" max="5" placeholder="—" oninput="calcolaAsym()"></div>
+      <div class="col-cell"><label>Col 2<br><small>SX</small></label><input type="number" id="c2" min="0" max="5" placeholder="—" oninput="calcolaAsym()"></div>
+      <div class="col-cell"><label>Col 3<br><small>SX</small></label><input type="number" id="c3" min="0" max="5" placeholder="—" oninput="calcolaAsym()"></div>
+      <div class="col-cell"><label>Col 4<br><small>CTR</small></label><input type="number" id="c4" min="0" max="5" placeholder="—" oninput="calcolaAsym()"></div>
+      <div class="col-cell"><label>Col 5<br><small>DX</small></label><input type="number" id="c5" min="0" max="5" placeholder="—" oninput="calcolaAsym()"></div>
+      <div class="col-cell"><label>Col 6<br><small>DX</small></label><input type="number" id="c6" min="0" max="5" placeholder="—" oninput="calcolaAsym()"></div>
+      <div class="col-cell"><label>Col 7<br><small>DX</small></label><input type="number" id="c7" min="0" max="5" placeholder="—" oninput="calcolaAsym()"></div>
+    </div>
+    <div id="asym-preview"></div>
+  </div>
+
+  <!-- PUNTEGGI AGGREGATI -->
+  <div class="card">
+    <div class="card-title">Punteggi aggregati</div>
+    <div class="score-row">
+      <div class="score-label">Score di Asimmetria<small>(DX barrate − SX barrate) · range −15…+15 · cut-off patologico: ≥ +3 o ≤ −3</small></div>
+      <div class="score-input-wrap"><input type="number" id="asym" min="-15" max="15" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">Accuratezza — Omissioni totali<small>N. campanelle non barrate (0–35)</small></div>
+      <div class="score-input-wrap"><input type="number" id="acc" min="0" max="35" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">Tempo di esecuzione<small>Secondi (max 300 s = 5 min)</small></div>
+      <div class="score-input-wrap"><input type="number" id="tempo" min="0" max="300" placeholder="—" oninput="calcola()"></div>
+    </div>
+  </div>
+
+  <!-- RISULTATI -->
+  <div class="card">
+    <div class="card-title">Risultati</div>
+    <div id="alert-demo" class="alert-box">⚠ Inserire età e scolarità per calcolare i cut-off corretti.</div>
+    <div id="results-content" style="display:none">
+      <div id="res_asym"></div>
+      <div class="separator"></div>
+      <div id="res_acc"></div>
+      <div class="separator"></div>
+      <div id="res_tempo"></div>
+      <div class="note">
+        <strong>Correzione demografica:</strong> Mancuso et al. (2019) — 401 soggetti sani, età 20–80 anni.<br>
+        <strong>Asimmetria:</strong> nessun effetto di età, scolarità o genere → cut-off fisso ≥ +3 (neglect sinistro) o ≤ −3 (neglect destro). Positivo = più omissioni a sinistra.<br>
+        <strong>Accuratezza (omissioni):</strong> corretto per età e scolarità. Il cut-off patologico è: arrotondamento(massimo) + 1. N. omissioni ≥ cut-off = PATOLOGICO.<br>
+        <strong>Tempo:</strong> corretto per età (no scolarità). Tempo > massimo = PATOLOGICO.<br>
+        Genere: non significativo in nessuna variabile.
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary"   id="btn-lista"   disabled onclick="copiaLista()">Copia come elenco</button>
+      <button class="btn-secondary" id="btn-tabella" disabled onclick="copiaTabella()">Copia come tabella</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── FORMULE (Mancuso 2019) ──────────────────────────────────────────────────
+// ACCURATEZZA (omissioni)
+// expected = −0.83 + 0.025*age + (−0.042)*education
+// maximum  = expected + 1.96 * 1.15
+// cutoff patologico = floor(maximum) + 1
+function accExpected(eta, scol) {
+  return -0.83 + 0.025*eta + (-0.042)*scol;
+}
+function accMaximum(eta, scol) {
+  return accExpected(eta, scol) + 1.96 * 1.15;
+}
+function accCutoff(eta, scol) {
+  return Math.floor(accMaximum(eta, scol)) + 1;
+}
+
+// TEMPO
+// expected = 94.03 + 0.56*age
+// maximum  = expected + 1.96 * 48.1
+function tempoExpected(eta) { return 94.03 + 0.56*eta; }
+function tempoMaximum(eta)  { return tempoExpected(eta) + 1.96*48.1; }
+
+// ASIMMETRIA: cut-off fisso ±3 (no correzione demografica)
+const ASYM_CUT = 3;
+
+let stato = {};
+
+function calcolaAsym() {
+  const cols = [1,2,3,4,5,6,7].map(i => parseFloat(document.getElementById('c'+i).value));
+  const allPresent = cols.every(v => !isNaN(v));
+  if (!allPresent) { document.getElementById('asym-preview').innerHTML=''; return; }
+  const sx = cols[0]+cols[1]+cols[2];
+  const dx = cols[4]+cols[5]+cols[6];
+  const asym = dx - sx;
+  document.getElementById('asym').value = asym;
+  document.getElementById('asym-preview').innerHTML = `
+    <div class="asym-display" style="color:${Math.abs(asym)>=ASYM_CUT?'var(--bad)':'var(--ok)'}">
+      Asimmetria calcolata: ${asym > 0 ? '+' : ''}${asym} &nbsp;|&nbsp; SX: ${sx} · DX: ${dx}
+    </div>`;
+  calcola();
+}
+
+function calcola() {
+  const eta  = parseFloat(document.getElementById('eta').value);
+  const scol = parseFloat(document.getElementById('scol').value);
+  const asym = parseFloat(document.getElementById('asym').value);
+  const acc  = parseFloat(document.getElementById('acc').value);
+  const tempo= parseFloat(document.getElementById('tempo').value);
+
+  const alertBox = document.getElementById('alert-demo');
+  const content  = document.getElementById('results-content');
+
+  if (isNaN(eta) || isNaN(scol)) {
+    alertBox.style.display = 'block'; content.style.display = 'none';
+    disableButtons(); stato = {}; return;
+  }
+  alertBox.style.display = 'none'; content.style.display = 'block';
+
+  stato = {};
+  let anyPresent = false;
+
+  // ASIMMETRIA
+  const elA = document.getElementById('res_asym');
+  if (isNaN(asym)) {
+    elA.innerHTML = `<div class="result-block"><span class="result-label">Asimmetria</span><span style="color:var(--text-dim);font-size:13px;">— in attesa (cut-off patologico: |asim| ≥ 3) —</span></div>`;
+  } else {
+    anyPresent = true;
+    const okA = Math.abs(asym) < ASYM_CUT;
+    const ast = !okA ? '<sup class="asterisk">*</sup>' : '';
+    const dir = asym > 0 ? ' (omissioni SX — neglect sinistro)' : asym < 0 ? ' (omissioni DX — neglect destro)' : ' (simmetrico)';
+    elA.innerHTML = `<div class="result-block">
+      <span class="result-label">Asimmetria</span>
+      <span class="result-values">${asym>0?'+':''}${asym}${ast}${dir}</span>
+      <span class="result-values" style="font-size:11px;color:var(--text-dim)">cut-off: |val| ≥ 3</span>
+      <span class="outcome-badge ${okA?'ok':'patol'}">${okA?'nella norma':'PATOLOGICO'}</span>
+    </div>`;
+    stato.asym = { nome:'Asimmetria', grezzo:asym, cutoff:'|val| ≥ 3', ok:okA, alterato:!okA };
+  }
+
+  // ACCURATEZZA
+  const elAcc = document.getElementById('res_acc');
+  const cutAcc = accCutoff(eta, scol);
+  const maxAcc = accMaximum(eta, scol);
+  if (isNaN(acc)) {
+    elAcc.innerHTML = `<div class="result-block"><span class="result-label">Accuratezza (omissioni)</span><span style="color:var(--text-dim);font-size:13px;">— in attesa (cut-off patologico: ≥${cutAcc} omissioni) —</span></div>`;
+  } else {
+    anyPresent = true;
+    const okAcc = acc < cutAcc;
+    const ast = !okAcc ? '<sup class="asterisk">*</sup>' : '';
+    elAcc.innerHTML = `<div class="result-block">
+      <span class="result-label">Accuratezza (omissioni)</span>
+      <span class="result-values">${acc}${ast} omissioni <span style="color:var(--text-dim);font-size:11px;">(cut-off: ≥${cutAcc} → patologico)</span></span>
+      <span class="outcome-badge ${okAcc?'ok':'patol'}">${okAcc?'nella norma':'PATOLOGICO'}</span>
+    </div>`;
+    stato.acc = { nome:'Accuratezza (omissioni)', grezzo:acc, cutoff:'≥'+cutAcc, ok:okAcc, alterato:!okAcc };
+  }
+
+  // TEMPO
+  const elT = document.getElementById('res_tempo');
+  const maxTempo = Math.round(tempoMaximum(eta));
+  if (isNaN(tempo)) {
+    elT.innerHTML = `<div class="result-block"><span class="result-label">Tempo di esecuzione</span><span style="color:var(--text-dim);font-size:13px;">— in attesa (cut-off: > ${maxTempo} s) —</span></div>`;
+  } else {
+    anyPresent = true;
+    const okT = tempo <= maxTempo;
+    const ast = !okT ? '<sup class="asterisk">*</sup>' : '';
+    const mm = Math.floor(tempo/60), ss = tempo%60;
+    elT.innerHTML = `<div class="result-block">
+      <span class="result-label">Tempo di esecuzione</span>
+      <span class="result-values">${tempo}${ast} s (${mm}'${ss.toString().padStart(2,'0')}'') <span style="color:var(--text-dim);font-size:11px;">(max: ${maxTempo} s)</span></span>
+      <span class="outcome-badge ${okT?'ok':'patol'}">${okT?'nella norma':'PATOLOGICO'}</span>
+    </div>`;
+    stato.tempo = { nome:'Tempo di esecuzione', grezzo:tempo, cutoff:'> '+maxTempo+' s', ok:okT, alterato:!okT };
+  }
+
+  document.getElementById('btn-lista').disabled   = !anyPresent;
+  document.getElementById('btn-tabella').disabled = !anyPresent;
+}
+
+function disableButtons() {
+  document.getElementById('btn-lista').disabled   = true;
+  document.getElementById('btn-tabella').disabled = true;
+}
+
+function copiaLista() {
+  const lines = Object.values(stato).map(r => {
+    const ast = r.alterato ? '*' : '';
+    const val = r.nome.includes('Tempo') ? r.grezzo+' s' : r.grezzo;
+    return `Test delle Campanelle — ${r.nome} (Mancuso et al., 2019): ${val}${ast} (cut-off ${r.cutoff} — ${r.ok?'nella norma':'PATOLOGICO'})`;
+  });
+  navigator.clipboard.writeText(lines.join('\n'));
+}
+
+function copiaTabella() {
+  const html = `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
+<tr style="background:#e8eaf0"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>PE/Z/Ponderato</th><th>Cut-off</th></tr>
+${Object.values(stato).map(r=>{
+  const ast = r.alterato ? '*' : '';
+  const val = r.nome.includes('Tempo') ? r.grezzo+' s' : r.grezzo;
+  return `<tr><td>Campanelle — ${r.nome} (Mancuso et al., 2019)</td><td>${val}${ast}</td><td>—</td><td>${r.ok?'nella norma':'PATOLOGICO'}</td><td>${r.cutoff}</td></tr>`;
+}).join('\n')}
+</table>`;
+  navigator.clipboard.write([new ClipboardItem({'text/html': new Blob([html],{type:'text/html'})})]);
+}
+</script>
+</body>
+</html>

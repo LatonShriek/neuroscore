@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #3 — Digit Span & Corsi Span Monaco 2013</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3347;--accent:#52b788;--ok:#2ecc71;--warn:#e67e22;--err:#e74c3c;--text:#e8eaf0;--muted:#8892a4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh}
+.shell{max-width:820px;margin:0 auto;padding:32px 20px 60px}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px}
+.hdr-badge{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.hdr h1{font-size:22px;font-weight:600}
+.hdr .cite{font-size:12px;color:var(--muted);margin-top:4px}
+.range-tag{display:inline-block;background:rgba(82,183,136,.12);border:1px solid var(--accent);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:6px}
+.sec-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;margin-top:24px}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.demo-grid{grid-template-columns:1fr 1fr}}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 10px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+
+.test-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.test-hdr{background:var(--surface2);padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.test-hdr .t-badge{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:600}
+.test-hdr .t-name{font-size:14px;font-weight:500}
+.test-body{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:480px){.test-body{grid-template-columns:1fr}}
+
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.score-row label{font-size:12px;color:var(--muted);font-family:var(--mono);min-width:120px}
+.score-row input{width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:18px;padding:7px 10px;outline:none;text-align:center;transition:border-color .2s}
+.score-row input:focus{border-color:var(--accent)}
+.score-row .smax{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.res-inline{font-family:var(--mono);font-size:13px;margin-top:8px;color:var(--muted)}
+.res-inline strong{color:var(--text)}
+.es-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:5px;font-family:var(--mono);font-size:14px;font-weight:700;margin-left:6px}
+.es-0{background:rgba(231,76,60,.2);color:var(--err)} .es-1{background:rgba(230,126,34,.2);color:var(--warn)}
+.es-2{background:rgba(46,204,113,.15);color:var(--ok)} .es-3{background:rgba(46,204,113,.2);color:var(--ok)} .es-4{background:rgba(46,204,113,.25);color:var(--ok)}
+
+/* Tabella correzione compatta */
+.corr-wrap{overflow-x:auto;margin-top:8px}
+.corr-table{border-collapse:collapse;font-family:var(--mono);font-size:11px;white-space:nowrap}
+.corr-table th,.corr-table td{border:1px solid var(--border);padding:4px 7px;text-align:center}
+.corr-table th{background:var(--surface2);color:var(--muted)}
+.corr-table .hl{background:#0d2e1a;color:var(--ok);font-weight:700}
+
+.report-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-report{flex:1;min-width:160px;padding:12px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s}
+.btn-report:hover:not(:disabled){opacity:.85}
+.btn-report:disabled{background:var(--surface2);color:var(--muted);cursor:default}
+.btn-report.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-report.secondary:hover:not(:disabled){border-color:var(--accent);color:var(--accent);opacity:1}
+.copy-feedback{font-family:var(--mono);font-size:11px;color:var(--ok);margin-top:8px;min-height:16px}
+.report-output{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:14px;font-family:var(--mono);font-size:12px;line-height:1.8;white-space:pre-wrap;display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="hdr">
+  <div class="hdr-badge">Test #3</div>
+  <h1>Digit Span & Corsi Span — Forward e Backward</h1>
+  <div class="cite">Monaco M., Costa A., Caltagirone C., Carlesimo G.A. (2013). Forward and backward span for verbal and visuo-spatial data: standardization and normative data from an Italian adult population. <em>Neurological Sciences</em>, 34, 749–754. doi:10.1007/s10072-012-1130-x.</div>
+  <div class="range-tag">Età: 20–90 anni</div>
+</div>
+
+<div class="sec-label">Dati paziente</div>
+<div class="demo-grid">
+  <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="20" max="90" placeholder="es. 65" oninput="calcAll()"></div>
+  <div class="field"><label>Sesso</label><select id="p-sesso" onchange="calcAll()"><option value="">—</option><option value="M">M</option><option value="F">F</option></select></div>
+  <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-scol" min="3" max="17" placeholder="es. 13" oninput="calcAll()"></div>
+  <div class="field"><label>Data valutazione</label><input type="date" id="p-data"></div>
+</div>
+
+<!-- Digit Forward -->
+<div class="sec-label">Punteggi span (lunghezza della sequenza più lunga corretta)</div>
+
+<div class="test-block">
+  <div class="test-hdr"><span class="t-badge">DS-F</span><span class="t-name">Digit Span Forward (span uditivo-verbale)</span></div>
+  <div class="test-body">
+    <div>
+      <div class="score-row"><label>Span DS-F</label><input type="number" id="g-dsf" min="0" max="9" placeholder="0–9" oninput="calcAll()"><span class="smax">max 9</span></div>
+      <div class="res-inline" id="r-dsf">— Adj: — &nbsp; ES: —</div>
+    </div>
+    <div class="corr-wrap" id="ct-dsf"></div>
+  </div>
+</div>
+
+<div class="test-block">
+  <div class="test-hdr"><span class="t-badge">DS-B</span><span class="t-name">Digit Span Backward (memoria di lavoro verbale)</span></div>
+  <div class="test-body">
+    <div>
+      <div class="score-row"><label>Span DS-B</label><input type="number" id="g-dsb" min="0" max="8" placeholder="0–8" oninput="calcAll()"><span class="smax">max 8</span></div>
+      <div class="res-inline" id="r-dsb">— Adj: — &nbsp; ES: —</div>
+    </div>
+    <div class="corr-wrap" id="ct-dsb"></div>
+  </div>
+</div>
+
+<div class="test-block">
+  <div class="test-hdr"><span class="t-badge">CS-F</span><span class="t-name">Corsi Span Forward (span visuo-spaziale)</span></div>
+  <div class="test-body">
+    <div>
+      <div class="score-row"><label>Span CS-F</label><input type="number" id="g-csf" min="0" max="9" placeholder="0–9" oninput="calcAll()"><span class="smax">max 9</span></div>
+      <div class="res-inline" id="r-csf">— Adj: — &nbsp; ES: —</div>
+    </div>
+    <div class="corr-wrap" id="ct-csf"></div>
+  </div>
+</div>
+
+<div class="test-block">
+  <div class="test-hdr"><span class="t-badge">CS-B</span><span class="t-name">Corsi Span Backward (esecutivo centrale)</span></div>
+  <div class="test-body">
+    <div>
+      <div class="score-row"><label>Span CS-B</label><input type="number" id="g-csb" min="0" max="8" placeholder="0–8" oninput="calcAll()"><span class="smax">max 8</span></div>
+      <div class="res-inline" id="r-csb">— Adj: — &nbsp; ES: —</div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px">CS-B: correzione solo per età (non scolarità)</div>
+    </div>
+    <div class="corr-wrap" id="ct-csb"></div>
+  </div>
+</div>
+
+<!-- Ratio -->
+<div class="test-block">
+  <div class="test-hdr"><span class="t-badge">RATIO</span><span class="t-name">Ratio Backward/Forward</span></div>
+  <div class="test-body">
+    <div>
+      <div class="res-inline">DS ratio: <strong id="r-ratio-ds">—</strong> &nbsp;|&nbsp; CS ratio: <strong id="r-ratio-cs">—</strong></div>
+      <div class="res-inline" id="r-ratio-res" style="margin-top:6px">ES DS ratio: — &nbsp; ES CS ratio: —</div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:6px">Ratio = Backward_adj / Forward_adj. Basso ratio → deficit esecutivo centrale.</div>
+    </div>
+  </div>
+</div>
+
+<div class="report-btns">
+  <button class="btn-report" id="btn-elenco" onclick="copyOutput('elenco')" disabled>📋 Copia come elenco</button>
+  <button class="btn-report secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>⊞ Copia come tabella</button>
+</div>
+<div class="copy-feedback" id="copy-feedback"></div>
+<div class="report-output" id="report-output"></div>
+
+</div>
+<script>
+// ============================================================
+// GRIGLIA CORREZIONE — Monaco et al. 2013, Tabella 3
+// Equazioni di regressione:
+// DS-F: 5.84 + 1.74*(log10(100-età)-1.61) + 0.28*(sqrt(scol)-3.28)
+//   → PC = grezzo - correzione
+// NB: la correzione si ottiene valutando il punto (età,scol) nella griglia
+// Per semplicità usiamo direttamente la formula
+// ============================================================
+// Costanti Monaco 2013:
+// DSF: intercetta 5.84, bAge=1.74*(log10-1.61), bScol=0.28*(sqrt-3.28)
+// DSB: 4.47, 1.65*(log10-1.61), 0.41*(sqrt-3.28)
+// CSF: 5.38, 1.69*(log10-1.61), 0.33*(sqrt-3.28)
+// CSB: 4.72, 2.41*(log10-1.61), [no scol]
+
+function corr(eta, scol, bAge, bScol, baseAge=1.61, baseScol=3.28) {
+  const logAge = Math.log10(100 - eta);
+  const sqrtScol = Math.sqrt(scol);
+  return bAge * (logAge - baseAge) + bScol * (sqrtScol - baseScol);
+}
+
+function adjScore(grezzo, eta, scol, bAge, bScol) {
+  return grezzo - corr(eta, scol, bAge, bScol);
+}
+
+function adjCSB(grezzo, eta) {
+  const logAge = Math.log10(100 - eta);
+  return grezzo - 2.41*(logAge - 1.61);
+}
+
+// ES table Monaco 2013 (Tabella 4) — valori degli adjusted scores
+// ES 0 = < soglia più bassa, ES 4 = > mediana
+const ES_THRESHOLDS = {
+  DSF: [4.26, 4.60, 5.29, 5.75], // ES 0 se <4.26, 1 se <4.60, 2 se <5.29, 3 se <5.75, 4 altrimenti
+  DSB: [2.65, 3.29, 3.79, 4.33],
+  CSF: [3.46, 4.29, 4.80, 5.37],
+  CSB: [3.08, 3.37, 3.99, 4.55],
+  RATIO_DS: [0.48, 0.58, 0.66, 0.79],
+  RATIO_CS: [0.51, 0.63, 0.74, 0.90],
+};
+
+function adjToES(adj, key) {
+  const t = ES_THRESHOLDS[key];
+  if (adj < t[0]) return 0;
+  if (adj < t[1]) return 1;
+  if (adj < t[2]) return 2;
+  if (adj < t[3]) return 3;
+  return 4;
+}
+
+// Griglia correzione tabellare (estratta da Tab.3 Monaco 2013)
+const GRID_AGES = [20,25,30,35,40,45,50,55,60,65,70,75,80,85,90];
+const GRID_SCOL = [3,5,8,13,17];
+
+const DSF_GRID = [
+  [-0.09,-0.04,0.01,0.07,0.13,0.19,0.26,0.34,0.43,0.53,0.65,0.79,0.96,1.17,1.48],
+  [-0.23,-0.18,-0.13,-0.07,-0.01,0.05,0.12,0.20,0.29,0.39,0.51,0.65,0.82,1.03,1.34],
+  [-0.39,-0.35,-0.29,-0.24,-0.18,-0.11,-0.04,0.04,0.13,0.23,0.35,0.49,0.65,0.87,1.18],
+  [-0.61,-0.56,-0.51,-0.45,-0.39,-0.32,-0.25,-0.17,-0.08,0.02,0.13,0.27,0.44,0.66,0.96],
+  [null,-0.70,-0.65,-0.59,-0.53,-0.47,-0.40,-0.32,-0.23,-0.13,-0.01,0.13,0.30,0.51,0.82],
+];
+const DSB_GRID = [
+  [0.14,0.19,0.24,0.29,0.35,0.41,0.48,0.55,0.64,0.73,0.84,0.97,1.13,1.34,1.63],
+  [-0.06,-0.02,0.03,0.08,0.14,0.20,0.27,0.35,0.53,0.53,0.64,0.77,0.93,1.13,1.42],
+  [-0.31,-0.26,-0.21,-0.16,-0.10,-0.04,0.02,0.10,0.19,0.28,0.39,0.52,0.68,0.89,1.18],
+  [-0.62,-0.58,-0.53,-0.48,-0.42,-0.36,-0.29,-0.21,-0.13,-0.03,0.08,0.21,0.37,0.57,0.86],
+  [null,-0.79,-0.74,-0.69,-0.63,-0.57,-0.50,-0.42,-0.34,-0.24,-0.13,0.00,0.16,0.36,0.65],
+];
+const CSF_GRID = [
+  [0.00,0.05,0.10,0.16,0.22,0.28,0.35,0.43,0.51,0.61,0.72,0.86,1.02,1.23,1.53],
+  [-0.16,-0.11,-0.06,-0.01,0.05,0.11,0.18,0.26,0.35,0.44,0.56,0.69,0.85,1.07,1.36],
+  [-0.35,-0.31,-0.26,-0.20,-0.14,-0.08,-0.01,0.07,0.15,0.25,0.36,0.50,0.66,0.87,1.17],
+  [-0.61,-0.56,-0.51,-0.46,-0.40,-0.33,-0.26,-0.19,-0.10,0.00,0.11,0.24,0.41,0.62,0.91],
+  [null,-0.73,-0.68,-0.63,-0.57,-0.50,-0.43,-0.36,-0.27,-0.17,-0.06,0.07,0.24,0.45,0.74],
+];
+const CSB_GRID_AGE = [-0.83,-0.76,-0.69,-0.61,-0.52,-0.43,-0.33,-0.21,-0.09,0.06,0.22,0.42,0.66,0.96,1.40];
+
+function getCorr(grid, eta, scol) {
+  // Trova fascia scol più vicina
+  const sIdx = GRID_SCOL.reduce((best,s,i) => Math.abs(s-scol) < Math.abs(GRID_SCOL[best]-scol) ? i : best, 0);
+  const aIdx = GRID_AGES.reduce((best,a,i) => Math.abs(a-eta) < Math.abs(GRID_AGES[best]-eta) ? i : best, 0);
+  const val = grid[sIdx][aIdx];
+  return val;
+}
+
+function getCorrCSB(eta) {
+  const aIdx = GRID_AGES.reduce((best,a,i) => Math.abs(a-eta) < Math.abs(GRID_AGES[best]-eta) ? i : best, 0);
+  return CSB_GRID_AGE[aIdx];
+}
+
+function buildCorrTable(grid, eta, scol, adjVal, key) {
+  const sIdx = GRID_SCOL.reduce((best,s,i) => Math.abs(s-scol) < Math.abs(GRID_SCOL[best]-scol) ? i : best, 0);
+  const aIdx = GRID_AGES.reduce((best,a,i) => Math.abs(a-eta) < Math.abs(GRID_AGES[best]-eta) ? i : best, 0);
+
+  let h = `<table class="corr-table"><thead><tr><th>Scol↓ Età→</th>`;
+  // Mostra solo 5 colonne età intorno al valore corrente
+  const aStart = Math.max(0, aIdx-2);
+  const aEnd = Math.min(GRID_AGES.length-1, aIdx+2);
+  for(let i=aStart;i<=aEnd;i++) h+=`<th>${GRID_AGES[i]}</th>`;
+  h+=`</tr></thead><tbody>`;
+  GRID_SCOL.forEach((s,si) => {
+    h+=`<tr><td>${s} aa</td>`;
+    for(let ai=aStart;ai<=aEnd;ai++){
+      const v=grid[si][ai];
+      const hl=(si===sIdx&&ai===aIdx)?' class="hl"':'';
+      h+=`<td${hl}>${v!==null?v.toFixed(2):'—'}</td>`;
+    }
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  return h;
+}
+
+function buildCorrTableCSB(eta) {
+  const aIdx = GRID_AGES.reduce((best,a,i) => Math.abs(a-eta) < Math.abs(GRID_AGES[best]-eta) ? i : best, 0);
+  const aStart=Math.max(0,aIdx-2), aEnd=Math.min(GRID_AGES.length-1,aIdx+2);
+  let h='<table class="corr-table"><thead><tr><th>Età→</th>';
+  for(let i=aStart;i<=aEnd;i++) h+=`<th>${GRID_AGES[i]}</th>`;
+  h+='</tr><tbody><tr><td>corr</td>';
+  for(let i=aStart;i<=aEnd;i++){
+    const hl=i===aIdx?' class="hl"':'';
+    h+=`<td${hl}>${CSB_GRID_AGE[i].toFixed(2)}</td>`;
+  }
+  h+='</tr></tbody></table>';
+  return h;
+}
+
+window._r = {};
+
+function calcAll() {
+  const eta  = parseFloat(document.getElementById('p-eta').value);
+  const scol = parseFloat(document.getElementById('p-scol').value);
+  const gDSF = parseFloat(document.getElementById('g-dsf').value);
+  const gDSB = parseFloat(document.getElementById('g-dsb').value);
+  const gCSF = parseFloat(document.getElementById('g-csf').value);
+  const gCSB = parseFloat(document.getElementById('g-csb').value);
+
+  const hasDemo = !isNaN(eta) && !isNaN(scol);
+
+  function processOne(grezzo, grid, key, resId, ctId, isCsb) {
+    if (!hasDemo || isNaN(grezzo)) {
+      document.getElementById(resId).innerHTML = '— Adj: — &nbsp; ES: —';
+      if(ctId) document.getElementById(ctId).innerHTML = '';
+      return null;
+    }
+    const corr = isCsb ? getCorrCSB(eta) : getCorr(grid, eta, scol);
+    const adj = grezzo - (corr !== null ? corr : 0);
+    const es  = adjToES(adj, key);
+    const ast = es<=1?'*':'';
+    document.getElementById(resId).innerHTML =
+      `Adj: <strong>${adj.toFixed(2)}${ast}</strong> &nbsp; ES: <span class="es-badge es-${es}">${es}</span>`;
+    if (ctId) {
+      document.getElementById(ctId).innerHTML = isCsb
+        ? buildCorrTableCSB(eta)
+        : buildCorrTable(grid, eta, scol, adj, key);
+    }
+    return {g:grezzo, adj, es, ast};
+  }
+
+  window._r.dsf = processOne(gDSF, DSF_GRID, 'DSF', 'r-dsf', 'ct-dsf', false);
+  window._r.dsb = processOne(gDSB, DSB_GRID, 'DSB', 'r-dsb', 'ct-dsb', false);
+  window._r.csf = processOne(gCSF, CSF_GRID, 'CSF', 'r-csf', 'ct-csf', false);
+  window._r.csb = processOne(gCSB, null,      'CSB', 'r-csb', 'ct-csb', true);
+
+  // Ratio
+  const rDS = (window._r.dsf && window._r.dsb) ? window._r.dsb.adj / window._r.dsf.adj : null;
+  const rCS = (window._r.csf && window._r.csb) ? window._r.csb.adj / window._r.csf.adj : null;
+  document.getElementById('r-ratio-ds').textContent = rDS !== null ? rDS.toFixed(2) : '—';
+  document.getElementById('r-ratio-cs').textContent = rCS !== null ? rCS.toFixed(2) : '—';
+
+  let ratioText = '';
+  if (rDS !== null) { const es=adjToES(rDS,'RATIO_DS'); ratioText += `ES DS ratio: <span class="es-badge es-${es}">${es}</span>`; window._r.rDS={v:rDS,es}; }
+  if (rCS !== null) { const es=adjToES(rCS,'RATIO_CS'); ratioText += ` &nbsp; ES CS ratio: <span class="es-badge es-${es}">${es}</span>`; window._r.rCS={v:rCS,es}; }
+  document.getElementById('r-ratio-res').innerHTML = ratioText || 'ES DS ratio: — &nbsp; ES CS ratio: —';
+
+  const hasAny = window._r.dsf||window._r.dsb||window._r.csf||window._r.csb;
+  if(hasAny&&hasDemo) enableButtons(); else disableButtons();
+}
+
+function enableButtons()  { document.getElementById('btn-elenco').disabled=false; document.getElementById('btn-tabella').disabled=false; }
+function disableButtons() { document.getElementById('btn-elenco').disabled=true;  document.getElementById('btn-tabella').disabled=true; }
+
+// ============================================================
+// OUTPUT
+// ============================================================
+function buildElenco() {
+  const r = window._r;
+  const esLabel = es => es<=0?'(PE 0 — patologico)':es===1?'(PE 1 — borderline)':`(PE ${es})`;
+  let lines = ['Digit Span & Corsi Span — Forward e Backward (Monaco et al., 2013):'];
+  if(r.dsf) lines.push(`  DS-Forward: span ${r.dsf.g} → ${r.dsf.adj.toFixed(2)}${r.dsf.ast} ${esLabel(r.dsf.es)}`);
+  if(r.dsb) lines.push(`  DS-Backward: span ${r.dsb.g} → ${r.dsb.adj.toFixed(2)}${r.dsb.ast} ${esLabel(r.dsb.es)}`);
+  if(r.csf) lines.push(`  CS-Forward: span ${r.csf.g} → ${r.csf.adj.toFixed(2)}${r.csf.ast} ${esLabel(r.csf.es)}`);
+  if(r.csb) lines.push(`  CS-Backward: span ${r.csb.g} → ${r.csb.adj.toFixed(2)}${r.csb.ast} ${esLabel(r.csb.es)}`);
+  if(r.rDS) lines.push(`  Ratio DS (B/F): ${r.rDS.v.toFixed(2)} ${esLabel(r.rDS.es)}`);
+  if(r.rCS) lines.push(`  Ratio CS (B/F): ${r.rCS.v.toFixed(2)} ${esLabel(r.rCS.es)}`);
+  return lines.join('\n');
+}
+
+function buildTabellaHTML() {
+  const r = window._r;
+  const rows = [
+    r.dsf ? `<tr><td>Digit Span Forward</td><td>${r.dsf.g}</td><td>${r.dsf.adj.toFixed(2)}${r.dsf.ast}</td><td>PE ${r.dsf.es}</td><td>—</td></tr>` : '',
+    r.dsb ? `<tr><td>Digit Span Backward</td><td>${r.dsb.g}</td><td>${r.dsb.adj.toFixed(2)}${r.dsb.ast}</td><td>PE ${r.dsb.es}</td><td>—</td></tr>` : '',
+    r.csf ? `<tr><td>Corsi Span Forward</td><td>${r.csf.g}</td><td>${r.csf.adj.toFixed(2)}${r.csf.ast}</td><td>PE ${r.csf.es}</td><td>—</td></tr>` : '',
+    r.csb ? `<tr><td>Corsi Span Backward</td><td>${r.csb.g}</td><td>${r.csb.adj.toFixed(2)}${r.csb.ast}</td><td>PE ${r.csb.es}</td><td>—</td></tr>` : '',
+    r.rDS ? `<tr><td>Ratio DS (B/F)</td><td>${r.rDS.v.toFixed(2)}</td><td>—</td><td>PE ${r.rDS.es}</td><td>—</td></tr>` : '',
+    r.rCS ? `<tr><td>Ratio CS (B/F)</td><td>${r.rCS.v.toFixed(2)}</td><td>—</td><td>PE ${r.rCS.es}</td><td>—</td></tr>` : '',
+  ].join('');
+  return `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%">
+  <thead><tr style="font-weight:bold;background:#f2f2f2"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE (0–4)</b></td><td><b>Cut-off</b></td></tr></thead>
+  <tbody>
+  <tr><td colspan="5" style="background:#f9f9f9;font-style:italic;font-size:11px"><b>Digit Span &amp; Corsi Span — Forward e Backward</b> (Monaco et al., 2013)</td></tr>
+  ${rows}
+  </tbody></table>`;
+}
+
+function copyOutput(tipo) {
+  const out=document.getElementById('report-output'), fb=document.getElementById('copy-feedback');
+  if(tipo==='elenco'){const t=buildElenco();out.textContent=t;out.style.display='block';navigator.clipboard.writeText(t).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{selOut(out);fb.textContent='⚠ Seleziona e Ctrl+C';});}
+  else{const h=buildTabellaHTML();out.textContent='[Tabella] Digit & Corsi Span';out.style.display='block';try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([h],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata — Ctrl+V in Google Docs';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(h,fb));}catch(e){fbH(h,fb);}}
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+function selOut(el){const r=document.createRange();r.selectNodeContents(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+
+document.getElementById('p-data').value=new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

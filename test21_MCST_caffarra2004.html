@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #21 — MCST (Caffarra et al., 2004)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#232635;--accent:#4f8ef7;--accent2:#7eb3ff;
+    --text:#e8eaf0;--text2:#9ba3b8;--border:#2e3347;--ok:#4caf82;--warn:#f7a94f;--err:#f75f5f;
+    --ok-bg:rgba(76,175,130,0.08);--warn-bg:rgba(247,169,79,0.08);--err-bg:rgba(247,95,95,0.08);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6}
+  .container{max-width:780px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:18px;font-weight:600;color:var(--accent2);margin-bottom:4px}
+  .subtitle{font-size:12px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-bottom:24px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:14px}
+  .card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text2);margin-bottom:14px}
+  label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px}
+  select,input[type=number],input[type=date]{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+    padding:7px 10px;border-radius:5px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;width:100%;outline:none;transition:border-color 0.2s}
+  select:focus,input:focus{border-color:var(--accent)}
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  .field{flex:1;min-width:100px}.field-sm{flex:0 0 90px}
+  .info-box{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:10px 14px;font-size:12px;color:var(--text2);margin-bottom:10px}
+  .info-box b{color:var(--accent2)}
+  .info-row{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-top:4px}
+
+  /* score inputs */
+  .score-row{display:flex;align-items:center;gap:12px;padding:9px 12px;background:var(--surface2);border-radius:5px;border:1px solid var(--border);margin-bottom:7px}
+  .score-row .lbl{flex:1;font-size:13px;color:var(--text2)}
+  .score-row .note{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace}
+  .score-row input{flex:0 0 90px}
+
+  /* correction table */
+  .corr-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:4px}
+  .corr-table th{background:var(--surface2);color:var(--text2);padding:5px 7px;border:1px solid var(--border);text-align:center;font-size:10px}
+  .corr-table td{border:1px solid var(--border);padding:4px 7px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)}
+  .corr-table tr.hl td{background:rgba(79,142,247,0.12);color:var(--accent)}
+  .corr-table .lbl-cell{text-align:left;color:var(--text2)}
+
+  /* result */
+  .res-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface2);border-radius:5px;border:1px solid var(--border);margin-bottom:6px}
+  .res-name{font-size:13px;color:var(--text2);flex:1}
+  .res-vals{display:flex;gap:10px;align-items:center}
+  .res-raw{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text)}
+  .res-corr{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--accent2)}
+  .pe-chip{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text2)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+  .b-ok{background:var(--ok-bg);color:var(--ok);border:1px solid rgba(76,175,130,0.3)}
+  .b-w{background:var(--warn-bg);color:var(--warn);border:1px solid rgba(247,169,79,0.3)}
+  .b-e{background:var(--err-bg);color:var(--err);border:1px solid rgba(247,95,95,0.3)}
+
+  .warn-box{background:var(--warn-bg);border:1px solid rgba(247,169,79,0.3);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--warn);margin-top:12px;display:none}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{padding:9px 18px;border-radius:5px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.18s;font-family:'IBM Plex Sans',sans-serif}
+  .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+  .btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+  .btn:disabled{opacity:0.35;cursor:not-allowed}
+  #report-output{margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;
+    padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text2);white-space:pre-wrap;display:none}
+  #copy-feedback{font-size:12px;color:var(--ok);margin-top:6px;min-height:18px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>MCST — Modified Card Sorting Test</h1>
+  <div class="subtitle">Nelson et al. (1976) · Taratura Caffarra et al. (2004) · Kit del Neuropsicologo Italiano</div>
+
+  <div class="info-box">
+    <b>Versione:</b> 48 carte (mazzo WCST originale senza carte ambigue) · 6 categorie max · stop a esaurimento carte.<br>
+    <b>N. Categorie:</b> nessuna correzione demografica · cut-off grezzo ≥ 3.<br>
+    <b>Errori Perseverativi:</b> correzione per età e scolarità (tabella) → ES dalla tabella PE.
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dati paziente</div>
+    <div class="row">
+      <div class="field-sm"><label>Data</label><input type="date" id="p-data"></div>
+      <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="20" max="90" placeholder="es. 65" oninput="recalc()"></div>
+      <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-scol" min="0" max="21" placeholder="es. 13" oninput="recalc()"></div>
+    </div>
+    <div id="norm-info" class="info-row"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Punteggi grezzi</div>
+    <div class="score-row">
+      <span class="lbl">Numero Categorie (PG)</span>
+      <span class="note">0–6</span>
+      <input type="number" id="cat_raw" min="0" max="6" oninput="recalc()">
+    </div>
+    <div class="score-row">
+      <span class="lbl">Errori Perseverativi (PG)</span>
+      <span class="note">0–47</span>
+      <input type="number" id="ep_raw" min="0" max="47" oninput="recalc()">
+    </div>
+    <div class="score-row" style="opacity:0.6">
+      <span class="lbl">Errori Non-Perseverativi</span>
+      <span class="note">0–47 (solo conteggio)</span>
+      <input type="number" id="enp_raw" min="0" max="47" oninput="recalc()">
+    </div>
+  </div>
+
+  <!-- tabella correzione EP interattiva -->
+  <div class="card">
+    <div class="card-title">Tabella correzione EP — età × scolarità (riga/colonna attiva evidenziata)</div>
+    <div style="overflow-x:auto">
+      <table class="corr-table" id="t-ep">
+        <thead>
+          <tr><th class="lbl-cell">Età</th><th>Scol 5</th><th>Scol 8</th><th>Scol 13</th><th>Scol 17</th></tr>
+        </thead>
+        <tbody id="ep-tbody"></tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:6px">Il fattore si <b>somma</b> al punteggio grezzo EP per ottenere EP corretto.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Risultati</div>
+    <div id="res-container"><div style="color:var(--text2);font-size:12px">Inserisci i dati per vedere i risultati.</div></div>
+  </div>
+
+  <div id="warn-nodata" class="warn-box">⚠ Età fuori range normativo (20–90 anni).</div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-elenco" onclick="copyOutput('elenco')" disabled>Copia come elenco</button>
+    <button class="btn btn-secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>Copia come tabella</button>
+  </div>
+  <pre id="report-output"></pre>
+  <div id="copy-feedback"></div>
+</div>
+
+<script>
+// ============================================================
+// MCST — Caffarra et al. 2004
+// Correzione Errori Perseverativi: tabella età × scolarità
+// Righe: età 20,25,30,35,40,45,50,55,60,65,70,75,80,85,90
+// Colonne: scol 5, 8, 13, 17
+// ============================================================
+const EP_CORR = {
+  20: [1,    1,    1.25, 1.25],
+  25: [0.75, 0.75, 1,    1   ],
+  30: [0.50, 0.50, 0.75, 0.75],
+  35: [0.25, 0.50, 0.50, 0.75],
+  40: [0,    0.25, 0.25, 0.50],
+  45: [0,    0,    0.25, 0.25],
+  50: [-0.25,0,    0,    0.25],
+  55: [-0.25,-0.25,0,    0   ],
+  60: [-0.50,-0.25,-0.25,-0.25],
+  65: [-0.50,-0.50,-0.25,-0.25],
+  70: [-0.75,-0.75,-0.50,-0.50],
+  75: [-0.75,-0.75,-0.50,-0.50],
+  80: [-1,   -0.75,-0.75,-0.75],
+  85: [-1,   -1,   -0.75,-0.75],
+  90: [-1.25,-1,   -1,   -0.75]
+};
+const AGE_KEYS = [20,25,30,35,40,45,50,55,60,65,70,75,80,85,90];
+const SCOL_LABELS = [5, 8, 13, 17];
+
+// ES per Errori Perseverativi (PC) — Image 1
+// Più alto = peggio (inversione)
+const ES_EP = [
+  {min: 6.41, es: 0},
+  {min: 4.84, max: 6.40, es: 1},
+  {min: 3.28, max: 4.83, es: 2},
+  {min: 1.72, max: 3.27, es: 3},
+  {max: 1.71, es: 4}
+];
+
+// ES per N. Categorie (grezzo — no correzione)
+// Tabella Image 1: ≤2=ES0; 3=ES1; 4=ES2; 5=ES3; ≥6=ES4
+function esCategorie(cat) {
+  if (cat === null) return null;
+  if (cat <= 2) return 0;
+  if (cat === 3) return 1;
+  if (cat === 4) return 2;
+  if (cat === 5) return 3;
+  return 4;
+}
+
+function calcESEP(epCorr) {
+  if (epCorr === null) return null;
+  if (epCorr >= 6.41) return 0;
+  if (epCorr >= 4.84) return 1;
+  if (epCorr >= 3.28) return 2;
+  if (epCorr >= 1.72) return 3;
+  return 4;
+}
+
+function getAgeKey(eta) {
+  if (eta < 18 || eta > 93) return null;
+  let best = AGE_KEYS[0], bestDiff = Math.abs(eta - AGE_KEYS[0]);
+  for (const k of AGE_KEYS) {
+    const d = Math.abs(eta - k);
+    if (d < bestDiff) { bestDiff = d; best = k; }
+  }
+  return best;
+}
+
+function getScolIdx(scol) {
+  if (scol <= 6)  return 0;
+  if (scol <= 10) return 1;
+  if (scol <= 15) return 2;
+  return 3;
+}
+
+function getVal(id) { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; }
+
+function esBadge(es) {
+  if (es === null) return '<span class="badge" style="background:var(--surface2);color:var(--text2)">—</span>';
+  if (es === 0) return '<span class="badge b-e">Patologico</span>';
+  if (es === 1) return '<span class="badge b-w">Borderline</span>';
+  return '<span class="badge b-ok">Nella norma</span>';
+}
+function fmt(v, dec=2) { return (v === null || isNaN(v)) ? '—' : Number(v).toFixed(dec); }
+
+// render tabella correzione
+function renderCorrTable() {
+  const tbody = document.getElementById('ep-tbody');
+  tbody.innerHTML = AGE_KEYS.map((k, ri) =>
+    `<tr id="ep_r${ri}"><td class="lbl-cell">${k}</td>${SCOL_LABELS.map((s,ci) =>
+      `<td id="ep_r${ri}_c${ci}">${EP_CORR[k][ci]}</td>`).join('')}</tr>`
+  ).join('');
+}
+
+function highlightTable(ageKey, scolIdx) {
+  const ageRowIdx = AGE_KEYS.indexOf(ageKey);
+  AGE_KEYS.forEach((k, ri) => {
+    const row = document.getElementById(`ep_r${ri}`);
+    if (!row) return;
+    row.classList.toggle('hl', ri === ageRowIdx);
+    SCOL_LABELS.forEach((s, ci) => {
+      const cell = document.getElementById(`ep_r${ri}_c${ci}`);
+      if (!cell) return;
+      cell.style.fontWeight = (ri === ageRowIdx && ci === scolIdx) ? '700' : '';
+      cell.style.color = (ri === ageRowIdx && ci === scolIdx) ? 'var(--accent)' : '';
+    });
+  });
+}
+
+let lastR = {};
+
+function recalc() {
+  const eta  = parseInt(document.getElementById('p-eta').value);
+  const scol = parseInt(document.getElementById('p-scol').value);
+  const catRaw = getVal('cat_raw');
+  const epRaw  = getVal('ep_raw');
+  const enpRaw = getVal('enp_raw');
+
+  const ageKey  = getAgeKey(eta);
+  const scolIdx = getScolIdx(scol);
+  const demoOk  = ageKey !== null && !isNaN(scol);
+
+  document.getElementById('warn-nodata').style.display = (!isNaN(eta) && eta > 0 && ageKey === null) ? 'block' : 'none';
+  document.getElementById('btn-elenco').disabled = !demoOk;
+  document.getElementById('btn-tabella').disabled = !demoOk;
+  document.getElementById('norm-info').textContent = demoOk
+    ? `Fascia età → ${ageKey} anni · Scolarità → ${SCOL_LABELS[scolIdx]} anni (chiave norma)`
+    : 'Inserisci età e scolarità per la correzione';
+
+  highlightTable(ageKey, scolIdx);
+
+  if (!demoOk) {
+    document.getElementById('res-container').innerHTML = '<div style="color:var(--text2);font-size:12px">Inserisci i dati demografici.</div>';
+    return;
+  }
+
+  // N. Categorie: nessuna correzione
+  const esCAT = esCategorie(catRaw);
+
+  // EP correzione
+  const corrFactor = EP_CORR[ageKey]?.[scolIdx] ?? 0;
+  const epCorr = epRaw !== null ? Math.round((epRaw + corrFactor) * 100) / 100 : null;
+  const esEP   = calcESEP(epCorr);
+
+  lastR = { catRaw, esCAT, epRaw, epCorr, corrFactor, esEP, enpRaw };
+
+  const items = [
+    {name:'N. Categorie', raw:catRaw, corr:'—', note:'no correzione', es:esCAT, co:'≥ 3'},
+    {name:'Errori Perseverativi', raw:epRaw, corr:epCorr !== null ? fmt(epCorr) : '—', es:esEP, co:'≤ 6.40 (PC)'},
+  ];
+
+  document.getElementById('res-container').innerHTML = items.map(d => {
+    const ast = (d.es !== null && d.es <= 1) ? '*' : '';
+    const rawDisp = d.raw !== null ? `${d.raw}${ast}` : '—';
+    const corrDisp = d.es !== null && d.corr !== '—' ? `${d.corr}${ast}` : (d.corr ?? '—');
+    return `<div class="res-row">
+      <span class="res-name">${d.name}</span>
+      <div class="res-vals">
+        <span class="res-raw">${rawDisp}</span>
+        <span style="color:var(--text2)">→</span>
+        <span class="res-corr">${corrDisp}</span>
+        <span class="pe-chip">PE ${d.es ?? '—'}</span>
+        ${esBadge(d.es)}
+      </div>
+    </div>`;
+  }).join('') + (enpRaw !== null ? `<div class="res-row" style="opacity:0.6">
+    <span class="res-name">Errori Non-Perseverativi</span>
+    <div class="res-vals"><span class="res-raw">${enpRaw}/47</span><span style="color:var(--text2)">—</span><span style="font-size:11px;color:var(--text2)">solo conteggio</span></div>
+  </div>` : '');
+}
+
+function esitoStr(es) { return es===0?'Patologico':es===1?'Borderline':'nella norma'; }
+
+function buildElenco() {
+  const r = lastR;
+  const astCAT = (r.esCAT !== null && r.esCAT <= 1) ? '*' : '';
+  const astEP  = (r.esEP  !== null && r.esEP  <= 1) ? '*' : '';
+  const lines = ['MCST (Nelson 1976 / Caffarra et al., 2004):'];
+  if (r.catRaw !== null) lines.push(`  N. Categorie: ${r.catRaw}${astCAT} → — (PE ${r.esCAT??'—'} — ${r.esCAT!==null?esitoStr(r.esCAT):'—'}, cut-off ≥3)`);
+  if (r.epRaw  !== null) lines.push(`  Errori Perseverativi: ${r.epRaw}${astEP} → ${fmt(r.epCorr)}${astEP} (PE ${r.esEP??'—'} — ${r.esEP!==null?esitoStr(r.esEP):'—'}, cut-off ≤6.40)`);
+  if (r.enpRaw !== null) lines.push(`  Errori Non-Perseverativi: ${r.enpRaw}/47 (solo conteggio)`);
+  return lines.join('\n');
+}
+
+function buildTabellaHTML() {
+  const r = lastR;
+  const astCAT = (r.esCAT !== null && r.esCAT <= 1) ? '*' : '';
+  const astEP  = (r.esEP  !== null && r.esEP  <= 1) ? '*' : '';
+  const rows = [
+    r.catRaw !== null ? `<tr><td>N. Categorie</td><td>${r.catRaw}${astCAT}/6</td><td>—</td><td>PE ${r.esCAT??'—'}</td><td>≥ 3</td></tr>` : '',
+    r.epRaw  !== null ? `<tr><td>Errori Perseverativi</td><td>${r.epRaw}${astEP}/47</td><td>${fmt(r.epCorr)}${astEP}</td><td>PE ${r.esEP??'—'}</td><td>≤ 6.40 (PC)</td></tr>` : '',
+    r.enpRaw !== null ? `<tr><td>Errori Non-Perseverativi</td><td>${r.enpRaw}/47</td><td>—</td><td>—</td><td>—</td></tr>` : '',
+  ].join('');
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead><tr style="background:#d0d8f2"><td colspan="5"><b>MCST (Nelson 1976 / Caffarra et al., 2004)</b></td></tr>
+  <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE (0–4)</b></td><td><b>Cut-off</b></td></tr></thead>
+  <tbody>${rows}</tbody></table>`;
+}
+
+function copyOutput(tipo) {
+  const out=document.getElementById('report-output'), fb=document.getElementById('copy-feedback');
+  if (tipo==='elenco') {
+    const t=buildElenco(); out.textContent=t; out.style.display='block';
+    navigator.clipboard.writeText(t).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{selOut(out);fb.textContent='⚠ Seleziona e Ctrl+C';});
+  } else {
+    const h=buildTabellaHTML(); out.textContent='[Tabella] MCST'; out.style.display='block';
+    try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([h],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(h,fb));}catch(e){fbH(h,fb);}
+  }
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+function selOut(el){const r=document.createRange();r.selectNodeContents(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+renderCorrTable();
+</script>
+</body>
+</html>

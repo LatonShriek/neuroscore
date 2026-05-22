@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stroop 50 item — Luzzi et al., 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3050;
+  --accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8ecf8;--muted:#7a84a0;
+  --ok:#3ddc84;--warn:#f7b731;--err:#ff5c5c;
+}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.6;padding:24px;max-width:1020px;margin:0 auto}
+h1{font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.subtitle{font-size:.82rem;color:var(--muted);margin-bottom:20px;font-family:'IBM Plex Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none;transition:border .2s}
+input[type=number]:focus{border-color:var(--accent)}
+input[type=number]:disabled{opacity:.4;cursor:not-allowed}
+.result-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);gap:12px}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:.82rem;color:var(--muted)}
+.result-val{font-family:'IBM Plex Mono',monospace;font-size:.92rem;font-weight:600;text-align:right}
+.es0{color:var(--err)}.es1{color:#ff9a3c}.es2{color:var(--warn)}.es3{color:var(--ok)}.es4{color:var(--ok)}
+.alert{background:#1e1830;border:1px solid #5b4af7;border-radius:8px;padding:12px 16px;font-size:.82rem;color:#b8aaff;display:none}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{padding:10px 20px;border-radius:7px;border:none;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2);color:#0f1117}
+.btn-primary:disabled,.btn-sec:disabled{opacity:.35;cursor:not-allowed}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-sec:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.output-area{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;white-space:pre-wrap;display:none;margin-top:10px}
+.feedback{font-size:.8rem;color:var(--ok);margin-top:6px;min-height:1.2em}
+.section-note{background:#0d1a2e;border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.8rem;color:#8ab4f8;margin-bottom:14px}
+.task-header{font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+table.norm-info{width:100%;border-collapse:collapse;font-size:.74rem;margin-top:6px}
+table.norm-info th{background:var(--surface2);color:var(--muted);padding:5px 6px;text-align:center;font-weight:600;border:1px solid var(--border)}
+table.norm-info td{padding:4px 6px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:.72rem;text-align:center}
+select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:.92rem;padding:8px 12px;width:100%;outline:none;cursor:pointer}
+select:focus{border-color:var(--accent)}
+.divider{border:none;border-top:1px solid var(--border);margin:10px 0}
+.pill{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.72rem;font-family:'IBM Plex Mono',monospace;font-weight:700}
+.pill-0{background:#3a1515;color:var(--err)}
+.pill-1{background:#3a2510;color:#ff9a3c}
+.pill-2{background:#3a3010;color:var(--warn)}
+.pill-3{background:#1a3a2a;color:var(--ok)}
+.pill-4{background:#1a3a2a;color:var(--ok)}
+</style>
+</head>
+<body>
+<h1>Test di Stroop — Versione 50 item (4 task)</h1>
+<div class="subtitle">Luzzi, Cherubini, Rosettani et al. — Neurological Sciences, 2026</div>
+
+<div class="card">
+  <h2>Dati paziente</h2>
+  <div class="grid4">
+    <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="20" max="90" placeholder="es. 65" oninput="onDemoChange()"></div>
+    <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-sco" min="0" max="19" placeholder="es. 13" oninput="onDemoChange()"></div>
+    <div class="field"><label>Data</label><input type="date" id="p-data"></div>
+    <div class="field"><label>Codice</label><input type="text" id="p-code" placeholder="opzionale" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none"></div>
+  </div>
+  <div id="nota-norma" class="alert" style="margin-top:10px"></div>
+</div>
+
+<div class="card">
+  <h2>Punteggi grezzi — 4 task (50 item ciascuno)</h2>
+  <div class="section-note">
+    T1: lettura parole in nero &nbsp;|&nbsp; T2: denominazione punti colorati &nbsp;|&nbsp; T3: lettura parole con inchiostro incongruente &nbsp;|&nbsp; T4: denominazione colore di parole colore-incongruenti
+  </div>
+  <div class="grid4">
+    <div>
+      <div class="task-header">Task 1 — Lettura parole</div>
+      <div class="field" style="margin-bottom:8px"><label>Tempo T1 (sec)</label><input type="number" id="t1" min="0" max="300" placeholder="~25" oninput="calcola()"></div>
+      <div class="field"><label>Errori E1 (di solito 0)</label><input type="number" id="e1" min="0" max="50" value="0" oninput="calcola()"></div>
+    </div>
+    <div>
+      <div class="task-header">Task 2 — Denominazione colori</div>
+      <div class="field" style="margin-bottom:8px"><label>Tempo T2 (sec)</label><input type="number" id="t2" min="0" max="300" placeholder="~31" oninput="calcola()"></div>
+      <div class="field"><label>Errori E2</label><input type="number" id="e2" min="0" max="50" placeholder="0–50" oninput="calcola()"></div>
+    </div>
+    <div>
+      <div class="task-header">Task 3 — Lettura incongruente</div>
+      <div class="field" style="margin-bottom:8px"><label>Tempo T3 (sec)</label><input type="number" id="t3" min="0" max="300" placeholder="~29" oninput="calcola()"></div>
+      <div class="field"><label>Errori E3</label><input type="number" id="e3" min="0" max="50" placeholder="0–50" oninput="calcola()"></div>
+    </div>
+    <div>
+      <div class="task-header">Task 4 — Denominazione incongruente</div>
+      <div class="field" style="margin-bottom:8px"><label>Tempo T4 (sec)</label><input type="number" id="t4" min="0" max="600" placeholder="~61" oninput="calcola()"></div>
+      <div class="field"><label>Errori E4</label><input type="number" id="e4" min="0" max="50" placeholder="0–50" oninput="calcola()"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Risultati</h2>
+  <div id="results-area"><p style="color:var(--muted);font-size:.85rem">Inserisci età, scolarità e almeno T4/E4 per vedere i risultati.</p></div>
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copyOutput('elenco')">Copia come elenco</button>
+    <button class="btn-sec" id="btn-tabella" disabled onclick="copyOutput('tabella')">Copia come tabella</button>
+  </div>
+  <div id="output-area" class="output-area"></div>
+  <div id="copy-feedback" class="feedback"></div>
+</div>
+
+<div class="card">
+  <h2>Punteggi Equivalenti — Cut-off (ES 0–4)</h2>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Punteggi corretti (score corretto = grezzo − fattore correzione). ES alti = prestazione migliore (meno tempo / errori).</p>
+  <table class="norm-info">
+    <tr><th>Indice</th><th>ITL</th><th>ES=0</th><th>ES=1</th><th>ES=2</th><th>ES=3</th><th>ES=4</th></tr>
+    <tr><td>T4</td><td>78.36</td><td>&gt;86.20</td><td>&gt;67.64</td><td>&gt;59.92</td><td>&gt;55.13</td><td>≤55.13</td></tr>
+    <tr><td>E4</td><td>5.39</td><td>&gt;6.73</td><td>&gt;3.28</td><td>&gt;1.73</td><td>&gt;1.07</td><td>≤1.07</td></tr>
+    <tr><td>T3</td><td>39.20</td><td>&gt;48.03</td><td>&gt;31.74</td><td>&gt;28.54</td><td>&gt;25.76</td><td>≤25.76</td></tr>
+    <tr><td>E3</td><td>0.78</td><td>&gt;1.78</td><td>&gt;0.17</td><td>&gt;0.10</td><td>&gt;0.03</td><td>≤0.03</td></tr>
+    <tr><td>T2</td><td>37.41</td><td>&gt;44.98</td><td>&gt;33.30</td><td>&gt;30.32</td><td>&gt;27.94</td><td>≤27.94</td></tr>
+    <tr><td>E2</td><td>5.79</td><td>&gt;6.08</td><td>&gt;4.27</td><td>&gt;2.30</td><td>&gt;0.16</td><td>≤0.16</td></tr>
+    <tr><td>T1</td><td>30.29</td><td>&gt;32.85</td><td>&gt;32.85</td><td>&gt;27.18</td><td>&gt;25.05</td><td>≤25.05</td></tr>
+    <tr><td>T4−T3</td><td>54.01</td><td>&gt;57.05</td><td>&gt;42.02</td><td>&gt;35.34</td><td>&gt;30.21</td><td>≤30.21</td></tr>
+    <tr><td>E4−E3</td><td>5.26</td><td>&gt;6.46</td><td>&gt;3.22</td><td>&gt;1.57</td><td>&gt;0.82</td><td>≤0.82</td></tr>
+    <tr><td>T4−T2</td><td>50.09</td><td>&gt;54.50</td><td>&gt;38.96</td><td>&gt;33.26</td><td>&gt;28.36</td><td>≤28.36</td></tr>
+    <tr><td>E4−E2</td><td>5.42</td><td>&gt;6.70</td><td>&gt;3.18</td><td>&gt;1.70</td><td>&gt;1.07</td><td>≤1.07</td></tr>
+    <tr><td>T3−T1</td><td>11.11</td><td>&gt;17.87</td><td>&gt;5.16</td><td>&gt;3.52</td><td>&gt;2.18</td><td>≤2.18</td></tr>
+  </table>
+</div>
+
+<script>
+// ── FORMULE ESATTE (Tabella 5, Luzzi 2026) ──────────────────────────────────
+// mean_edu = 10.58 → ln(10.58) = 2.3589319665131
+// mean_age = 55.50
+// mean_ln100minusage = ln(100-55.50) = ln(44.5) = 3.79641...
+// ln(100-55.496) ≈ 3.79641056233036 (paper usa 55.4955752 per T4-T2)
+
+const M_LN_EDU = 2.3589319665131;
+const M_AGE = 55.4955752; // media usata nel paper per T4
+const M_AGE_T42 = 55.4955752;
+const M_LN100A = 3.65101496467337; // ln(100-55.50) ≈ ln(44.50)
+const M_LN100A2 = 3.79641056233036; // per E4-E2
+const M_SQRT_EDU = 3.16314629759675; // sqrt(mean_edu)
+const M_1_EDU = 0.0999450851729517; // 1/mean_edu (per E4-E3)
+const M_1_EDU2 = 0.0945211210280571; // per T3-T1
+
+// Costanti AGE^3 medie dal paper
+const M_AGE3_T4 = 170912.989789193;
+const M_AGE3_E2 = 170575.099525605;
+
+function lnSafe(x){return x>0?Math.log(x):0}
+
+function corrT4(age, edu) {
+  return -8.021699*(Math.sqrt(edu)-M_SQRT_EDU) - 30.9378348*(lnSafe(100-age)-M_LN100A);
+}
+function corrE4(age, edu) {
+  return -1.0398004*(lnSafe(edu)-M_LN_EDU) - 2.2906369*(lnSafe(100-age)-M_LN100A);
+}
+function corrT3(age, edu) {
+  return -5.8994342*(lnSafe(edu)-M_LN_EDU) + 3.48e-5*(Math.pow(age,3)-M_AGE3_T4);
+}
+function corrE3(age) {
+  return 1.2e-6*(Math.pow(age,3)-M_AGE3_T4);
+}
+function corrT2(age, edu) {
+  return -4.4905181*(lnSafe(edu)-M_LN_EDU) + 3.34e-5*(Math.pow(age,3)-M_AGE3_T4);
+}
+function corrE2(age) {
+  return 3.84e-5*(Math.pow(age,3)-M_AGE3_E2);
+}
+function corrT1(age, edu) {
+  return -3.3535984*(lnSafe(edu)-M_LN_EDU) + 1.71e-5*(Math.pow(age,3)-M_AGE3_T4);
+}
+// Differenze
+function corrT4mT3(age, edu) {
+  return -0.5593092*(Math.sqrt(edu)-M_SQRT_EDU) + 7.1500263*(age-61.4862637);
+}
+function corrE4mE3(age, edu) {
+  return 7.1613468*((1/edu)-M_1_EDU) - 1.703813*(lnSafe(100-age)-M_LN100A);
+}
+function corrT4mT2(age, edu) {
+  return -6.3232321*(lnSafe(edu)-M_LN_EDU) + 0.4416765*(age-M_AGE_T42);
+}
+function corrE4mE2(age, edu) {
+  return -0.9990949*(lnSafe(edu)-2.35842458076661) - 1.9898895*(lnSafe(100-age)-M_LN100A2);
+}
+function corrT3mT1(age, edu) {
+  return 18.6240033*((1/edu)-M_1_EDU2) + 1.71e-5*(Math.pow(age,3)-M_AGE3_T4);
+}
+
+// ES da punteggio corretto (tabella 4 — più alto = peggio per tempi/errori)
+function getES(corrScore, itl, es0, es1, es2, es3) {
+  // es0, es1, es2, es3 sono soglie SUPERIORI del corretto (sopra = ES peggiore)
+  if (corrScore > es0) return 0;
+  if (corrScore > es1) return 1;
+  if (corrScore > es2) return 2;
+  if (corrScore > es3) return 3;
+  return 4;
+}
+
+const ES_CUTS = {
+  T4: {itl:78.36, es0:86.20, es1:67.64, es2:59.92, es3:55.13},
+  E4: {itl:5.39, es0:6.73, es1:3.28, es2:1.73, es3:1.07},
+  T3: {itl:39.20, es0:48.03, es1:31.74, es2:28.54, es3:25.76},
+  E3: {itl:0.78, es0:1.78, es1:0.17, es2:0.10, es3:0.03},
+  T2: {itl:37.41, es0:44.98, es1:33.30, es2:30.32, es3:27.94},
+  E2: {itl:5.79, es0:6.08, es1:4.27, es2:2.30, es3:0.16},
+  T1: {itl:30.29, es0:32.85, es1:32.85, es2:27.18, es3:25.05},
+  'T4-T3': {itl:54.01, es0:57.05, es1:42.02, es2:35.34, es3:30.21},
+  'E4-E3': {itl:5.26, es0:6.46, es1:3.22, es2:1.57, es3:0.82},
+  'T4-T2': {itl:50.09, es0:54.50, es1:38.96, es2:33.26, es3:28.36},
+  'E4-E2': {itl:5.42, es0:6.70, es1:3.18, es2:1.70, es3:1.07},
+  'T3-T1': {itl:11.11, es0:17.87, es1:5.16, es2:3.52, es3:2.18},
+};
+
+function esFromKey(corrScore, key) {
+  const c = ES_CUTS[key];
+  return getES(corrScore, c.itl, c.es0, c.es1, c.es2, c.es3);
+}
+
+const ES_LABELS = {0:'Deficitario',1:'Borderline',2:'Basso-normale',3:'Nella norma',4:'Nella norma'};
+const ES_CLS = {0:'es0',1:'es1',2:'es2',3:'es3',4:'es4'};
+
+let lastData = null;
+
+function onDemoChange(){ calcola(); }
+
+function fmt(x){ return x !== null && !isNaN(x) ? x.toFixed(2) : '—'; }
+
+function calcola() {
+  const age = parseFloat(document.getElementById('p-eta').value);
+  const edu = parseFloat(document.getElementById('p-sco').value);
+  const nota = document.getElementById('nota-norma');
+  const resArea = document.getElementById('results-area');
+  const btnE = document.getElementById('btn-elenco');
+  const btnT = document.getElementById('btn-tabella');
+
+  if (isNaN(age) || isNaN(edu)) {
+    btnE.disabled=true; btnT.disabled=true;
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci età e scolarità.</p>';
+    return;
+  }
+  if (age < 20 || age > 90 || edu < 0 || edu > 19) {
+    nota.style.display='block';
+    nota.textContent='⚠ Valori fuori range (età 20–90, scolarità 0–19 anni).';
+    btnE.disabled=true; btnT.disabled=true; return;
+  }
+  nota.style.display='none';
+
+  const t1r = parseFloat(document.getElementById('t1').value);
+  const t2r = parseFloat(document.getElementById('t2').value);
+  const t3r = parseFloat(document.getElementById('t3').value);
+  const t4r = parseFloat(document.getElementById('t4').value);
+  const e1r = parseFloat(document.getElementById('e1').value)||0;
+  const e2r = parseFloat(document.getElementById('e2').value);
+  const e3r = parseFloat(document.getElementById('e3').value);
+  const e4r = parseFloat(document.getElementById('e4').value);
+
+  if (isNaN(t4r) && isNaN(t3r) && isNaN(t2r) && isNaN(t1r)) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci almeno i tempi T4 (o più task).</p>';
+    btnE.disabled=true; btnT.disabled=true; return;
+  }
+
+  // Calcola corretti e ES per ogni score disponibile
+  const scores = {};
+
+  function proc(key, raw, corrFn) {
+    if (isNaN(raw)) return null;
+    const cf = corrFn(age, edu);
+    const corr = raw - cf;
+    const es = esFromKey(corr, key);
+    return {raw, cf, corr, es};
+  }
+  function procAge(key, raw, corrFn) {
+    if (isNaN(raw)) return null;
+    const cf = corrFn(age);
+    const corr = raw - cf;
+    const es = esFromKey(corr, key);
+    return {raw, cf, corr, es};
+  }
+
+  scores.T1 = proc('T1', t1r, corrT1);
+  scores.T2 = proc('T2', t2r, corrT2);
+  scores.T3 = proc('T3', t3r, corrT3);
+  scores.T4 = proc('T4', t4r, corrT4);
+  scores.E2 = procAge('E2', e2r, corrE2);
+  scores.E3 = procAge('E3', e3r, corrE3);
+  scores.E4 = proc('E4', e4r, corrE4);
+
+  // Differenze
+  if (!isNaN(t4r) && !isNaN(t3r)) {
+    const raw = Math.max(0, t4r-t3r);
+    const cf = corrT4mT3(age, edu);
+    const corr = raw - cf;
+    scores['T4-T3'] = {raw, cf, corr, es: esFromKey(corr, 'T4-T3')};
+  }
+  if (!isNaN(e4r) && !isNaN(e3r)) {
+    const raw = Math.max(0, e4r-e3r);
+    const cf = corrE4mE3(age, edu);
+    const corr = raw - cf;
+    scores['E4-E3'] = {raw, cf, corr, es: esFromKey(corr, 'E4-E3')};
+  }
+  if (!isNaN(t4r) && !isNaN(t2r)) {
+    const raw = Math.max(0, t4r-t2r);
+    const cf = corrT4mT2(age, edu);
+    const corr = raw - cf;
+    scores['T4-T2'] = {raw, cf, corr, es: esFromKey(corr, 'T4-T2')};
+  }
+  if (!isNaN(e4r) && !isNaN(e2r)) {
+    const raw = Math.max(0, e4r-e2r);
+    const cf = corrE4mE2(age, edu);
+    const corr = raw - cf;
+    scores['E4-E2'] = {raw, cf, corr, es: esFromKey(corr, 'E4-E2')};
+  }
+  if (!isNaN(t3r) && !isNaN(t1r)) {
+    const raw = Math.max(0, t3r-t1r);
+    const cf = corrT3mT1(age, edu);
+    const corr = raw - cf;
+    scores['T3-T1'] = {raw, cf, corr, es: esFromKey(corr, 'T3-T1')};
+  }
+
+  // Rendering
+  let html = '<div class="result-box">';
+  const ordered = ['T1','T2','T3','T4','E2','E3','E4','T4-T3','E4-E3','T4-T2','E4-E2','T3-T1'];
+  for (const key of ordered) {
+    const s = scores[key];
+    if (!s) continue;
+    const ast = s.es <= 1 ? '*' : '';
+    html += `<div class="result-row">
+      <span class="result-label">${key}</span>
+      <span class="result-val">
+        grezzo <b>${fmt(s.raw)}</b> → corretto <b>${fmt(s.corr)}${ast}</b>
+        &nbsp;<span class="pill pill-${s.es}">ES ${s.es} — ${ES_LABELS[s.es]}</span>
+      </span>
+    </div>`;
+  }
+  html += '</div>';
+  resArea.innerHTML = html;
+  lastData = {age, edu, scores};
+  btnE.disabled = false; btnT.disabled = false;
+}
+
+function buildElenco() {
+  if(!lastData) return '';
+  const d = lastData;
+  const c = document.getElementById('p-code').value;
+  const hdr = c ? `${c} — ` : '';
+  const ordered = ['T4','E4','T3','E3','T4-T3','E4-E3','T4-T2','E4-E2','T3-T1','T2','T1','E2'];
+  let parts = [];
+  for (const key of ordered) {
+    const s = d.scores[key]; if (!s) continue;
+    const ast = s.es <= 1 ? '*' : '';
+    parts.push(`${key}: ${fmt(s.raw)} → ${fmt(s.corr)}${ast} (ES ${s.es} — ${ES_LABELS[s.es]})`);
+  }
+  return `${hdr}Stroop 50 (Luzzi et al., 2026): ${parts.join(' | ')}`;
+}
+
+function buildTabella() {
+  const d = lastData;
+  const ordered = ['T4','E4','T3','E3','T2','E2','T1','T4-T3','E4-E3','T4-T2','E4-E2','T3-T1'];
+  let rows = '';
+  for (const key of ordered) {
+    const s = d.scores[key]; if (!s) continue;
+    const ast = s.es <= 1 ? '*' : '';
+    const co = ES_CUTS[key];
+    rows += `<tr><td>Stroop ${key}</td><td>${fmt(s.raw)}${ast}</td><td>${fmt(s.corr)}${ast}</td><td>ES ${s.es}${ast} — ${ES_LABELS[s.es]}</td><td>≤ ${co.es3}</td></tr>`;
+  }
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>Test di Stroop 50 item (Luzzi et al., 2026)</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE (ES 0–4)</b></td><td><b>Cut-off (ES≥3)</b></td></tr>
+  </thead>
+  <tbody>${rows}</tbody>
+</table>`;
+}
+
+function copyOutput(tipo) {
+  const out = document.getElementById('output-area');
+  const fb = document.getElementById('copy-feedback');
+  if (tipo === 'elenco') {
+    const txt = buildElenco();
+    out.textContent = txt; out.style.display='block';
+    navigator.clipboard.writeText(txt).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{fb.textContent='⚠ Ctrl+C';});
+  } else {
+    const html = buildTabella();
+    out.textContent='[Tabella Stroop 50]'; out.style.display='block';
+    try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(html,fb));}catch(e){fbH(html,fb);}
+  }
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corsi Span + Supraspan — Facchin et al. (2024)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#222536;--border:#2e3348;--accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8eaf0;--text2:#9da3b8;--text3:#6b7190;--ok:#34d399;--warn:#fbbf24;--err:#f87171;--font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;padding:2rem 1rem}
+  .container{max-width:760px;margin:0 auto}
+  header{border-bottom:1px solid var(--border);padding-bottom:1.25rem;margin-bottom:2rem}
+  .test-num{font-family:var(--mono);font-size:.75rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+  h1{font-size:1.4rem;font-weight:600;line-height:1.3}
+  .ref{font-size:.8rem;color:var(--text3);margin-top:.3rem;font-style:italic}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.25rem}
+  .section-title{font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+  .field-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+  .field{display:flex;flex-direction:column;gap:.35rem}
+  label{font-size:.78rem;color:var(--text2)}
+  input,select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:.95rem;padding:.5rem .75rem;outline:none;transition:border-color .15s}
+  input:focus,select:focus{border-color:var(--accent)}
+
+  /* ── Span protocol ── */
+  .span-row{display:grid;grid-template-columns:56px 1fr 70px;align-items:center;gap:.75rem;padding:.45rem 0;border-bottom:1px solid var(--border)}
+  .span-row:last-child{border-bottom:none}
+  .span-label{font-family:var(--mono);font-size:.85rem;color:var(--accent);font-weight:600}
+  .span-seqs{display:flex;flex-direction:column;gap:.3rem}
+  .seq-line{display:flex;align-items:center;gap:.5rem}
+  .seq-nums{font-family:var(--mono);font-size:.75rem;color:var(--text3);min-width:170px}
+  .seq-btns{display:flex;gap:.3rem}
+  .seq-btn{width:26px;height:26px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:.72rem;color:var(--text3);transition:all .12s;display:flex;align-items:center;justify-content:center;padding:0}
+  .seq-btn.ok{background:rgba(52,211,153,.18);border-color:var(--ok);color:var(--ok)}
+  .seq-btn.err{background:rgba(248,113,113,.15);border-color:var(--err);color:var(--err)}
+  .status-badge{font-family:var(--mono);font-size:.72rem;padding:.18rem .45rem;border-radius:4px;text-align:center}
+  .st-pass{background:rgba(52,211,153,.12);color:var(--ok)}
+  .st-fail{background:rgba(248,113,113,.1);color:var(--err)}
+  .st-nd{background:var(--surface2);color:var(--text3)}
+
+  .span-result-bar{display:flex;align-items:center;gap:1rem;background:var(--surface2);border-radius:8px;padding:.75rem 1rem;margin-top:.85rem;flex-wrap:wrap}
+  .sbar-label{font-size:.8rem;color:var(--text2)}
+  .sbar-val{font-family:var(--mono);font-size:1.5rem;font-weight:600;color:var(--accent2)}
+  .sbar-sep{color:var(--border)}
+
+  /* ── Supraspan protocol ── */
+  .ss-header{display:grid;grid-template-columns:40px 1fr 90px 90px 80px;gap:.5rem;padding:.3rem .5rem;background:var(--surface2);border-radius:6px 6px 0 0;font-size:.72rem;color:var(--text3);font-weight:500}
+  .ss-trial{display:grid;grid-template-columns:40px 1fr 90px 90px 80px;gap:.5rem;padding:.4rem .5rem;border-bottom:1px solid var(--border);align-items:center}
+  .ss-trial:last-child{border-bottom:none}
+  .ss-trial:nth-child(odd){background:rgba(255,255,255,.01)}
+  .trial-num{font-family:var(--mono);font-size:.78rem;color:var(--text3);text-align:center}
+  .trial-seq{font-family:var(--mono);font-size:.73rem;color:var(--text3)}
+  .trial-input{background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:.82rem;padding:.3rem .4rem;text-align:center;width:100%}
+  .trial-input:focus{border-color:var(--accent);outline:none}
+  .trial-score{font-family:var(--mono);font-size:.82rem;color:var(--accent2);text-align:center}
+  .trial-sel{background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:.78rem;padding:.28rem .3rem;width:100%}
+
+  .ss-total-bar{display:flex;align-items:center;gap:1rem;background:var(--surface2);border-radius:0 0 8px 8px;padding:.65rem 1rem;flex-wrap:wrap}
+  .ss-total-label{font-size:.8rem;color:var(--text2)}
+  .ss-total-val{font-family:var(--mono);font-size:1.3rem;font-weight:600;color:var(--accent2)}
+
+  /* ── Risultati ── */
+  .result-box{border:1px solid var(--border);border-radius:10px;padding:1.25rem;background:var(--surface)}
+  .sub-section{margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)}
+  .sub-section:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+  .sub-title{font-size:.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+  .result-row{display:flex;justify-content:space-between;align-items:center;padding:.38rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+  .result-row:last-child{border-bottom:none}
+  .result-label{font-size:.82rem;color:var(--text2)}
+  .result-val{font-family:var(--mono);font-size:.93rem;font-weight:500}
+  .pe-badge{display:inline-flex;align-items:center;padding:.22rem .7rem;border-radius:20px;font-family:var(--mono);font-weight:600;font-size:.88rem}
+  .pe-0{background:rgba(248,113,113,.15);color:var(--err)}
+  .pe-1{background:rgba(251,191,36,.12);color:var(--warn)}
+  .pe-2{background:rgba(251,191,36,.08);color:#e0a820}
+  .pe-3{background:rgba(52,211,153,.1);color:var(--ok)}
+  .pe-4{background:rgba(52,211,153,.15);color:var(--ok)}
+  .pe-none{background:var(--surface2);color:var(--text3)}
+
+  .btn-row{display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap}
+  button.action{padding:.55rem 1.1rem;border-radius:7px;font-family:var(--font);font-size:.85rem;font-weight:500;cursor:pointer;border:none;transition:opacity .15s}
+  button.action:disabled{opacity:.35;cursor:not-allowed}
+  button.action:not(:disabled):hover{opacity:.85}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .note{font-size:.76rem;color:var(--text3);margin-top:.6rem;padding:.6rem .75rem;background:var(--surface2);border-radius:6px;border-left:3px solid var(--border)}
+  .flash{animation:flash .4s}
+  @keyframes flash{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="test-num">Test #05 · Memoria di Lavoro Visuo-Spaziale</div>
+    <h1>Corsi Span + Supraspan Visuo-Spaziale (CSSL / CSSR)</h1>
+    <div class="ref">Facchin A., Pegoraro S., Rigoli M., Rizzi E., Strina V., Barera S., Castiglieri G., Daini R., Guarnerio C. (2024) · Neurol Sci</div>
+  </header>
+
+  <!-- Dati demografici -->
+  <div class="section">
+    <div class="section-title">Dati demografici</div>
+    <div class="field-row">
+      <div class="field"><label>Età (anni)</label><input type="number" id="eta" min="18" max="90" placeholder="es. 68" oninput="calcola()"></div>
+      <div class="field"><label>Scolarità (anni)</label><input type="number" id="scol" min="1" max="30" placeholder="es. 13" oninput="calcola()"></div>
+      <div class="field"><label>Sesso</label>
+        <select id="sesso" onchange="calcola()">
+          <option value="">—</option>
+          <option value="F">Femmina (1)</option>
+          <option value="M">Maschio (0)</option>
+        </select>
+      </div>
+    </div>
+    <div class="note">Gender: 1 = femmina, 0 = maschio (codifica originale Facchin). Il sesso entra solo nella correzione CS.</div>
+  </div>
+
+  <!-- PARTE 1: Corsi Span -->
+  <div class="section">
+    <div class="section-title">Parte 1 — Corsi Span (CS)</div>
+    <div class="note" style="margin-bottom:1rem">
+      Prova: 4–6; 7–1–9 (se errore: 5–8–9; 2–5–4). <strong>Span</strong> = serie più lunga con ≥ 2 sequenze corrette su 3.
+    </div>
+    <div id="span-protocol"></div>
+    <div class="span-result-bar">
+      <span class="sbar-label">CS grezzo:</span>
+      <span class="sbar-val" id="cs-grezzo-disp">—</span>
+      <span class="sbar-sep">|</span>
+      <span class="sbar-label">oppure inserisci manualmente:</span>
+      <input type="number" id="cs-manual" min="2" max="9" placeholder="2–9" style="width:72px" oninput="onCSManual()">
+    </div>
+  </div>
+
+  <!-- PARTE 2: Supraspan -->
+  <div class="section">
+    <div class="section-title">Parte 2 — Apprendimento Supraspan (CSSL)</div>
+    <div class="note" style="margin-bottom:1rem">
+      Sequenza fissa: <strong style="font-family:var(--mono);color:var(--accent2)">5 – 8 – 3 – 2 – 6 – 7 – 1 – 9</strong><br>
+      Ritmo: 1 cubetto / 2 sec. Criterio: 3 ripetizioni consecutive corrette (o max 18 prove).<br>
+      Per ogni prova seleziona il punteggio dalla tabella (cubetti in ordine).
+    </div>
+
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden">
+      <div class="ss-header">
+        <span style="text-align:center">Prova</span>
+        <span>Sequenza riprodotta</span>
+        <span style="text-align:center">Cubetti in ordine</span>
+        <span style="text-align:center">Punteggio</span>
+        <span></span>
+      </div>
+      <div id="ss-trials"></div>
+    </div>
+
+    <div class="ss-total-bar">
+      <span class="ss-total-label">CSSL grezzo (somma punteggi):</span>
+      <span class="ss-total-val" id="cssl-total">0.00</span>
+      <span class="sbar-sep" style="margin-left:.5rem">|</span>
+      <span class="ss-total-label" style="margin-left:.5rem">Prove completate:</span>
+      <span class="ss-total-val" id="cssl-nprove" style="font-size:1rem">0</span>
+    </div>
+  </div>
+
+  <!-- PARTE 3: Recall differita -->
+  <div class="section">
+    <div class="section-title">Parte 3 — Recall Differita (CSSR)</div>
+    <div class="note" style="margin-bottom:1rem">
+      Dopo 5 min di attività non visuo-spaziale: "Riproduca la sequenza di cubetti che abbiamo ripetuto più volte".<br>
+      Usa la stessa tabella punteggi. <strong>CSSR grezzo = punteggio della singola prova differita.</strong>
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+      <div class="field" style="min-width:200px">
+        <label>Cubetti in ordine (prova differita)</label>
+        <select id="cssr-sel" onchange="calcola()" style="width:100%">
+          <option value="">— seleziona —</option>
+        </select>
+      </div>
+      <div style="font-family:var(--mono);font-size:.9rem;color:var(--accent2)">
+        CSSR grezzo: <span id="cssr-grezzo-disp">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risultati -->
+  <div class="result-box">
+    <div class="section-title" style="margin-bottom:.75rem">Risultato</div>
+
+    <div class="sub-section">
+      <div class="sub-title">CS — Corsi Span</div>
+      <div class="result-row"><span class="result-label">Punteggio grezzo</span><span class="result-val" id="r-cs-g">—</span></div>
+      <div class="result-row"><span class="result-label">Correzione demografica</span><span class="result-val" id="r-cs-corr">—</span></div>
+      <div class="result-row"><span class="result-label">Punteggio corretto</span><span class="result-val" id="r-cs-c">—</span></div>
+      <div class="result-row"><span class="result-label">Punteggio Equivalente</span><span class="result-val"><span class="pe-badge pe-none" id="r-cs-pe">—</span></span></div>
+    </div>
+
+    <div class="sub-section">
+      <div class="sub-title">CSSL — Supraspan Learning</div>
+      <div class="result-row"><span class="result-label">Punteggio grezzo</span><span class="result-val" id="r-cssl-g">—</span></div>
+      <div class="result-row"><span class="result-label">Correzione demografica</span><span class="result-val" id="r-cssl-corr">—</span></div>
+      <div class="result-row"><span class="result-label">Punteggio corretto</span><span class="result-val" id="r-cssl-c">—</span></div>
+      <div class="result-row"><span class="result-label">Punteggio Equivalente</span><span class="result-val"><span class="pe-badge pe-none" id="r-cssl-pe">—</span></span></div>
+    </div>
+
+    <div class="sub-section">
+      <div class="sub-title">CSSR — Supraspan Recall</div>
+      <div class="result-row"><span class="result-label">Punteggio grezzo</span><span class="result-val" id="r-cssr-g">—</span></div>
+      <div class="result-row"><span class="result-label">Correzione demografica</span><span class="result-val" id="r-cssr-corr">—</span></div>
+      <div class="result-row"><span class="result-label">Punteggio corretto</span><span class="result-val" id="r-cssr-c">—</span></div>
+      <div class="result-row"><span class="result-label">Punteggio Equivalente</span><span class="result-val"><span class="pe-badge pe-none" id="r-cssr-pe">—</span></span></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="action btn-primary" id="btn-elenco" disabled onclick="copiaElenco()">Copia come elenco</button>
+    <button class="action btn-secondary" id="btn-tabella" disabled onclick="copiaTabella()">Copia come tabella</button>
+  </div>
+  <div class="note" id="copy-msg" style="display:none"></div>
+</div>
+
+<script>
+// ─── Sequenze Corsi Span ───
+const SPAN_SEQS = {
+  2: [['5','6'],['4','7'],['9','5']],
+  3: [['4','7','2'],['8','1','5'],['3','6','1']],
+  4: [['9','3','1','5'],['6','5','4','8'],['4','9','8','7']],
+  5: [['8','5','4','1','9'],['2','3','5','4','1'],['3','4','1','7','2']],
+  6: [['5','3','2','4','6','7'],['9','8','1','4','6','5'],['2','3','1','5','9','4']],
+  7: [['5','9','1','7','4','2','8'],['4','1','7','9','3','8','6'],['5','8','1','9','2','6','4']],
+  8: [['1','7','6','4','8','3','2','5'],['7','1','2','3','4','6','8','5'],['9','4','7','3','1','8','2','5']],
+  9: [['2','6','5','7','9','3','4','8','1'],['8','2','3','4','1','7','9','6','5'],['3','4','6','7','5','8','9','2','1']],
+};
+const spanResults = {}; // spanResults[span][si] = true/false/null
+for (let s = 2; s <= 9; s++) spanResults[s] = [null, null, null];
+
+function buildSpanProtocol() {
+  const el = document.getElementById('span-protocol');
+  let html = '';
+  for (let span = 2; span <= 9; span++) {
+    html += `<div class="span-row">
+      <span class="span-label">${span}</span>
+      <div class="span-seqs">`;
+    SPAN_SEQS[span].forEach((seq, si) => {
+      html += `<div class="seq-line">
+        <span class="seq-nums">${seq.join(' – ')}</span>
+        <div class="seq-btns">
+          <button class="seq-btn" id="sb_${span}_${si}_ok" onclick="setSpan(${span},${si},true)">✓</button>
+          <button class="seq-btn" id="sb_${span}_${si}_no" onclick="setSpan(${span},${si},false)">✗</button>
+        </div>
+      </div>`;
+    });
+    html += `</div><span class="status-badge st-nd" id="sst_${span}">—</span></div>`;
+  }
+  el.innerHTML = html;
+}
+
+function setSpan(span, si, val) {
+  spanResults[span][si] = val;
+  document.getElementById(`sb_${span}_${si}_ok`).className = 'seq-btn' + (val===true?' ok':'');
+  document.getElementById(`sb_${span}_${si}_no`).className = 'seq-btn' + (val===false?' err':'');
+  const r = spanResults[span];
+  const correct = r.filter(x=>x===true).length;
+  const filled  = r.filter(x=>x!==null).length;
+  const el = document.getElementById(`sst_${span}`);
+  if (!filled) { el.className='status-badge st-nd'; el.textContent='—'; }
+  else if (correct>=2) { el.className='status-badge st-pass'; el.textContent='PASS'; }
+  else if (filled===3) { el.className='status-badge st-fail'; el.textContent='FAIL'; }
+  else { el.className='status-badge st-nd'; el.textContent=`${correct}/3`; }
+  updateCSFromProtocol();
+}
+
+function updateCSFromProtocol() {
+  let cs = null;
+  for (let s = 2; s <= 9; s++) {
+    if (spanResults[s].filter(x=>x===true).length >= 2) cs = s;
+  }
+  document.getElementById('cs-grezzo-disp').textContent = cs !== null ? cs : '—';
+  if (cs !== null) document.getElementById('cs-manual').value = cs;
+  calcola();
+}
+
+function onCSManual() {
+  const v = document.getElementById('cs-manual').value;
+  document.getElementById('cs-grezzo-disp').textContent = v || '—';
+  calcola();
+}
+
+// ─── Tabella punteggi Supraspan ───
+// Ogni entry: { label, score }
+const SS_SCORE_OPTIONS = [
+  {label:'0 cubetti in ordine', score:0.06},
+  {label:'2 cubetti in ordine', score:0.30},
+  {label:'3 cubetti in ordine', score:0.52},
+  {label:'4 cubetti in ordine', score:0.74},
+  {label:'5 cubetti in ordine', score:0.96},
+  {label:'6 cubetti in ordine', score:1.18},
+  {label:'7 cubetti in ordine', score:1.40},
+  {label:'8 cubetti in ordine (tutto)', score:1.62},
+  {label:'2+2 (non consecutivi)', score:0.53},
+  {label:'2+3', score:0.75},
+  {label:'2+4 / 3+3', score:0.97},
+  {label:'2+5 / 3+4', score:1.19},
+  {label:'2+6 / 3+5 / 4+4', score:1.41},
+  {label:'2+2+2', score:0.76},
+  {label:'2+2+2+2', score:1.00},
+  {label:'3+3+2', score:1.21},
+  {label:'3+2+2', score:0.99},
+];
+
+function buildSupraspan() {
+  const el = document.getElementById('ss-trials');
+  let html = '';
+  for (let t = 1; t <= 18; t++) {
+    const opts = SS_SCORE_OPTIONS.map(o =>
+      `<option value="${o.score}">${o.label} (${o.score})</option>`).join('');
+    html += `<div class="ss-trial">
+      <span class="trial-num">${t}</span>
+      <input class="trial-input" type="text" id="ss_seq_${t}" placeholder="es. 5 8 3 2…" oninput="updateSSTotal()">
+      <select class="trial-sel" id="ss_sel_${t}" onchange="updateSSTotal()">
+        <option value="">—</option>${opts}
+      </select>
+      <span class="trial-score" id="ss_score_${t}">—</span>
+      <span></span>
+    </div>`;
+  }
+  el.innerHTML = html;
+
+  // Popola anche il select CSSR
+  const csEl = document.getElementById('cssr-sel');
+  let csOpts = `<option value="">— seleziona —</option>`;
+  SS_SCORE_OPTIONS.forEach(o => {
+    csOpts += `<option value="${o.score}">${o.label} (${o.score})</option>`;
+  });
+  csEl.innerHTML = csOpts;
+}
+
+function updateSSTotal() {
+  let total = 0, nProve = 0;
+  for (let t = 1; t <= 18; t++) {
+    const sel = document.getElementById(`ss_sel_${t}`);
+    const scoreEl = document.getElementById(`ss_score_${t}`);
+    if (sel.value !== '') {
+      const v = parseFloat(sel.value);
+      total += v;
+      nProve++;
+      scoreEl.textContent = v.toFixed(2);
+    } else {
+      scoreEl.textContent = '—';
+    }
+  }
+  document.getElementById('cssl-total').textContent = total.toFixed(2);
+  document.getElementById('cssl-nprove').textContent = nProve;
+  calcola();
+}
+
+// ─── Formule Facchin (da Excel verificato) ───
+// CS:   adj = raw + 0.7616*(LN(età)−3.864) − 0.4229*(SQRT(scol)−3.555)
+// CSSL: adj = raw + 0.841*(SQRT(età)−7.044) − 2.852*(SQRT(scol)−3.555) − 8.855*(SQRT(CS_raw)−2.218)
+// CSSR: adj = raw + 0.0747*(SQRT(età)−7.044) − 0.271*(LN(scol)−2.497) − 0.491*(LN(CS_raw)−1.582)
+// Sesso: F=1, M=0 — entra solo nel CS
+
+// ─── Soglie PE (da Excel) ───
+function getPE_CS(c)   { if(c===null)return null; if(c<=3.43)return 0; if(c<=4.21)return 1; if(c<=4.52)return 2; if(c<=4.97)return 3; return 4; }
+function getPE_CSSL(c) { if(c===null)return null; if(c<=6.75)return 0; if(c<=12.67)return 1; if(c<=16.63)return 2; if(c<=19.37)return 3; return 4; }
+function getPE_CSSR(c) { if(c===null)return null; if(c<=0.16)return 0; if(c<=0.65)return 1; if(c<=0.97)return 2; if(c<=1.24)return 3; return 4; }
+
+let state = {};
+
+function calcola() {
+  const eta   = parseFloat(document.getElementById('eta').value);
+  const scol  = parseFloat(document.getElementById('scol').value);
+  const sesso = document.getElementById('sesso').value;
+  const demoOk = !isNaN(eta) && !isNaN(scol) && sesso !== '';
+
+  // CS grezzo
+  const csManual = parseFloat(document.getElementById('cs-manual').value);
+  const csDisp   = document.getElementById('cs-grezzo-disp').textContent;
+  const cs_raw = !isNaN(csManual) ? csManual : (csDisp !== '—' ? parseFloat(csDisp) : NaN);
+
+  // CSSL grezzo
+  const cssl_raw = parseFloat(document.getElementById('cssl-total').textContent);
+
+  // CSSR grezzo
+  const cssrSelVal = document.getElementById('cssr-sel').value;
+  const cssr_raw = cssrSelVal !== '' ? parseFloat(cssrSelVal) : NaN;
+  document.getElementById('cssr-grezzo-disp').textContent = !isNaN(cssr_raw) ? cssr_raw.toFixed(2) : '—';
+
+  updateButtons(demoOk);
+
+  // ─── CS ───
+  let cs_c=null, cs_corr=null, cs_pe=null;
+  if (!isNaN(cs_raw) && demoOk) {
+    cs_corr = 0.7616*(Math.log(eta)-3.864) - 0.4229*(Math.sqrt(scol)-3.555);
+    cs_c = cs_raw + cs_corr;
+    cs_pe = getPE_CS(cs_c);
+  }
+
+  // ─── CSSL ───
+  let cssl_c=null, cssl_corr=null, cssl_pe=null;
+  if (!isNaN(cssl_raw) && cssl_raw > 0 && !isNaN(cs_raw) && demoOk) {
+    cssl_corr = 0.841*(Math.sqrt(eta)-7.044) - 2.852*(Math.sqrt(scol)-3.555) - 8.855*(Math.sqrt(cs_raw)-2.218);
+    cssl_c = cssl_raw + cssl_corr;
+    cssl_pe = getPE_CSSL(cssl_c);
+  }
+
+  // ─── CSSR ───
+  let cssr_c=null, cssr_corr=null, cssr_pe=null;
+  if (!isNaN(cssr_raw) && !isNaN(cs_raw) && cs_raw > 0 && demoOk) {
+    cssr_corr = 0.0747*(Math.sqrt(eta)-7.044) - 0.271*(Math.log(scol)-2.497) - 0.491*(Math.log(cs_raw)-1.582);
+    cssr_c = cssr_raw + cssr_corr;
+    cssr_pe = getPE_CSSR(cssr_c);
+  }
+
+  updResult('cs',   isNaN(cs_raw)?null:cs_raw,     cs_corr,   cs_c,   cs_pe);
+  updResult('cssl', isNaN(cssl_raw)?null:cssl_raw,  cssl_corr, cssl_c, cssl_pe);
+  updResult('cssr', isNaN(cssr_raw)?null:cssr_raw,  cssr_corr, cssr_c, cssr_pe, 2);
+
+  state = {cs_raw:isNaN(cs_raw)?null:cs_raw, cssl_raw:isNaN(cssl_raw)?null:cssl_raw,
+           cssr_raw:isNaN(cssr_raw)?null:cssr_raw, cs_c, cssl_c, cssr_c, cs_pe, cssl_pe, cssr_pe};
+}
+
+function updResult(key, raw, corr, corrVal, pe, dec=4) {
+  const v=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  v(`r-${key}-g`,   raw!==null ? (dec<=2?raw.toFixed(dec):raw.toFixed(0)) : '—');
+  v(`r-${key}-corr`, corr!==null ? (corr>=0?'+':'')+corr.toFixed(4) : '—');
+  v(`r-${key}-c`,   corrVal!==null ? corrVal.toFixed(4) : '—');
+  setPE(`r-${key}-pe`, pe);
+}
+
+function setPE(id, pe) {
+  const el=document.getElementById(id); if(!el)return;
+  if(pe===null){el.className='pe-badge pe-none';el.textContent='—';return;}
+  const labels=['Patologico','Borderline','Lieve deficit','Nella norma','Nella norma'];
+  el.className=`pe-badge pe-${pe}`;el.textContent=`PE ${pe} — ${labels[pe]}`;
+}
+
+function updateButtons(ok) {
+  document.getElementById('btn-elenco').disabled = !ok;
+  document.getElementById('btn-tabella').disabled = !ok;
+}
+
+function peLabel(pe){return pe!==null?['patologico','borderline','lieve deficit','nella norma','nella norma'][pe]:'—';}
+
+function copiaElenco() {
+  const {cs_raw,cssl_raw,cssr_raw,cs_c,cssl_c,cssr_c,cs_pe,cssl_pe,cssr_pe}=state;
+  const fmt=(raw,corr,pe,dec=2)=>{
+    if(raw===null)return'—';
+    const ast=(pe!==null&&pe<=1)?'*':'';
+    const cr=corr!==null?corr.toFixed(4)+ast:'—';
+    return`${raw.toFixed(dec)} → ${cr} (PE ${pe!==null?pe:'—'} — ${peLabel(pe)})`;
+  };
+  const txt=[
+    `Corsi Span (Facchin et al., 2024): ${fmt(cs_raw,cs_c,cs_pe,0)}`,
+    `Corsi Supraspan Learning CSSL (Facchin et al., 2024): ${fmt(cssl_raw,cssl_c,cssl_pe,2)}`,
+    `Corsi Supraspan Recall CSSR (Facchin et al., 2024): ${fmt(cssr_raw,cssr_c,cssr_pe,2)}`,
+  ].join('\n');
+  navigator.clipboard.writeText(txt).then(()=>showMsg('✓ Copiato come elenco'));
+}
+
+function copiaTabella() {
+  const {cs_raw,cssl_raw,cssr_raw,cs_c,cssl_c,cssr_c,cs_pe,cssl_pe,cssr_pe}=state;
+  const row=(t,raw,corr,pe,dec=2)=>{
+    const ast=(pe!==null&&pe<=1)?'*':'';
+    const gs=raw!==null?raw.toFixed(dec):'—';
+    const cs=corr!==null?corr.toFixed(4)+ast:'—';
+    return`<tr><td>${t}</td><td>${gs}</td><td>${cs}</td><td>PE ${pe!==null?pe:'—'}</td><td>—</td></tr>`;
+  };
+  const html=`<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:13px">
+<tr style="background:#1a1d27;color:#4f8ef7"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>PE</th><th>Cut-off</th></tr>
+${row('Corsi Span — CS (Facchin et al., 2024)',cs_raw,cs_c,cs_pe,0)}
+${row('Corsi Supraspan Learning — CSSL (Facchin et al., 2024)',cssl_raw,cssl_c,cssl_pe,2)}
+${row('Corsi Supraspan Recall — CSSR (Facchin et al., 2024)',cssr_raw,cssr_c,cssr_pe,2)}
+</table>`;
+  const blob=new Blob([html],{type:'text/html'});
+  navigator.clipboard.write([new ClipboardItem({'text/html':blob})]).then(()=>showMsg('✓ Copiato come tabella'));
+}
+
+function showMsg(msg){
+  const el=document.getElementById('copy-msg');
+  el.textContent=msg;el.style.display='block';
+  el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+  setTimeout(()=>el.style.display='none',3000);
+}
+
+// Init
+buildSpanProtocol();
+buildSupraspan();
+</script>
+</body>
+</html>

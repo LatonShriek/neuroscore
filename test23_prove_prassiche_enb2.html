@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #23 — Prove Prassiche ENB-2</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3347;
+    --accent: #4f8ef7;
+    --accent2: #7c5cbf;
+    --ok: #2ecc71;
+    --warn: #e67e22;
+    --err: #e74c3c;
+    --text: #e8eaf0;
+    --muted: #8892a4;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.6; min-height: 100vh; }
+
+  .shell { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  /* HEADER */
+  .hdr { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 28px; }
+  .hdr-badge { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
+  .hdr h1 { font-size: 22px; font-weight: 600; }
+  .hdr .cite { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* SECTION LABEL */
+  .sec-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 10px; margin-top: 24px; }
+
+  /* DATI PAZIENTE */
+  .demo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media(max-width:520px){ .demo-grid { grid-template-columns: 1fr 1fr; } }
+  .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; font-family: var(--mono); }
+  .field input, .field select {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: var(--mono); font-size: 14px; padding: 8px 10px; outline: none;
+    transition: border-color .2s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+
+  /* AGE WARN */
+  .age-warn { background: #2d1f0e; border: 1px solid var(--warn); border-radius: 6px; padding: 8px 12px;
+    font-size: 12px; color: var(--warn); margin-top: 10px; display: none; }
+
+  /* ITEM GRID */
+  .cat-block { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px; overflow: hidden; }
+  .cat-hdr { background: var(--surface2); padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+  .cat-hdr .cat-num { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+  .cat-hdr .cat-name { font-size: 13px; font-weight: 500; }
+  .cat-score { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  .item-row { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); }
+  .item-row:last-child { border-bottom: none; }
+  .item-desc { flex: 1; font-size: 14px; font-style: italic; color: #c5cad8; }
+  .btn-group { display: flex; gap: 6px; }
+  .btn-score {
+    width: 36px; height: 36px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--muted); font-family: var(--mono); font-size: 14px;
+    font-weight: 500; cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center;
+  }
+  .btn-score:hover { border-color: var(--accent); color: var(--text); }
+  .btn-score.active-0 { background: #3d1515; border-color: var(--err); color: var(--err); }
+  .btn-score.active-1 { background: #0d2e1a; border-color: var(--ok); color: var(--ok); }
+
+  /* TOTALE */
+  .result-bar {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 20px; margin-top: 20px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .total-display { font-family: var(--mono); }
+  .total-display .num { font-size: 36px; font-weight: 500; color: var(--accent); line-height: 1; }
+  .total-display .denom { font-size: 16px; color: var(--muted); }
+
+  .verdict { flex: 1; min-width: 180px; }
+  .verdict .v-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
+  .verdict .v-text { font-size: 15px; font-weight: 500; }
+  .v-ok  { color: var(--ok); }
+  .v-err { color: var(--err); }
+  .v-na  { color: var(--muted); }
+
+  .cutoff-info { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+  /* NORM TABLE PREVIEW */
+  .norm-wrap { margin-top: 20px; overflow-x: auto; }
+  .norm-table { border-collapse: collapse; width: 100%; font-family: var(--mono); font-size: 12px; }
+  .norm-table th, .norm-table td { border: 1px solid var(--border); padding: 6px 10px; text-align: center; }
+  .norm-table th { background: var(--surface2); color: var(--muted); }
+  .norm-table td { color: var(--text); }
+  .norm-table .highlight { background: #1b2a3b; color: var(--accent); font-weight: 600; }
+
+  /* REPORT BTNS */
+  .report-btns { display: flex; gap: 10px; margin-top: 18px; }
+  .btn-report {
+    flex: 1; padding: 12px 16px; border-radius: 8px; border: none;
+    background: var(--accent); color: #fff; font-family: var(--sans); font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: opacity .2s;
+  }
+  .btn-report:hover { opacity: .85; }
+  .btn-report:disabled { background: var(--surface2); color: var(--muted); cursor: default; }
+  .btn-report.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-report.secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); opacity: 1; }
+
+  .copy-feedback {
+    font-family: var(--mono); font-size: 11px; color: var(--ok); margin-top: 8px;
+    height: 16px; transition: opacity .3s;
+  }
+
+  .report-output {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 16px; margin-top: 14px; font-family: var(--mono); font-size: 13px; line-height: 1.8;
+    white-space: pre-wrap; display: none;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-badge">Test #23 · ENB-2</div>
+    <h1>Prove Prassiche</h1>
+    <div class="cite">Mondini S., Mapelli D., Vestri A., Arcara G., Bisiacchi P.S. (2011). <em>Esame Neuropsicologico Breve 2 (ENB-2).</em> Raffaello Cortina Editore, Milano. — Cut-off da Tab. 5.6 (bassa scolarità ≤ 8 anni) / Tab. 5.7 (alta scolarità > 8 anni) per fascia d'età.</div>
+  </div>
+
+  <!-- DATI PAZIENTE -->
+  <div class="sec-label">Dati paziente</div>
+  <div class="demo-grid">
+    <div class="field">
+      <label>Età (anni)</label>
+      <input type="number" id="p-eta" min="15" max="100" placeholder="es. 68" oninput="checkAge(); calcResult()">
+    </div>
+    <div class="field">
+      <label>Scolarità (anni)</label>
+      <input type="number" id="p-scol" min="0" max="30" placeholder="es. 13" oninput="calcResult()">
+    </div>
+    <div class="field">
+      <label>Sesso</label>
+      <select id="p-sesso"><option value="">—</option><option value="M">M</option><option value="F">F</option></select>
+    </div>
+  </div>
+  <div class="age-warn" id="age-warn">⚠ Range normativo: 15–>80 anni. Procedere con cautela fuori da questo range.</div>
+
+  <!-- SCORING -->
+  <div class="sec-label">Scoring (0 = assente / 1 = corretto)</div>
+
+  <!-- Cat A: Pantomime -->
+  <div class="cat-block" id="cat-A">
+    <div class="cat-hdr">
+      <span class="cat-num">A</span>
+      <span class="cat-name">Pantomima d'uso di oggetti</span>
+      <span class="cat-score" id="score-A">— / 2</span>
+    </div>
+    <div class="item-row">
+      <span class="item-desc">Mostri il movimento con in mano: un <strong>martello</strong></span>
+      <div class="btn-group">
+        <button class="btn-score" onclick="setScore('A',0,0,this)">0</button>
+        <button class="btn-score" onclick="setScore('A',0,1,this)">1</button>
+      </div>
+    </div>
+    <div class="item-row">
+      <span class="item-desc">Mostri il movimento con in mano: uno <strong>spazzolino da denti</strong></span>
+      <div class="btn-group">
+        <button class="btn-score" onclick="setScore('A',1,0,this)">0</button>
+        <button class="btn-score" onclick="setScore('A',1,1,this)">1</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cat B: Gesti simbolici -->
+  <div class="cat-block" id="cat-B">
+    <div class="cat-hdr">
+      <span class="cat-num">B</span>
+      <span class="cat-name">Gesti con significato su indicazione verbale</span>
+      <span class="cat-score" id="score-B">— / 2</span>
+    </div>
+    <div class="item-row">
+      <span class="item-desc">Mostri: il <strong>segno della croce</strong></span>
+      <div class="btn-group">
+        <button class="btn-score" onclick="setScore('B',0,0,this)">0</button>
+        <button class="btn-score" onclick="setScore('B',0,1,this)">1</button>
+      </div>
+    </div>
+    <div class="item-row">
+      <span class="item-desc">Mostri: il gesto per dire <strong>"quello è matto"</strong></span>
+      <div class="btn-group">
+        <button class="btn-score" onclick="setScore('B',1,0,this)">0</button>
+        <button class="btn-score" onclick="setScore('B',1,1,this)">1</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cat C: Copia gesti senza significato -->
+  <div class="cat-block" id="cat-C">
+    <div class="cat-hdr">
+      <span class="cat-num">C</span>
+      <span class="cat-name">Copia di gesti senza significato</span>
+      <span class="cat-score" id="score-C">— / 2</span>
+    </div>
+    <div class="item-row">
+      <span class="item-desc">Copi: <strong>medio inarcato sull'indice</strong> (una mano)</span>
+      <div class="btn-group">
+        <button class="btn-score" onclick="setScore('C',0,0,this)">0</button>
+        <button class="btn-score" onclick="setScore('C',0,1,this)">1</button>
+      </div>
+    </div>
+    <div class="item-row">
+      <span class="item-desc">Copi: <strong>braccio steso + palmo aperto / braccio ripiegato + pugno sulla spalla</strong></span>
+      <div class="btn-group">
+        <button class="btn-score" onclick="setScore('C',1,0,this)">0</button>
+        <button class="btn-score" onclick="setScore('C',1,1,this)">1</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RISULTATO -->
+  <div class="result-bar">
+    <div class="total-display">
+      <span class="num" id="tot-num">—</span><span class="denom"> / 6</span>
+    </div>
+    <div class="verdict">
+      <div class="v-label">Esito</div>
+      <div class="v-text v-na" id="verdict-text">Dati incompleti</div>
+    </div>
+    <div class="cutoff-info" id="cutoff-info">Inserire età e scolarità</div>
+  </div>
+
+  <!-- TABELLA NORME -->
+  <div class="sec-label" style="margin-top:28px">Tabella normativa di riferimento</div>
+  <div id="norm-selector" style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+    <button onclick="showNorm('bassa')" id="btn-bassa" class="btn-score" style="width:auto;padding:6px 14px;font-size:12px">Tab. 5.6 — Bassa scol. (≤8 aa)</button>
+    <button onclick="showNorm('alta')" id="btn-alta" class="btn-score" style="width:auto;padding:6px 14px;font-size:12px">Tab. 5.7 — Alta scol. (>8 aa)</button>
+  </div>
+  <div class="norm-wrap" id="norm-wrap"></div>
+
+  <!-- REPORT -->
+  <div class="report-btns">
+    <button class="btn-report" id="btn-elenco" onclick="copyOutput('elenco')" disabled>📋 Copia come elenco</button>
+    <button class="btn-report secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>⊞ Copia come tabella</button>
+  </div>
+  <div class="copy-feedback" id="copy-feedback"></div>
+  <div class="report-output" id="report-output"></div>
+
+</div>
+
+<script>
+// =====================================================
+// DATI
+// =====================================================
+const CATS = ['A','B','C'];
+const scores = { A:[null,null], B:[null,null], C:[null,null] };
+
+// Cut-off Tab. 5.6 (bassa scolarità ≤8 aa) — Prove prassiche
+// Fasce: 15-20, 21-30, 31-40, 41-50, 51-60, 61-70, 71-80, >80
+const CO_BASSA = [6, 6, 6, 6, 6, 6, 5, 5];
+// Cut-off Tab. 5.7 (alta scolarità >8 aa)
+const CO_ALTA  = [6, 6, 6, 6, 6, 6, 5, 5];
+
+const BANDS = ['15–20','21–30','31–40','41–50','51–60','61–70','71–80','>80'];
+
+function ageBand(eta) {
+  if (eta < 15)  return -1;
+  if (eta <= 20) return 0;
+  if (eta <= 30) return 1;
+  if (eta <= 40) return 2;
+  if (eta <= 50) return 3;
+  if (eta <= 60) return 4;
+  if (eta <= 70) return 5;
+  if (eta <= 80) return 6;
+  return 7; // >80 — valido, fascia 7
+}
+
+// =====================================================
+// SCORING
+// =====================================================
+function setScore(cat, idx, val, btn) {
+  // clear other button in same pair
+  const group = btn.parentElement.querySelectorAll('.btn-score');
+  group.forEach(b => { b.classList.remove('active-0','active-1'); });
+  btn.classList.add(`active-${val}`);
+  scores[cat][idx] = val;
+  updateCatScore(cat);
+  calcResult();
+}
+
+function updateCatScore(cat) {
+  const s = scores[cat];
+  const filled = s.filter(v => v !== null).length;
+  const total  = s.filter(v => v !== null).reduce((a,b)=>a+b,0);
+  document.getElementById(`score-${cat}`).textContent =
+    filled === 2 ? `${total} / 2` : '— / 2';
+}
+
+function calcResult() {
+  const eta  = parseInt(document.getElementById('p-eta').value);
+  const scol = parseInt(document.getElementById('p-scol').value);
+  const allFilled = CATS.every(c => scores[c].every(v => v !== null));
+  const totEl = document.getElementById('tot-num');
+  const verdEl = document.getElementById('verdict-text');
+  const coEl   = document.getElementById('cutoff-info');
+
+  // Calcola tot parziale (item compilati)
+  const tot = CATS.reduce((sum,c) => sum + scores[c].filter(v=>v!==null).reduce((a,b)=>a+b,0), 0);
+  totEl.textContent = allFilled ? tot : '—';
+
+  const hasDemo = !isNaN(eta) && !isNaN(scol);
+  const band = hasDemo ? ageBand(eta) : -1;
+
+  if (band < 0) {
+    verdEl.className = 'v-text v-na';
+    verdEl.textContent = hasDemo ? 'Età < 15 aa: fuori range normativo' : 'Inserire età e scolarità';
+    coEl.textContent = '';
+    document.getElementById('btn-elenco').disabled = true;
+    document.getElementById('btn-tabella').disabled = true;
+    return;
+  }
+
+  const highScol = scol > 8;
+  const co = highScol ? CO_ALTA[band] : CO_BASSA[band];
+  const tabName = highScol ? 'Tab. 5.7' : 'Tab. 5.6';
+  const bandName = BANDS[band];
+
+  coEl.textContent = `Cut-off ${tabName} (età ${bandName}): ≥ ${co}`;
+
+  if (!allFilled) {
+    verdEl.className = 'v-text v-na';
+    verdEl.textContent = 'Scoring incompleto';
+    // Abilita comunque — output mostrerà scoring parziale
+    document.getElementById('btn-elenco').disabled = false;
+    document.getElementById('btn-tabella').disabled = false;
+    highlightNormTable(band, highScol);
+    return;
+  }
+
+  if (tot >= co) {
+    verdEl.className = 'v-text v-ok';
+    verdEl.textContent = `✓ Nella norma (${tot} ≥ ${co})`;
+  } else {
+    verdEl.className = 'v-text v-err';
+    verdEl.textContent = `✗ Sotto il cut-off (${tot} < ${co})`;
+  }
+
+  document.getElementById('btn-elenco').disabled = false;
+  document.getElementById('btn-tabella').disabled = false;
+  highlightNormTable(band, highScol);
+}
+
+// =====================================================
+// TABELLE NORMATIVE
+// =====================================================
+let currentNorm = 'bassa';
+
+function showNorm(which) {
+  currentNorm = which;
+  document.getElementById('btn-bassa').classList.toggle('active-1', which==='bassa');
+  document.getElementById('btn-alta').classList.toggle('active-1', which==='alta');
+
+  const eta  = parseInt(document.getElementById('p-eta').value);
+  const scol = parseInt(document.getElementById('p-scol').value);
+  const band = (!isNaN(eta) && !isNaN(scol)) ? ageBand(eta) : -1;
+  const highScol = !isNaN(scol) && scol > 8;
+  const activeBand = (which === 'bassa' && !highScol) || (which === 'alta' && highScol) ? band : -1;
+
+  const co = which === 'bassa' ? CO_BASSA : CO_ALTA;
+  const tabLabel = which === 'bassa' ? 'Tabella 5.6 — Bassa scolarità (≤ 8 anni)' : 'Tabella 5.7 — Alta scolarità (> 8 anni)';
+
+  let html = `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">${tabLabel} — Mondini et al., 2011</div>`;
+  html += `<table class="norm-table"><thead><tr><th>Fascia età</th>${BANDS.map(b=>`<th>${b}</th>`).join('')}</tr></thead><tbody>`;
+  html += `<tr><td style="text-align:left;color:var(--muted)">Cut-off</td>`;
+  BANDS.forEach((b,i) => {
+    const cls = (i === activeBand) ? ' class="highlight"' : '';
+    html += `<td${cls}>${co[i]}</td>`;
+  });
+  html += `</tr></tbody></table>`;
+  html += `<div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">Il paziente è <em>nella norma</em> se il punteggio grezzo ≥ cut-off. Punteggi inferiori al cut-off sono considerati patologici (5° percentile).</div>`;
+
+  document.getElementById('norm-wrap').innerHTML = html;
+}
+
+function highlightNormTable(band, highScol) {
+  const which = highScol ? 'alta' : 'bassa';
+  showNorm(which);
+}
+
+// =====================================================
+// OUTPUT — due formati
+// =====================================================
+function getResultData() {
+  const eta      = parseInt(document.getElementById('p-eta').value);
+  const scol     = parseInt(document.getElementById('p-scol').value);
+  const band     = ageBand(eta);
+  const highScol = scol > 8;
+  const co       = highScol ? CO_ALTA[band] : CO_BASSA[band];
+  const allFilled = CATS.every(c => scores[c].every(v => v !== null));
+  const tot      = CATS.reduce((sum,c) => sum + scores[c].filter(v=>v!==null).reduce((a,b)=>a+b,0), 0);
+  const patol    = allFilled && (tot < co);
+  const asterisco = patol ? '*' : '';
+  const esitoStr  = !allFilled ? 'scoring incompleto' : patol ? 'sotto cut-off' : 'nella norma';
+  const coStr     = `cut-off ≥ ${co}`;
+  return { tot, co, patol, asterisco, esitoStr, coStr, band, highScol, allFilled };
+}
+
+function buildElenco() {
+  const d = getResultData();
+  // Formato identico all'esempio condiviso:
+  // Nome test (Autori, anno): punteggio* (cut-off — esito)
+  return `Prove Prassiche ENB-2 (Mondini et al., 2011): ${d.tot}/6${d.asterisco} (${d.coStr} — ${d.esitoStr})`;
+}
+
+function buildTabellaHTML() {
+  const d = getResultData();
+  return `
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%">
+  <thead>
+    <tr style="font-weight:bold;background:#f2f2f2">
+      <td><b>Test</b></td>
+      <td><b>Punteggio grezzo</b></td>
+      <td><b>Punteggio corretto</b></td>
+      <td><b>Punteggio Equivalente / Ponderato*</b></td>
+      <td><b>Cut-off</b></td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>Prove Prassiche ENB-2</b><br><i>(Mondini et al., 2011)</i></td>
+      <td>${d.tot}/6${d.asterisco}</td>
+      <td>—</td>
+      <td>—</td>
+      <td>≥ ${d.co} (${d.esitoStr})</td>
+    </tr>
+  </tbody>
+</table>`;
+}
+
+function copyOutput(tipo) {
+  const out = document.getElementById('report-output');
+  const fb  = document.getElementById('copy-feedback');
+
+  if (tipo === 'elenco') {
+    const testo = buildElenco();
+    out.textContent = testo;
+    out.style.display = 'block';
+    navigator.clipboard.writeText(testo).then(() => {
+      fb.textContent = '✓ Testo elenco copiato — incolla nel documento con Ctrl+V';
+      setTimeout(() => { fb.textContent = ''; }, 4000);
+    }).catch(() => {
+      const range = document.createRange();
+      range.selectNodeContents(out);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      fb.textContent = '⚠ Seleziona il testo sopra e copia con Ctrl+C';
+    });
+
+  } else {
+    const html = buildTabellaHTML();
+    // Anteprima testo
+    const d = getResultData();
+    out.textContent = `[Tabella] Prove Prassiche ENB-2 | ${d.tot}/6${d.asterisco} | — | — | ≥ ${d.co} (${d.esitoStr})`;
+    out.style.display = 'block';
+
+    // Copia come HTML (Google Docs lo incolla come tabella vera)
+    try {
+      const blob = new Blob([html], { type: 'text/html' });
+      const item = new ClipboardItem({ 'text/html': blob });
+      navigator.clipboard.write([item]).then(() => {
+        fb.textContent = '✓ Tabella copiata — incolla in Google Docs con Ctrl+V (verrà incollata come tabella)';
+        setTimeout(() => { fb.textContent = ''; }, 5000);
+      }).catch(() => fallbackTableCopy(html, out, fb));
+    } catch(e) {
+      fallbackTableCopy(html, out, fb);
+    }
+  }
+}
+
+function fallbackTableCopy(html, out, fb) {
+  // Fallback: crea elemento temporaneo, seleziona, copia
+  const tmp = document.createElement('div');
+  tmp.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+  tmp.innerHTML = html;
+  document.body.appendChild(tmp);
+  const range = document.createRange();
+  range.selectNodeContents(tmp);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+  try {
+    document.execCommand('copy');
+    fb.textContent = '✓ Tabella copiata — incolla in Google Docs con Ctrl+V';
+  } catch(e) {
+    fb.textContent = '⚠ Copia non riuscita — seleziona il testo sopra e copia con Ctrl+C';
+  }
+  window.getSelection().removeAllRanges();
+  document.body.removeChild(tmp);
+  setTimeout(() => { fb.textContent = ''; }, 5000);
+}
+
+// =====================================================
+// INIT
+// =====================================================
+function checkAge() {
+  const a = parseInt(document.getElementById('p-eta').value);
+  document.getElementById('age-warn').style.display =
+    (a && (a < 15 || a > 100)) ? 'block' : 'none';
+}
+
+showNorm('bassa');
+</script>
+</body>
+</html>

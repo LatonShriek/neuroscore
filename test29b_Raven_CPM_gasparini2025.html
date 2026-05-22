@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raven CPM — Gasparini et al., 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3050;--accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8ecf8;--muted:#7a84a0;--ok:#3ddc84;--warn:#f7b731;--err:#ff5c5c}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.6;padding:24px;max-width:900px;margin:0 auto}
+h1{font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.subtitle{font-size:.82rem;color:var(--muted);margin-bottom:20px;font-family:'IBM Plex Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none;transition:border .2s}
+input[type=number]:focus{border-color:var(--accent)}
+.result-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:.82rem;color:var(--muted)}
+.result-val{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:600}
+.es0{color:var(--err)}.es1{color:#ff9a3c}.es2{color:var(--warn)}.es3{color:var(--ok)}.es4{color:var(--ok)}
+.alert{background:#1e1830;border:1px solid #5b4af7;border-radius:8px;padding:12px 16px;font-size:.82rem;color:#b8aaff;display:none;margin-top:10px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{padding:10px 20px;border-radius:7px;border:none;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2);color:#0f1117}
+.btn-primary:disabled,.btn-sec:disabled{opacity:.35;cursor:not-allowed}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-sec:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.output-area{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;white-space:pre-wrap;display:none;margin-top:10px}
+.feedback{font-size:.8rem;color:var(--ok);margin-top:6px;min-height:1.2em}
+.section-note{background:#0d1a2e;border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.8rem;color:#8ab4f8;margin-bottom:14px}
+table.norm-info{width:100%;border-collapse:collapse;font-size:.76rem;margin-top:8px}
+table.norm-info th{background:var(--surface2);color:var(--muted);padding:5px 8px;text-align:center;font-weight:600;border:1px solid var(--border)}
+table.norm-info td{padding:5px 8px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:.74rem;text-align:center}
+.ans-btn{width:24px;height:24px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.68rem;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;justify-content:center;margin:1px}
+.ans-btn:hover{border-color:var(--accent)}
+.ans-btn.correct{background:#1a4a2a;border-color:var(--ok);color:var(--ok)}
+.ans-btn.wrong{background:#3a1a1a;border-color:var(--err);color:var(--err)}
+.raven-sets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:12px}
+.raven-set h3{font-size:.78rem;font-weight:700;color:var(--accent);margin-bottom:8px}
+.item-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.item-lbl{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--muted);min-width:22px}
+.item-corr{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--ok);min-width:18px}
+.score-tot{font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--accent);margin-top:6px}
+</style>
+</head>
+<body>
+<h1>Matrici Progressive di Raven a Colori (CPM)</h1>
+<div class="subtitle">Gasparini, Scandola, Salati et al. — J. Clinical &amp; Experimental Neuropsychology, 2025 · Norma aggiornata (Flynn effect)</div>
+
+<div class="card">
+  <h2>Dati paziente</h2>
+  <div class="grid4">
+    <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="40" max="85" placeholder="es. 65" oninput="calcola()"></div>
+    <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-sco" min="0" max="25" placeholder="es. 13" oninput="calcola()"></div>
+    <div class="field"><label>Data</label><input type="date" id="p-data"></div>
+    <div class="field"><label>Codice</label><input type="text" id="p-code" placeholder="opzionale" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none"></div>
+  </div>
+  <div id="nota-norma" class="alert"></div>
+</div>
+
+<div class="card">
+  <h2>Somministrazione — 36 item (Set A, Ab, B)</h2>
+  <div class="section-note">Clicca la risposta del paziente per ogni item. Oppure inserisci direttamente il punteggio totale.</div>
+  <div class="raven-sets">
+    <div class="raven-set"><h3>Set A</h3><div id="set-A"></div><div class="score-tot">Totale A: <span id="tot-A">0</span>/12</div></div>
+    <div class="raven-set"><h3>Set Ab</h3><div id="set-Ab"></div><div class="score-tot">Totale Ab: <span id="tot-Ab">0</span>/12</div></div>
+    <div class="raven-set"><h3>Set B</h3><div id="set-B"></div><div class="score-tot">Totale B: <span id="tot-B">0</span>/12</div></div>
+  </div>
+  <div style="margin-top:14px;display:flex;align-items:center;gap:16px">
+    <div class="field" style="max-width:200px">
+      <label>Punteggio grezzo totale (0–36)</label>
+      <input type="number" id="pg-direct" min="0" max="36" placeholder="inserisci qui" oninput="calcola()">
+    </div>
+    <button class="btn-sec" style="margin-top:16px;font-size:.8rem" onclick="clearAll()">Azzera item</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Risultati</h2>
+  <div id="results-area"><p style="color:var(--muted);font-size:.85rem">Inserisci età, scolarità e punteggio grezzo.</p></div>
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copyOutput('elenco')">Copia come elenco</button>
+    <button class="btn-sec" id="btn-tabella" disabled onclick="copyOutput('tabella')">Copia come tabella</button>
+  </div>
+  <div id="output-area" class="output-area"></div>
+  <div id="copy-feedback" class="feedback"></div>
+</div>
+
+<div class="card">
+  <h2>Griglia correzione — Gasparini 2025</h2>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Formula: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-family:'IBM Plex Mono',monospace">PC = PG − [2.95*(√edu − 3.582) + 4.42*(ln(100−età) − 3.467)]</code></p>
+  <p style="font-size:.78rem;color:var(--muted);margin-top:6px">Campione: N=364, età 40–85+, scol. media 12.98 anni. Range campione: 40–85 anni, scol. 3–19 anni.</p>
+  <table class="norm-info" style="margin-top:12px">
+    <tr><th>Edu/Età</th><th>40–49</th><th>50–54</th><th>55–59</th><th>60–64</th><th>65–69</th><th>70–74</th><th>75–79</th><th>80+</th></tr>
+    <tr><td>3–8</td><td>1.31</td><td>1.94</td><td>2.42</td><td>2.96</td><td>3.575</td><td>4.295</td><td>5.156</td><td>6.362</td></tr>
+    <tr><td>9–13</td><td>1.62</td><td>−1.00</td><td>−0.51</td><td>0.032</td><td>0.65</td><td>1.37</td><td>2.23</td><td>3.345</td></tr>
+    <tr><td>≥14</td><td>−3.816</td><td>−3.19</td><td>−2.706</td><td>−2.166</td><td>−1.55</td><td>−0.83</td><td>0.031</td><td>1.237</td></tr>
+  </table>
+  <p style="font-size:.73rem;color:var(--muted);margin-top:6px">Valori positivi = da sottrarre dal grezzo; negativi = da aggiungere (aggiustamento in favore).</p>
+  <p style="font-size:.78rem;color:var(--muted);margin-top:10px;font-weight:700">Punteggi Equivalenti (ES 0–4) — punteggio corretto:</p>
+  <table class="norm-info" style="max-width:360px;margin-top:6px">
+    <tr><th>Punteggio corretto</th><th>ES</th></tr>
+    <tr><td>≤ 22.53</td><td style="color:var(--err);font-weight:700">0 — Deficitario</td></tr>
+    <tr><td>≤ 27.05</td><td style="color:#ff9a3c;font-weight:700">1 — Borderline</td></tr>
+    <tr><td>≤ 29.79</td><td style="color:var(--warn);font-weight:700">2 — Basso</td></tr>
+    <tr><td>≤ 31.35</td><td style="color:var(--ok);font-weight:700">3 — Nella norma</td></tr>
+    <tr><td>&gt; 31.35</td><td style="color:var(--ok);font-weight:700">4 — Nella norma</td></tr>
+  </table>
+  <p style="font-size:.73rem;color:var(--muted);margin-top:6px">ITL = 24.21. Cut-off ES=0: ≤22.53.</p>
+</div>
+
+<script>
+const CORRECT = {
+  A: [4,5,1,2,6,3,6,2,1,3,4,5],
+  Ab:[4,5,1,6,2,1,3,4,6,3,5,2],
+  B: [2,6,1,2,1,3,5,6,4,3,4,5]
+};
+const itemResponses = {A: new Array(12).fill(null), Ab: new Array(12).fill(null), B: new Array(12).fill(null)};
+
+function buildSets() {
+  ['A','Ab','B'].forEach(set => {
+    const div = document.getElementById('set-'+set);
+    let html = '';
+    for (let i = 0; i < 12; i++) {
+      const corr = CORRECT[set][i];
+      html += `<div class="item-row"><span class="item-lbl">${i+1}</span><span class="item-corr">${corr}</span><span id="btns-${set}-${i}">`;
+      for (let a=1;a<=6;a++) html += `<button class="ans-btn" onclick="setAns('${set}',${i},${a})">${a}</button>`;
+      html += `</span></div>`;
+    }
+    div.innerHTML = html;
+  });
+}
+
+function setAns(set, idx, ans) {
+  itemResponses[set][idx] = ans;
+  renderSet(set);
+  let tot = 0;
+  ['A','Ab','B'].forEach(s => { for(let i=0;i<12;i++) if(itemResponses[s][i]===CORRECT[s][i]) tot++; });
+  document.getElementById('pg-direct').value = tot;
+  calcola();
+}
+
+function renderSet(set) {
+  for (let i=0;i<12;i++) {
+    const container = document.getElementById(`btns-${set}-${i}`);
+    if (!container) continue;
+    const btns = container.querySelectorAll('.ans-btn');
+    const sel = itemResponses[set][i];
+    const corr = CORRECT[set][i];
+    btns.forEach((btn, bidx) => {
+      btn.className = 'ans-btn';
+      if (sel === bidx+1) btn.classList.add(bidx+1===corr?'correct':'wrong');
+    });
+  }
+  let tot = 0;
+  for (let i=0;i<12;i++) if(itemResponses[set][i]===CORRECT[set][i]) tot++;
+  document.getElementById('tot-'+set).textContent = tot;
+}
+
+function clearAll() {
+  ['A','Ab','B'].forEach(set => { itemResponses[set]=new Array(12).fill(null); renderSet(set); });
+  document.getElementById('pg-direct').value='';
+  calcola();
+}
+
+// ── FORMULA ESATTA Gasparini 2025 ──────────────────────────────
+// PC = PG − [2.95*(√edu − 3.582) + 4.42*(ln(100−age) − 3.467)]
+// Media edu campione ≈ 12.98 → √12.98 ≈ 3.603 (paper usa 3.582 per coerenza con medie centrate)
+// Media age ≈ 65.71 → ln(100−65.71)=ln(34.29)≈3.535 (paper usa 3.467)
+
+function calcPC(pg, age, edu) {
+  const M_SQRT_EDU = 3.582;
+  const M_LN100A = 3.467;
+  const cf = 2.95*(Math.sqrt(edu)-M_SQRT_EDU) + 4.42*(Math.log(100-age)-M_LN100A);
+  return pg - cf;
+}
+
+function getES(pc) {
+  if (pc <= 22.53) return 0;
+  if (pc <= 27.05) return 1;
+  if (pc <= 29.79) return 2;
+  if (pc <= 31.35) return 3;
+  return 4;
+}
+const ES_LABELS = ['Deficitario','Borderline','Basso','Nella norma','Nella norma'];
+const ES_CLS = ['es0','es1','es2','es3','es4'];
+
+let lastData = null;
+
+function calcola() {
+  const age = parseFloat(document.getElementById('p-eta').value);
+  const edu = parseFloat(document.getElementById('p-sco').value);
+  const pg = parseFloat(document.getElementById('pg-direct').value);
+  const nota = document.getElementById('nota-norma');
+  const resArea = document.getElementById('results-area');
+  const btnE = document.getElementById('btn-elenco');
+  const btnT = document.getElementById('btn-tabella');
+
+  if (isNaN(age)||isNaN(edu)) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci età e scolarità.</p>';
+    btnE.disabled=true; btnT.disabled=true; return;
+  }
+  if (age < 40 || age > 90) {
+    nota.style.display='block';
+    nota.textContent='⚠ Campione normativo: età 40–85+. Valori fuori range potrebbero essere poco affidabili.';
+  } else { nota.style.display='none'; }
+  if (isNaN(pg)) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci punteggio grezzo.</p>';
+    btnE.disabled=true; btnT.disabled=true; return;
+  }
+
+  const pc = calcPC(pg, age, edu);
+  const es = getES(pc);
+  const ast = es <= 1 ? '*' : '';
+
+  resArea.innerHTML=`<div class="result-box">
+    <div class="result-row"><span class="result-label">Punteggio grezzo</span><span class="result-val">${pg}/36${ast}</span></div>
+    <div class="result-row"><span class="result-label">Punteggio corretto (formula)</span><span class="result-val">${pc.toFixed(2)}${ast}</span></div>
+    <div class="result-row"><span class="result-label">ES (0–4)</span><span class="result-val ${ES_CLS[es]}">ES ${es}${ast} — ${ES_LABELS[es]}</span></div>
+    <div class="result-row"><span class="result-label">Cut-off ES=0</span><span class="result-val" style="color:var(--muted)">≤ 22.53 (ITL 24.21)</span></div>
+  </div>`;
+
+  lastData = {pg, pc, es, ast};
+  btnE.disabled=false; btnT.disabled=false;
+}
+
+function buildElenco() {
+  if(!lastData) return '';
+  const d=lastData;
+  const c=document.getElementById('p-code').value;
+  const hdr=c?`${c} — `:'';
+  return `${hdr}Raven CPM (Gasparini et al., 2025): ${d.pg}${d.ast}/36 → ${d.pc.toFixed(2)}${d.ast} (ES ${d.es} — ${ES_LABELS[d.es]})`;
+}
+function buildTabella() {
+  const d=lastData;
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>Matrici Progressive di Raven CPM (Gasparini et al., 2025)</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>ES (0–4)</b></td><td><b>Cut-off</b></td></tr>
+  </thead>
+  <tbody>
+    <tr><td>Raven CPM</td><td>${d.pg}${d.ast}/36</td><td>${d.pc.toFixed(2)}${d.ast}</td><td>ES ${d.es}${d.ast} — ${ES_LABELS[d.es]}</td><td>&gt; 22.53</td></tr>
+  </tbody>
+</table>`;
+}
+
+function copyOutput(tipo){
+  const out=document.getElementById('output-area'),fb=document.getElementById('copy-feedback');
+  if(tipo==='elenco'){const txt=buildElenco();out.textContent=txt;out.style.display='block';navigator.clipboard.writeText(txt).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{fb.textContent='⚠ Ctrl+C';});}
+  else{const html=buildTabella();out.textContent='[Tabella]';out.style.display='block';try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(html,fb));}catch(e){fbH(html,fb);}}
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+
+buildSets();
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

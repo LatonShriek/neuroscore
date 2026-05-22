@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Torre di Londra — Shallice & McCarthy 1982</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3050;--accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8ecf8;--muted:#7a84a0;--ok:#3ddc84;--warn:#f7b731;--err:#ff5c5c}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.6;padding:24px;max-width:1000px;margin:0 auto}
+h1{font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.subtitle{font-size:.82rem;color:var(--muted);margin-bottom:20px;font-family:'IBM Plex Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none;transition:border .2s}
+input[type=number]:focus{border-color:var(--accent)}
+select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:.92rem;padding:8px 12px;width:100%;outline:none;cursor:pointer}
+select:focus{border-color:var(--accent)}
+.result-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);gap:8px}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:.82rem;color:var(--muted)}
+.result-val{font-family:'IBM Plex Mono',monospace;font-size:.92rem;font-weight:600;text-align:right}
+.es0{color:var(--err)}.es1{color:#ff9a3c}.es2{color:var(--warn)}.es3{color:var(--ok)}.es4{color:var(--ok)}
+.alert{background:#1e1830;border:1px solid #5b4af7;border-radius:8px;padding:12px 16px;font-size:.82rem;color:#b8aaff;display:none;margin-top:10px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{padding:10px 20px;border-radius:7px;border:none;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2);color:#0f1117}
+.btn-primary:disabled,.btn-sec:disabled{opacity:.35;cursor:not-allowed}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-sec:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.output-area{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;white-space:pre-wrap;display:none;margin-top:10px}
+.feedback{font-size:.8rem;color:var(--ok);margin-top:6px;min-height:1.2em}
+.section-note{background:#0d1a2e;border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.8rem;color:#8ab4f8;margin-bottom:14px}
+table.tol-table{width:100%;border-collapse:collapse;font-size:.76rem;margin-top:8px}
+table.tol-table th{background:var(--surface2);color:var(--muted);padding:5px 8px;text-align:center;font-weight:600;border:1px solid var(--border)}
+table.tol-table td{padding:5px 8px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:.74rem;text-align:center}
+/* Trial table */
+.trials-table{width:100%;border-collapse:collapse;margin-top:10px}
+.trials-table th{background:var(--surface2);color:var(--muted);padding:6px 8px;text-align:center;font-size:.76rem;font-weight:700;border:1px solid var(--border)}
+.trials-table td{padding:6px 8px;border:1px solid var(--border);text-align:center;font-size:.8rem}
+.score-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:28px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.82rem;cursor:pointer;transition:all .15s;margin:1px}
+.score-btn:hover{border-color:var(--accent);color:var(--accent)}
+.score-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.pill{display:inline-block;padding:2px 7px;border-radius:10px;font-size:.72rem;font-family:'IBM Plex Mono',monospace;font-weight:700}
+.pill-0{background:#3a1515;color:var(--err)}.pill-1{background:#3a2510;color:#ff9a3c}
+.pill-2{background:#3a3010;color:var(--warn)}.pill-3{background:#1a3a2a;color:var(--ok)}.pill-4{background:#1a3a2a;color:var(--ok)}
+</style>
+</head>
+<body>
+<h1>Torre di Londra (ToL)</h1>
+<div class="subtitle">Shallice &amp; McCarthy, 1982 · Norme italiane da standardizzazione italiana (file xlsx allegato)</div>
+
+<div class="card">
+  <h2>Dati paziente</h2>
+  <div class="grid4">
+    <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="20" max="90" placeholder="es. 60" oninput="calcola()"></div>
+    <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-sco" min="1" max="25" placeholder="es. 13" oninput="calcola()"></div>
+    <div class="field"><label>Sesso</label>
+      <select id="p-sex" onchange="calcola()">
+        <option value="">— seleziona —</option>
+        <option value="M">Maschio</option>
+        <option value="F">Femmina</option>
+      </select>
+    </div>
+    <div class="field"><label>Data</label><input type="date" id="p-data"></div>
+  </div>
+  <div id="nota-norma" class="alert"></div>
+</div>
+
+<div class="card">
+  <h2>Somministrazione — 12 prove</h2>
+  <div class="section-note">
+    Scoring: 3 = risolto in 0–15 sec &nbsp;|&nbsp; 2 = risolto in 15–30 sec &nbsp;|&nbsp; 1 = risolto in 30–60 sec &nbsp;|&nbsp; 0 = non risolto in 60 sec<br>
+    Punteggio massimo = 36 (Accuratezza). Speed = tempo totale complessivo in secondi.
+  </div>
+  <table class="trials-table">
+    <thead>
+      <tr><th>Prova</th><th>N. Mosse</th><th>Tempo (sec)</th><th>Punteggio (0–3)</th></tr>
+    </thead>
+    <tbody id="trials-body"></tbody>
+    <tfoot>
+      <tr style="background:var(--surface2)">
+        <td colspan="2" style="text-align:right;font-weight:700;font-size:.82rem;color:var(--muted)">TOTALE</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--accent)" id="tot-time">—</td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--accent)" id="tot-score">—/36</td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+<div class="card">
+  <h2>Risultati</h2>
+  <div id="results-area"><p style="color:var(--muted);font-size:.85rem">Inserisci età, scolarità, sesso e completa le prove.</p></div>
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copyOutput('elenco')">Copia come elenco</button>
+    <button class="btn-sec" id="btn-tabella" disabled onclick="copyOutput('tabella')">Copia come tabella</button>
+  </div>
+  <div id="output-area" class="output-area"></div>
+  <div id="copy-feedback" class="feedback"></div>
+</div>
+
+<div class="card">
+  <h2>Modello normativo (file xlsx — standardizzazione italiana)</h2>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Regressione multivariata su Speed (tempo totale) e LogitShrink Accuracy (punteggio accuratezza trasformato). Diagnosi univariata e bivariata (distanza di Mahalanobis).</p>
+  <div style="font-family:'IBM Plex Mono',monospace;font-size:.76rem;background:var(--surface2);padding:10px;border-radius:6px;line-height:1.8">
+    <b>Speed (tempo tot. sec):</b> intercetta=27.300 &nbsp;A=−0.03844 &nbsp;E=−0.03749 &nbsp;AE=+0.01949 &nbsp;G(F)=−0.62157 &nbsp;AG=+0.06326 &nbsp;σ=4.075<br>
+    <b>Accuracy (logitShrink 0–36):</b> intercetta=29.018 &nbsp;A=−0.02393 &nbsp;E=−0.01942 &nbsp;AE=+0.00788 &nbsp;G(F)=−0.98413 &nbsp;σ=3.161<br>
+    <span style="color:var(--muted)">A=età centrata (−27.74), E=scolarità centrata (−0.579), G=0 maschio/1 femmina, AE=interazione</span>
+  </div>
+  <p style="font-size:.78rem;color:var(--muted);margin-top:10px">ES da z-score: ES=4 se z>0 (> mediana); ES=3 se −0.62&lt;z≤0; ES=2 se −1.24&lt;z≤−0.62; ES=1 se −1.645&lt;z≤−1.24; ES=0 se z≤−1.645 (5° percentile)</p>
+</div>
+
+<script>
+const MOVES = [2,2,3,3,4,4,4,4,5,5,5,5];
+const trialScores = new Array(12).fill(null);
+const trialTimes = new Array(12).fill(null);
+
+function buildTrials() {
+  const tbody = document.getElementById('trials-body');
+  let html = '';
+  for (let i=0;i<12;i++) {
+    html += `<tr>
+      <td style="font-family:'IBM Plex Mono',monospace;font-weight:700">${i+1}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;color:var(--muted)">${MOVES[i]}</td>
+      <td><input type="number" id="time-${i}" min="0" max="60" placeholder="sec" style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.9rem;padding:5px 8px;width:80px;outline:none" oninput="onTimeInput(${i})"></td>
+      <td id="score-cell-${i}">`;
+    for (let v=0;v<=3;v++) html += `<button class="score-btn" id="sbtn-${i}-${v}" onclick="setTrialScore(${i},${v})">${v}</button>`;
+    html += `</td></tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+function onTimeInput(idx) {
+  const t = parseFloat(document.getElementById(`time-${idx}`).value);
+  trialTimes[idx] = isNaN(t) ? null : t;
+  // Auto-set score da tempo se vuoto
+  if (!isNaN(t) && trialScores[idx] === null) {
+    const autoScore = t <= 0 ? null : t <= 15 ? 3 : t <= 30 ? 2 : t <= 60 ? 1 : 0;
+    if (autoScore !== null) setTrialScore(idx, autoScore);
+  }
+  updateTotals();
+  calcola();
+}
+
+function setTrialScore(idx, val) {
+  trialScores[idx] = val;
+  for (let v=0;v<=3;v++) {
+    const b = document.getElementById(`sbtn-${idx}-${v}`);
+    if (b) b.className = 'score-btn'+(trialScores[idx]===v?' active':'');
+  }
+  updateTotals();
+  calcola();
+}
+
+function updateTotals() {
+  const sc = trialScores.filter(v=>v!==null);
+  const tm = trialTimes.filter(v=>v!==null);
+  document.getElementById('tot-score').textContent = sc.length>0?sc.reduce((a,b)=>a+b,0)+'/36':'—/36';
+  document.getElementById('tot-time').textContent = tm.length>0?tm.reduce((a,b)=>a+b,0)+' sec':'—';
+}
+
+// ── MODELLO XLSX ─────────────────────────────────────────────────
+// Parametri dal file xlsx (Sheet: Univariate Diagnosis TABLES)
+const SPEED_i=27.30004, SPEED_A=-0.03844, SPEED_E=-0.03749, SPEED_AE=0.01949, SPEED_G=-0.62157, SPEED_AG=0.06326, SPEED_sigma=4.07498;
+const ACC_i=29.01766, ACC_A=-0.02393, ACC_E=-0.01942, ACC_AE=0.00788, ACC_G=-0.98413, ACC_sigma=3.1606;
+// Medie campione per centrare
+const MEAN_AGE=27.74074074, MEAN_EDU=0.5787037037; // offset già centrati (from For Tables row)
+
+function predSpeed(age, edu, sex) {
+  const A = age - 54.518; // età media stimata dal file
+  const E = edu - 13.578; // scolarità media
+  const G = sex==='F'?1:0;
+  // Dalla riga "For Tables": offset A0=-20.74, E0=-0.579 → medie campione ~34+20.74=54.74, ~13+0.579=13.58
+  // Uso i valori diretti: predicted = i + A*age0 + E*edu0 + AE*age0*edu0 + G*G + AG*age0*G
+  // age0 = age - mean_age, edu0 = edu - mean_edu
+  const mean_age = 54.74074; // from For Tables row: age col says 25 → offset -20.74 → actual mean = 25+20.74
+  const mean_edu = 13.579;
+  const a0 = age - mean_age, e0 = edu - mean_edu;
+  const g = sex==='F'?1:0;
+  return SPEED_i + SPEED_A*a0 + SPEED_E*e0 + SPEED_AE*a0*e0 + SPEED_G*g + SPEED_AG*a0*g;
+}
+
+function predAcc(age, edu, sex) {
+  const mean_age=54.74074, mean_edu=13.579;
+  const a0=age-mean_age, e0=edu-mean_edu, g=sex==='F'?1:0;
+  return ACC_i + ACC_A*a0 + ACC_E*e0 + ACC_AE*a0*e0 + ACC_G*g;
+}
+
+function zToES(z) {
+  if (z > 0) return 4;
+  if (z > -0.62) return 3;
+  if (z > -1.24) return 2;
+  if (z > -1.645) return 1;
+  return 0;
+}
+const ES_LABELS={0:'Deficitario',1:'Borderline',2:'Basso',3:'Nella norma',4:'Nella norma'};
+const ES_CLS={0:'es0',1:'es1',2:'es2',3:'es3',4:'es4'};
+
+let lastData=null;
+
+function calcola() {
+  const age=parseFloat(document.getElementById('p-eta').value);
+  const edu=parseFloat(document.getElementById('p-sco').value);
+  const sex=document.getElementById('p-sex').value;
+  const nota=document.getElementById('nota-norma');
+  const resArea=document.getElementById('results-area');
+  const btnE=document.getElementById('btn-elenco'), btnT=document.getElementById('btn-tabella');
+
+  if(isNaN(age)||isNaN(edu)||!sex){
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci età, scolarità e sesso.</p>';
+    btnE.disabled=true;btnT.disabled=true;return;
+  }
+
+  const scoresFilled = trialScores.filter(v=>v!==null);
+  const timesFilled = trialTimes.filter(v=>v!==null);
+  const acc = scoresFilled.length>0 ? scoresFilled.reduce((a,b)=>a+b,0) : null;
+  const speed = timesFilled.length>0 ? timesFilled.reduce((a,b)=>a+b,0) : null;
+
+  if (acc===null && speed===null) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci almeno punteggio o tempo di una prova.</p>';
+    btnE.disabled=true;btnT.disabled=true;return;
+  }
+
+  nota.style.display='none';
+  let html='<div class="result-box">';
+
+  let esAcc=null, esSpeed=null, zAcc=null, zSpeed=null;
+
+  if (acc!==null && scoresFilled.length===12) {
+    const pred = predAcc(age,edu,sex);
+    zAcc = (acc-pred)/ACC_sigma;
+    esAcc = zToES(zAcc);
+    const astA = esAcc<=1?'*':'';
+    html+=`<div class="result-row"><span class="result-label">Accuratezza (grezzo)</span><span class="result-val ${ES_CLS[esAcc]}">${acc}${astA}/36 — z=${zAcc.toFixed(2)} — <span class="pill pill-${esAcc}">ES ${esAcc} — ${ES_LABELS[esAcc]}</span></span></div>`;
+  } else if (acc!==null) {
+    html+=`<div class="result-row"><span class="result-label">Accuratezza (parziale, ${scoresFilled.length}/12 prove)</span><span class="result-val">${acc} — completa tutte le prove per ES</span></div>`;
+  }
+
+  if (speed!==null && timesFilled.length===12) {
+    const pred = predSpeed(age,edu,sex);
+    zSpeed = (pred-speed)/SPEED_sigma; // speed: più lento = z negativo
+    esSpeed = zToES(zSpeed);
+    const astS = esSpeed<=1?'*':'';
+    html+=`<div class="result-row"><span class="result-label">Velocità (tempo totale)</span><span class="result-val ${ES_CLS[esSpeed]}">${speed}${astS} sec — z=${zSpeed.toFixed(2)} — <span class="pill pill-${esSpeed}">ES ${esSpeed} — ${ES_LABELS[esSpeed]}</span></span></div>`;
+  } else if (speed!==null) {
+    html+=`<div class="result-row"><span class="result-label">Tempo totale parziale (${timesFilled.length}/12 prove)</span><span class="result-val">${speed} sec — completa tutte le prove per ES</span></div>`;
+  }
+  html+='</div>';
+  resArea.innerHTML=html;
+
+  lastData={acc,speed,esAcc,esSpeed,zAcc,zSpeed};
+  btnE.disabled=false;btnT.disabled=false;
+}
+
+function buildElenco(){
+  if(!lastData)return'';
+  const d=lastData;
+  const c=document.getElementById('p-code')?.value||'';
+  const hdr=c?`${c} — `:'';
+  let parts=[];
+  if(d.esAcc!==null) parts.push(`Accuratezza ${d.acc}${d.esAcc<=1?'*':''}/36 (ES ${d.esAcc} — ${ES_LABELS[d.esAcc]})`);
+  if(d.esSpeed!==null) parts.push(`Velocità ${d.speed}${d.esSpeed<=1?'*':''} sec (ES ${d.esSpeed} — ${ES_LABELS[d.esSpeed]})`);
+  return `${hdr}Torre di Londra (Shallice & McCarthy 1982): ${parts.join(' | ')}`;
+}
+
+function buildTabella(){
+  const d=lastData;
+  let rows='';
+  if(d.esAcc!==null) rows+=`<tr><td>ToL — Accuratezza</td><td>${d.acc}${d.esAcc<=1?'*':''}/36</td><td>—</td><td>ES ${d.esAcc}${d.esAcc<=1?'*':''} — ${ES_LABELS[d.esAcc]}</td><td>z &gt; −1.645</td></tr>`;
+  if(d.esSpeed!==null) rows+=`<tr><td>ToL — Velocità</td><td>${d.speed}${d.esSpeed<=1?'*':''} sec</td><td>—</td><td>ES ${d.esSpeed}${d.esSpeed<=1?'*':''} — ${ES_LABELS[d.esSpeed]}</td><td>z &gt; −1.645</td></tr>`;
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>Torre di Londra (Shallice &amp; McCarthy, 1982 — standardizzazione italiana)</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>ES (0–4)</b></td><td><b>Cut-off</b></td></tr>
+  </thead>
+  <tbody>${rows}</tbody>
+</table>`;
+}
+
+function copyOutput(tipo){
+  const out=document.getElementById('output-area'),fb=document.getElementById('copy-feedback');
+  if(tipo==='elenco'){const txt=buildElenco();out.textContent=txt;out.style.display='block';navigator.clipboard.writeText(txt).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{fb.textContent='⚠ Ctrl+C';});}
+  else{const html=buildTabella();out.textContent='[Tabella ToL]';out.style.display='block';try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(html,fb));}catch(e){fbH(html,fb);}}
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+
+buildTrials();
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #16 — FCSRT-16 (Girtler et al., 2015)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#232635;--accent:#4f8ef7;--accent2:#7eb3ff;
+    --text:#e8eaf0;--text2:#9ba3b8;--border:#2e3347;--ok:#4caf82;--warn:#f7a94f;--err:#f75f5f;
+    --ok-bg:rgba(76,175,130,0.08);--warn-bg:rgba(247,169,79,0.08);--err-bg:rgba(247,95,95,0.08);}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6}
+  .container{max-width:860px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:18px;font-weight:600;color:var(--accent2);margin-bottom:4px}
+  .subtitle{font-size:12px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-bottom:24px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:14px}
+  .card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text2);margin-bottom:14px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px}
+  select,input[type=number],input[type=date]{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+    padding:7px 10px;border-radius:5px;font-size:13px;font-family:'IBM Plex Sans',sans-serif;width:100%;outline:none;transition:border-color 0.2s}
+  select:focus,input:focus{border-color:var(--accent)}
+  .field{flex:1;min-width:100px}.field-sm{flex:0 0 90px}
+
+  /* parole FCSRT */
+  .parole-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+  .parola-card{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:8px 10px}
+  .parola-cue{font-size:10px;color:var(--accent2);text-transform:uppercase;letter-spacing:0.05em}
+  .parola-word{font-size:13px;font-weight:500;color:var(--text)}
+
+  /* score inputs */
+  .score-block{background:var(--surface2);border-radius:6px;border:1px solid var(--border);padding:14px;flex:1;min-width:160px}
+  .score-block h4{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text2);margin-bottom:10px}
+
+  /* results */
+  .res-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface2);border-radius:5px;border:1px solid var(--border);margin-bottom:6px}
+  .res-name{font-size:13px;color:var(--text2)}
+  .res-vals{display:flex;gap:10px;align-items:center}
+  .res-raw{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text)}
+  .res-corr{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--accent2)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+  .b-ok{background:var(--ok-bg);color:var(--ok);border:1px solid rgba(76,175,130,0.3)}
+  .b-w{background:var(--warn-bg);color:var(--warn);border:1px solid rgba(247,169,79,0.3)}
+  .b-e{background:var(--err-bg);color:var(--err);border:1px solid rgba(247,95,95,0.3)}
+  .pe-chip{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text2)}
+
+  /* cut-off table */
+  .co-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}
+  .co-table th{background:var(--surface2);color:var(--text2);padding:5px 7px;border:1px solid var(--border);text-align:center}
+  .co-table td{border:1px solid var(--border);padding:4px 7px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)}
+  .co-table tr.highlight td{background:rgba(79,142,247,0.12);color:var(--accent)}
+  .co-table .lbl{text-align:left;color:var(--text2)}
+
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .btn{padding:9px 18px;border-radius:5px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.18s;font-family:'IBM Plex Sans',sans-serif}
+  .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+  .btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+  .btn:disabled{opacity:0.35;cursor:not-allowed}
+  #report-output{margin-top:10px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;
+    padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text2);white-space:pre-wrap;display:none}
+  #copy-feedback{font-size:12px;color:var(--ok);margin-top:6px;min-height:18px}
+  .info-row{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-top:4px}
+  .warn-box{background:var(--warn-bg);border:1px solid rgba(247,169,79,0.3);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--warn);margin-top:12px;display:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>FCSRT-16 — Free and Cued Selective Reminding Test</h1>
+  <div class="subtitle">Girtler et al. (2015) · Versione parole stampate 16 item · Neurol Sci</div>
+
+  <!-- parole -->
+  <div class="card">
+    <div class="card-title">Le 16 parole (con cue semantico)</div>
+    <div class="parole-grid">
+      <div class="parola-card"><div class="parola-cue">Pesce</div><div class="parola-word">Orata</div></div>
+      <div class="parola-card"><div class="parola-cue">Indumento</div><div class="parola-word">Sciarpa</div></div>
+      <div class="parola-card"><div class="parola-cue">Gioco</div><div class="parola-word">Scacchi</div></div>
+      <div class="parola-card"><div class="parola-cue">Fiore</div><div class="parola-word">Narciso</div></div>
+      <div class="parola-card"><div class="parola-cue">Professione</div><div class="parola-word">Idraulico</div></div>
+      <div class="parola-card"><div class="parola-cue">Frutto</div><div class="parola-word">Amarena</div></div>
+      <div class="parola-card"><div class="parola-cue">Metallo</div><div class="parola-word">Rame</div></div>
+      <div class="parola-card"><div class="parola-cue">Strumento</div><div class="parola-word">Arpa</div></div>
+      <div class="parola-card"><div class="parola-cue">Uccello</div><div class="parola-word">Corvo</div></div>
+      <div class="parola-card"><div class="parola-cue">Albero</div><div class="parola-word">Tiglio</div></div>
+      <div class="parola-card"><div class="parola-cue">Sport</div><div class="parola-word">Ciclismo</div></div>
+      <div class="parola-card"><div class="parola-cue">Verdura</div><div class="parola-word">Sedano</div></div>
+      <div class="parola-card"><div class="parola-cue">Ballo</div><div class="parola-word">Tango</div></div>
+      <div class="parola-card"><div class="parola-cue">Malattia</div><div class="parola-word">Morbillo</div></div>
+      <div class="parola-card"><div class="parola-cue">Mobile</div><div class="parola-word">Sgabello</div></div>
+      <div class="parola-card"><div class="parola-cue">Mat. scol.</div><div class="parola-word">Geografia</div></div>
+    </div>
+    <div class="info-row">3 prove di rievocazione libera immediata (20s countdown), poi cued recall → IFR = somma 3 prove libere (0–48) · ITR = somma 3 prove totali (0–48) · Riconoscimento (0–16) · Dopo 20 min: DFR (0–16) · DTR (0–16)</div>
+  </div>
+
+  <!-- dati paziente -->
+  <div class="card">
+    <div class="card-title">Dati paziente</div>
+    <div class="row">
+      <div class="field-sm"><label>Data</label><input type="date" id="p-data"></div>
+      <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="20" max="90" placeholder="es. 68" oninput="recalc()"></div>
+      <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-scol" min="0" max="21" placeholder="es. 13" oninput="recalc()"></div>
+    </div>
+    <div class="info-row" style="margin-top:2px">⚠ Il sesso non influenza significativamente i punteggi FCSRT-16 (Girtler et al., 2015)</div>
+    <div id="norm-info" class="info-row" style="margin-top:4px"></div>
+  </div>
+
+  <!-- input punteggi -->
+  <div class="card">
+    <div class="card-title">Inserimento punteggi</div>
+    <div class="row">
+      <div class="score-block">
+        <h4>Rievocazione immediata</h4>
+        <div class="row" style="margin-bottom:6px">
+          <div class="field"><label>Prova 1 libera (0–16)</label><input type="number" id="ifr1" min="0" max="16" oninput="recalc()"></div>
+          <div class="field"><label>Prova 2 libera (0–16)</label><input type="number" id="ifr2" min="0" max="16" oninput="recalc()"></div>
+          <div class="field"><label>Prova 3 libera (0–16)</label><input type="number" id="ifr3" min="0" max="16" oninput="recalc()"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>IFR tot (auto, 0–48)</label>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--accent);padding:8px 10px;background:var(--bg);border-radius:4px;border:1px solid var(--border)" id="ifr_auto">—</div>
+          </div>
+          <div class="field"><label>ITR (totale con cued, 0–48)</label><input type="number" id="itr" min="0" max="48" oninput="recalc()"></div>
+          <div class="field"><label>Riconoscimento (0–16)</label><input type="number" id="rp" min="0" max="16" oninput="recalc()"></div>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:4px">
+      <div class="score-block">
+        <h4>Rievocazione differita (dopo 20')</h4>
+        <div class="row">
+          <div class="field"><label>DFR — libera (0–16)</label><input type="number" id="dfr" min="0" max="16" oninput="recalc()"></div>
+          <div class="field"><label>DTR — totale con cued (0–16)</label><input type="number" id="dtr" min="0" max="16" oninput="recalc()"></div>
+        </div>
+      </div>
+      <div class="score-block">
+        <h4>Indice di Sensibilità al Cue</h4>
+        <label style="margin-bottom:6px">ISC = (ITR − IFR) / (48 − IFR)</label>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--accent);padding:8px 10px;background:var(--bg);border-radius:4px;border:1px solid var(--border)" id="isc_auto">—</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:6px">Cut-off ISC: ≥ 0.61 (globale, no correzione demografica)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- risultati -->
+  <div class="card">
+    <div class="card-title">Risultati</div>
+    <div id="res-container">
+      <div style="color:var(--text2);font-size:12px">Inserisci età e scolarità per i risultati corretti.</div>
+    </div>
+
+    <!-- tabella cut-off ITR/DTR interattiva -->
+    <div style="margin-top:16px">
+      <div class="card-title" style="margin-bottom:8px">Cut-off ITR e DTR (n. massimo missed items per ES=0)</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px">Tabella 5 di Girtler et al. (2015) — riga/colonna attiva in evidenza</div>
+      <table class="co-table" id="co-table-itr">
+        <thead>
+          <tr><th class="lbl">ITR — Edu</th><th>20–30</th><th>31–40</th><th>41–50</th><th>51–60</th><th>61–70</th><th>71–80</th><th>81–90</th></tr>
+        </thead>
+        <tbody>
+          <tr id="itr_r0"><td class="lbl">5 anni</td><td>8</td><td>10</td><td>11</td><td>12</td><td>14</td><td>15</td><td>16</td></tr>
+          <tr id="itr_r1"><td class="lbl">8 anni</td><td>7</td><td>8</td><td>9</td><td>11</td><td>12</td><td>13</td><td>15</td></tr>
+          <tr id="itr_r2"><td class="lbl">13 anni</td><td>4</td><td>5</td><td>7</td><td>8</td><td>9</td><td>10</td><td>12</td></tr>
+          <tr id="itr_r3"><td class="lbl">17 anni</td><td>2</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>10</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px;font-size:11px;color:var(--text2)">Stessa tabella per DFR (missed items su 16):</div>
+      <table class="co-table" id="co-table-dfr" style="margin-top:6px">
+        <thead>
+          <tr><th class="lbl">DFR — Edu</th><th>20–30</th><th>31–40</th><th>41–50</th><th>51–60</th><th>61–70</th><th>71–80</th><th>81–90</th></tr>
+        </thead>
+        <tbody>
+          <tr id="dfr_r0"><td class="lbl">5 anni</td><td>1</td><td>2</td><td>2</td><td>2</td><td>3</td><td>4</td><td>6</td></tr>
+          <tr id="dfr_r1"><td class="lbl">8 anni</td><td>1</td><td>1</td><td>2</td><td>2</td><td>2</td><td>3</td><td>4</td></tr>
+          <tr id="dfr_r2"><td class="lbl">13 anni</td><td>1</td><td>1</td><td>1</td><td>2</td><td>2</td><td>2</td><td>3</td></tr>
+          <tr id="dfr_r3"><td class="lbl">17 anni</td><td>1</td><td>1</td><td>1</td><td>1</td><td>2</td><td>2</td><td>2</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="warn-nodata" class="warn-box">⚠ Dati normativi non disponibili per questo profilo demografico.</div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-elenco" onclick="copyOutput('elenco')" disabled>Copia come elenco</button>
+    <button class="btn btn-secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>Copia come tabella</button>
+  </div>
+  <pre id="report-output"></pre>
+  <div id="copy-feedback"></div>
+</div>
+
+<script>
+// ============================================================
+// FCSRT-16 — Girtler et al. (2015)
+// ============================================================
+
+// Correzioni IFR (Tab.3): da aggiungere al punteggio grezzo
+// IFR Corrected = raw - 4.596 + 0.182*age - 0.417*education
+// DFR Corrected = raw - 1.788 + 0.0656*age - 0.14*education
+// Ma usiamo tabella di valori medi per combinazioni (Tab.3 del paper)
+
+// Tabella correzione IFR per età e scolarità (Tab.3)
+const CORR_IFR = {
+  5:  [-2.13, -0.30,  1.52,  3.34,  5.16,  6.98,  8.81],
+  8:  [-3.38, -1.56,  0.26,  2.09,  3.91,  5.73,  7.55],
+  13: [-5.47, -3.64, -1.82,  0,     1.82,  3.64,  5.47],
+  17: [-6.72, -4.9,  -3.07, -1.25,  0.57,  2.39,  4.21]
+};
+// Correzione DFR
+const CORR_DFR = {
+  5:  [-0.85, -0.19,  0.46,  1.12,  1.77,  2.43,  3.09],
+  8:  [-1.27, -0.61,  0.04,  0.70,  1.35,  2.01,  2.67],
+  13: [-1.97, -1.31, -0.66,  0,     0.66,  1.31,  1.97],
+  17: [-2.39, -1.73, -1.07, -0.42,  0.24,  0.89,  1.55]
+};
+
+// ES cutoff per IFR e DFR (Tab.4) — valori su punteggio CORRETTO
+// ES 0: 0–21.26 / 0–8.1
+// ES 1: 21.27–25.8 / 8.11–9.73
+// ES 2: 25.81–28.09 / 9.74–10.8
+// ES 3: 28.1–31.16 / 10.81–12.54
+// ES 4: >31.16 / >12.54
+const ES_IFR = [
+  {max: 21.26, es: 0},
+  {max: 25.80, es: 1},
+  {max: 28.09, es: 2},
+  {max: 31.16, es: 3},
+  {max: Infinity, es: 4}
+];
+const ES_DFR = [
+  {max: 8.10,  es: 0},
+  {max: 9.73,  es: 1},
+  {max: 10.80, es: 2},
+  {max: 12.54, es: 3},
+  {max: Infinity, es: 4}
+];
+
+// Cut-off ITR: missed items (48-ITR) massimi per ES=0 (Tab.5)
+// Righe: scol 5,8,13,17 | Colonne: 20-30,31-40,41-50,51-60,61-70,71-80,81-90
+const CO_ITR = {
+  5:  [8,10,11,12,14,15,16],
+  8:  [7, 8, 9,11,12,13,15],
+  13: [4, 5, 7, 8, 9,10,12],
+  17: [2, 4, 5, 6, 7, 8,10]
+};
+// Cut-off DFR: missed items (16-DFR) massimi per ES=0 (Tab.5)
+const CO_DFR = {
+  5:  [1,2,2,2,3,4,6],
+  8:  [1,1,2,2,2,3,4],
+  13: [1,1,1,2,2,2,3],
+  17: [1,1,1,1,2,2,2]
+};
+
+// DTR: ES4 = 16/16 per quasi tutte le combinazioni; ES0 = stessa tabella CO_DFR
+
+const AGE_IDX = (eta) => {
+  if (eta < 20 || eta > 90) return -1;
+  if (eta <= 30) return 0;
+  if (eta <= 40) return 1;
+  if (eta <= 50) return 2;
+  if (eta <= 60) return 3;
+  if (eta <= 70) return 4;
+  if (eta <= 80) return 5;
+  return 6;
+};
+
+const AGE_LABELS = ['20–30','31–40','41–50','51–60','61–70','71–80','81–90'];
+
+const SCOL_KEY = (scol) => {
+  if (scol <= 6)  return 5;
+  if (scol <= 10) return 8;
+  if (scol <= 14) return 13;
+  return 17;
+};
+
+const SCOL_ROW_IDX = {5:0, 8:1, 13:2, 17:3};
+
+function calcES(val, table) {
+  for (const row of table) {
+    if (val <= row.max) return row.es;
+  }
+  return 4;
+}
+
+function getVal(id) {
+  const v = parseFloat(document.getElementById(id).value);
+  return isNaN(v) ? null : v;
+}
+
+function esBadge(es) {
+  if (es === null) return '<span class="badge" style="background:var(--surface2);color:var(--text2)">—</span>';
+  if (es === 0) return '<span class="badge b-e">Patologico</span>';
+  if (es === 1) return '<span class="badge b-w">Borderline</span>';
+  return '<span class="badge b-ok">Nella norma</span>';
+}
+
+function fmt(v, dec=2) { return (v === null || isNaN(v)) ? '—' : Number(v).toFixed(dec); }
+
+let lastR = {};
+
+function highlightTable(ageIdx, scolKey) {
+  const scolRow = SCOL_ROW_IDX[scolKey] ?? -1;
+  ['itr','dfr'].forEach(type => {
+    [0,1,2,3].forEach(ri => {
+      const row = document.getElementById(`${type}_r${ri}`);
+      if (!row) return;
+      row.classList.toggle('highlight', ri === scolRow);
+      [...row.children].forEach((td, ci) => {
+        if (ci === 0) return; // label
+        td.style.fontWeight = (ci-1 === ageIdx) ? '700' : '';
+        td.style.color = (ri === scolRow && ci-1 === ageIdx) ? 'var(--accent)' : '';
+      });
+    });
+  });
+}
+
+function recalc() {
+  const eta  = parseInt(document.getElementById('p-eta').value);
+  const scol = parseInt(document.getElementById('p-scol').value);
+
+  // raw
+  const ifr1=getVal('ifr1'), ifr2=getVal('ifr2'), ifr3=getVal('ifr3');
+  const itr=getVal('itr'), rp=getVal('rp');
+  const dfr=getVal('dfr'), dtr=getVal('dtr');
+  const ifr = (ifr1!==null&&ifr2!==null&&ifr3!==null) ? ifr1+ifr2+ifr3 : null;
+  document.getElementById('ifr_auto').textContent = ifr !== null ? ifr : '—';
+
+  // ISC
+  let isc = null;
+  if (itr !== null && ifr !== null && (48 - ifr) > 0) {
+    isc = Math.round((itr - ifr) / (48 - ifr) * 1000) / 1000;
+  }
+  document.getElementById('isc_auto').textContent = isc !== null ? isc.toFixed(3) : '—';
+
+  // demo check
+  const ageIdx = AGE_IDX(eta);
+  const scolKey = SCOL_KEY(scol);
+  const demoOk = ageIdx >= 0 && !isNaN(scol) && scol >= 0;
+
+  document.getElementById('warn-nodata').style.display = (!isNaN(eta) && eta > 0 && ageIdx < 0) ? 'block' : 'none';
+  document.getElementById('btn-elenco').disabled = !demoOk;
+  document.getElementById('btn-tabella').disabled = !demoOk;
+  document.getElementById('norm-info').textContent = demoOk
+    ? `Fascia età: ${AGE_LABELS[ageIdx]} · Scolarità: ${scolKey} anni (chiave norma)`
+    : 'Inserisci età e scolarità per la correzione';
+
+  highlightTable(ageIdx, scolKey);
+
+  if (!demoOk) {
+    document.getElementById('res-container').innerHTML = '<div style="color:var(--text2);font-size:12px">Inserisci età e scolarità per vedere i risultati.</div>';
+    return;
+  }
+
+  // IFR corretto
+  const corrFactor_IFR = (CORR_IFR[scolKey] ?? [])[ageIdx] ?? null;
+  const ifrCorr = (ifr !== null && corrFactor_IFR !== null) ? Math.round((ifr + corrFactor_IFR) * 100) / 100 : null;
+  const esIFR  = ifrCorr !== null ? calcES(ifrCorr, ES_IFR) : null;
+
+  // DFR corretto
+  const corrFactor_DFR = (CORR_DFR[scolKey] ?? [])[ageIdx] ?? null;
+  const dfrCorr = (dfr !== null && corrFactor_DFR !== null) ? Math.round((dfr + corrFactor_DFR) * 100) / 100 : null;
+  const esDFR  = dfrCorr !== null ? calcES(dfrCorr, ES_DFR) : null;
+
+  // ITR: missed items
+  const itrMissed = itr !== null ? 48 - itr : null;
+  const itrCO = (CO_ITR[scolKey] ?? [])[ageIdx] ?? null;
+  let esITR = null;
+  if (itrMissed !== null && itrCO !== null) {
+    esITR = itrMissed <= itrCO ? 0 : 4; // ES0 = missed > cutoff; ES4 = massimo o quasi
+    // più preciso: missed=0 → ES4 sempre; > cutoff → ES0
+    if (itrMissed === 0) esITR = 4;
+    else if (itrMissed <= itrCO) esITR = 0;
+    else esITR = 4;
+    // nota: ES 1,2,3 non differenziati per ITR (vedi paper, solo ES0 e ES4)
+  }
+
+  // DTR: ES4 = 16/16 (quasi tutti), ES0 come DFR
+  const dtrMissed = dtr !== null ? 16 - dtr : null;
+  const dtrCO = (CO_DFR[scolKey] ?? [])[ageIdx] ?? null;
+  let esDTR = null;
+  if (dtrMissed !== null && dtrCO !== null) {
+    esDTR = dtrMissed === 0 ? 4 : (dtrMissed <= dtrCO ? 0 : 4);
+    if (dtrMissed > dtrCO) esDTR = 0;
+    else esDTR = 4;
+  }
+
+  // ISC cutoff (global, no correzione)
+  const esISC = isc !== null ? (isc >= 0.61 ? 4 : 0) : null;
+
+  lastR = {
+    ifr, ifrCorr, esIFR, corrFactor_IFR,
+    itr, itrMissed, itrCO, esITR,
+    rp, esRP: rp !== null ? (rp >= 14 ? 4 : 0) : null,
+    dfr, dfrCorr, esDFR, corrFactor_DFR,
+    dtr, dtrMissed, dtrCO, esDTR,
+    isc, esISC,
+    coIFR_str: '> 21.26', coDFR_str: '> 8.10',
+    scolKey, ageIdx
+  };
+
+  const resItems = [
+    {name:'IFR — Rievocaz. libera immediata (0–48)', raw:ifr, corr:ifrCorr !== null ? fmt(ifrCorr) : null, es:esIFR, co:'> 21.26 (corr)'},
+    {name:'ITR — Rievocaz. totale immediata (0–48)', raw:itr, corr: itrCO !== null ? `missed ≤ ${itrCO}` : null, es:esITR, co:`missed ≤ ${itrCO??'—'}`},
+    {name:'Riconoscimento (0–16)', raw:rp, corr:'—', es:rp !== null ? (rp >= 14 ? 4 : (rp <= 13 ? 1 : 4)) : null, co:'≥ 14 (< 65aa)', noCo:true},
+    {name:'DFR — Rievocaz. libera differita (0–16)', raw:dfr, corr:dfrCorr !== null ? fmt(dfrCorr) : null, es:esDFR, co:'> 8.10 (corr)'},
+    {name:'DTR — Rievocaz. totale differita (0–16)', raw:dtr, corr: dtrCO !== null ? `missed ≤ ${dtrCO}` : null, es:esDTR, co:`missed ≤ ${dtrCO??'—'}`},
+    {name:'ISC — Indice sensibilità al cue', raw:isc !== null ? fmt(isc,3) : null, corr:'—', es:esISC, co:'≥ 0.61'},
+  ];
+
+  document.getElementById('res-container').innerHTML = resItems.map(d => {
+    const ast = (d.es !== null && d.es <= 1) ? '*' : '';
+    const rawDisp = d.raw !== null ? `${d.raw}${ast}` : '—';
+    const corrDisp = d.corr !== null ? `${d.corr}${ast}` : '—';
+    return `<div class="res-row">
+      <span class="res-name">${d.name}</span>
+      <div class="res-vals">
+        <span class="res-raw">${rawDisp}</span>
+        <span style="color:var(--text2)">→</span>
+        <span class="res-corr">${corrDisp}</span>
+        <span class="pe-chip">PE ${d.es??'—'}</span>
+        ${esBadge(d.es)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esitoStr(es) { return es === 0 ? 'Patologico' : es === 1 ? 'Borderline' : 'nella norma'; }
+
+function buildElenco() {
+  const r = lastR;
+  const line = (name, raw, corr, es) => {
+    if (raw === null || raw === undefined) return null;
+    const ast = (es !== null && es <= 1) ? '*' : '';
+    return `  ${name}: ${raw}${ast} → ${corr??'—'}${ast} (PE ${es??'—'} — ${es!==null?esitoStr(es):'—'})`;
+  };
+  return [
+    'FCSRT-16 (Girtler et al., 2015):',
+    line('IFR (0–48)', r.ifr, r.ifrCorr!==null?fmt(r.ifrCorr):null, r.esIFR),
+    line('ITR (0–48)', r.itr, r.itrCO!==null?`missed ≤ ${r.itrCO}`:null, r.esITR),
+    r.rp !== null ? `  Riconoscimento: ${r.rp}/16 (cut-off ≥14; < 65aa)` : null,
+    line('DFR (0–16)', r.dfr, r.dfrCorr!==null?fmt(r.dfrCorr):null, r.esDFR),
+    line('DTR (0–16)', r.dtr, r.dtrCO!==null?`missed ≤ ${r.dtrCO}`:null, r.esDTR),
+    r.isc !== null ? `  ISC: ${fmt(r.isc,3)} (PE ${r.esISC??'—'} — cut-off ≥0.61)` : null,
+  ].filter(l => l !== null).join('\n');
+}
+
+function buildTabellaHTML() {
+  const r = lastR;
+  const ast = (es) => (es !== null && es <= 1) ? '*' : '';
+  const rows = [
+    `<tr><td>IFR (Rievoc. libera imm.)</td><td>${r.ifr??'—'}${ast(r.esIFR)}</td><td>${r.ifrCorr!==null?fmt(r.ifrCorr)+ast(r.esIFR):'—'}</td><td>PE ${r.esIFR??'—'}</td><td>&gt; 21.26 (corr.)</td></tr>`,
+    `<tr><td>ITR (Rievoc. totale imm.)</td><td>${r.itr??'—'}${ast(r.esITR)}</td><td>missed ≤ ${r.itrCO??'—'}</td><td>PE ${r.esITR??'—'}</td><td>missed ≤ ${r.itrCO??'—'}</td></tr>`,
+    r.rp!==null?`<tr><td>Riconoscimento</td><td>${r.rp}/16</td><td>—</td><td>—</td><td>≥ 14 (età &lt;65)</td></tr>`:'',
+    `<tr><td>DFR (Rievoc. libera diff.)</td><td>${r.dfr??'—'}${ast(r.esDFR)}</td><td>${r.dfrCorr!==null?fmt(r.dfrCorr)+ast(r.esDFR):'—'}</td><td>PE ${r.esDFR??'—'}</td><td>&gt; 8.10 (corr.)</td></tr>`,
+    `<tr><td>DTR (Rievoc. totale diff.)</td><td>${r.dtr??'—'}${ast(r.esDTR)}</td><td>missed ≤ ${r.dtrCO??'—'}</td><td>PE ${r.esDTR??'—'}</td><td>missed ≤ ${r.dtrCO??'—'}</td></tr>`,
+    r.isc!==null?`<tr><td>ISC</td><td>${fmt(r.isc,3)}</td><td>—</td><td>PE ${r.esISC??'—'}</td><td>≥ 0.61</td></tr>`:'',
+  ].join('');
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>FCSRT-16 (Girtler et al., 2015)</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE (0–4)</b></td><td><b>Cut-off</b></td></tr>
+  </thead><tbody>${rows}</tbody></table>`;
+}
+
+function copyOutput(tipo) {
+  const out=document.getElementById('report-output'), fb=document.getElementById('copy-feedback');
+  if (tipo==='elenco') {
+    const t=buildElenco(); out.textContent=t; out.style.display='block';
+    navigator.clipboard.writeText(t).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{selOut(out);fb.textContent='⚠ Seleziona e Ctrl+C';});
+  } else {
+    const h=buildTabellaHTML(); out.textContent='[Tabella] FCSRT-16'; out.style.display='block';
+    try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([h],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(h,fb));}catch(e){fbH(h,fb);}
+  }
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+function selOut(el){const r=document.createRange();r.selectNodeContents(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

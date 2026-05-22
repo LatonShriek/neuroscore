@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #4 — WoMAB Pasotti et al. 2021</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3347;--accent:#c77dff;--ok:#2ecc71;--warn:#e67e22;--err:#e74c3c;--text:#e8eaf0;--muted:#8892a4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh}
+.shell{max-width:820px;margin:0 auto;padding:32px 20px 60px}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px}
+.hdr-badge{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.hdr h1{font-size:22px;font-weight:600}
+.hdr .cite{font-size:12px;color:var(--muted);margin-top:4px}
+.range-tag{display:inline-block;background:rgba(199,125,255,.12);border:1px solid var(--accent);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:6px}
+.sec-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;margin-top:24px}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.demo-grid{grid-template-columns:1fr 1fr}}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 10px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+
+.subtest-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.subtest-hdr{background:var(--surface2);padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.subtest-hdr .sb{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:600;min-width:60px}
+.subtest-hdr .sn{font-size:13px;font-weight:500}
+.subtest-body{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.subtest-body{grid-template-columns:1fr}}
+.score-pair{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.score-pair label{font-size:12px;color:var(--muted);font-family:var(--mono);min-width:90px}
+.score-pair input{width:72px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:16px;padding:6px 8px;outline:none;text-align:center;transition:border-color .2s}
+.score-pair input:focus{border-color:var(--accent)}
+.score-pair .mx{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.res-col{padding-top:4px}
+.res-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.res-row strong{color:var(--text)}
+.es-badge{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;font-family:var(--mono);font-size:13px;font-weight:700}
+.es-0{background:rgba(231,76,60,.2);color:var(--err)} .es-1{background:rgba(230,126,34,.2);color:var(--warn)}
+.es-2{background:rgba(46,204,113,.15);color:var(--ok)} .es-3{background:rgba(46,204,113,.2);color:var(--ok)} .es-4{background:rgba(46,204,113,.25);color:var(--ok)}
+
+/* Riepilogo */
+.summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:4px}
+@media(max-width:500px){.summary-grid{grid-template-columns:1fr 1fr}}
+.sum-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+.sum-card .s-name{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;margin-bottom:4px}
+.sum-card .s-pc{font-size:13px;font-family:var(--mono);color:var(--muted)}
+.sum-card .s-es{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1}
+.pem-bar{background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:14px 18px;margin-top:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.pem-val{font-family:var(--mono);font-size:32px;font-weight:600;color:var(--accent);line-height:1}
+.pem-label{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.pem-note{font-size:11px;color:var(--muted);font-family:var(--mono)}
+
+.report-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-report{flex:1;min-width:160px;padding:12px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s}
+.btn-report:hover:not(:disabled){opacity:.85}
+.btn-report:disabled{background:var(--surface2);color:var(--muted);cursor:default}
+.btn-report.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-report.secondary:hover:not(:disabled){border-color:var(--accent);color:var(--accent);opacity:1}
+.copy-feedback{font-family:var(--mono);font-size:11px;color:var(--ok);margin-top:8px;min-height:16px}
+.report-output{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:14px;font-family:var(--mono);font-size:12px;line-height:1.8;white-space:pre-wrap;display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="hdr">
+  <div class="hdr-badge">Test #4</div>
+  <h1>WoMAB — Working Memory Assessment Battery</h1>
+  <div class="cite">Pasotti F., De Luca G., Aiello E.N. et al. (2021). Working Memory Assessment Battery (WoMAB). <em>Neurological Sciences</em>. doi:10.1007/s10072-021-05416-7. — Taratura: N=168, età 18–86, scolarità 4–21 aa.</div>
+  <div class="range-tag">Età: 18–86 anni | Scolarità: 4–21 anni</div>
+</div>
+
+<div class="sec-label">Dati paziente</div>
+<div class="demo-grid">
+  <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="18" max="86" placeholder="es. 55" oninput="calcAll()"></div>
+  <div class="field"><label>Sesso</label><select id="p-sesso" onchange="calcAll()"><option value="">—</option><option value="M">M</option><option value="F">F</option></select></div>
+  <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-scol" min="4" max="21" placeholder="es. 13" oninput="calcAll()"></div>
+  <div class="field"><label>Data valutazione</label><input type="date" id="p-data"></div>
+</div>
+
+<!-- FDS -->
+<div class="sec-label">Punteggi grezzi</div>
+<div class="subtest-block">
+  <div class="subtest-hdr"><span class="sb">FDS</span><span class="sn">Forward Digit Span — span uditivo-verbale</span></div>
+  <div class="subtest-body">
+    <div>
+      <div class="score-pair"><label>FDS-T (totale)</label><input type="number" id="g-fdst" min="0" max="16" placeholder="0–16" oninput="calcAll()"><span class="mx">/16</span></div>
+      <div class="score-pair"><label>FDS-S (span)</label><input type="number" id="g-fdss" min="0" max="9" placeholder="0–9" oninput="calcAll()"><span class="mx">/9</span></div>
+    </div>
+    <div class="res-col" id="res-fds"></div>
+  </div>
+</div>
+
+<!-- BDS -->
+<div class="subtest-block">
+  <div class="subtest-hdr"><span class="sb">BDS</span><span class="sn">Backward Digit Span — memoria di lavoro verbale</span></div>
+  <div class="subtest-body">
+    <div>
+      <div class="score-pair"><label>BDS-T (totale)</label><input type="number" id="g-bdst" min="0" max="14" placeholder="0–14" oninput="calcAll()"><span class="mx">/14</span></div>
+      <div class="score-pair"><label>BDS-WM (span)</label><input type="number" id="g-bdswm" min="0" max="8" placeholder="0–8" oninput="calcAll()"><span class="mx">/8</span></div>
+    </div>
+    <div class="res-col" id="res-bds"></div>
+  </div>
+</div>
+
+<!-- DOT -->
+<div class="subtest-block">
+  <div class="subtest-hdr"><span class="sb">DOT</span><span class="sn">Digit Ordering Test — riordino in ordine crescente</span></div>
+  <div class="subtest-body">
+    <div>
+      <div class="score-pair"><label>DOT-T (totale)</label><input type="number" id="g-dott" min="0" max="12" placeholder="0–12" oninput="calcAll()"><span class="mx">/12</span></div>
+      <div class="score-pair"><label>DOT-WM (span)</label><input type="number" id="g-dotwm" min="0" max="8" placeholder="0–8" oninput="calcAll()"><span class="mx">/8</span></div>
+    </div>
+    <div class="res-col" id="res-dot"></div>
+  </div>
+</div>
+
+<!-- ICT -->
+<div class="subtest-block">
+  <div class="subtest-hdr"><span class="sb">ICT</span><span class="sn">Ice Cream Test — memoria di lavoro con categorizzazione</span></div>
+  <div class="subtest-body">
+    <div>
+      <div class="score-pair"><label>ICT-T (totale)</label><input type="number" id="g-ictt" min="0" max="16" placeholder="0–16" oninput="calcAll()"><span class="mx">/16</span></div>
+      <div class="score-pair"><label>ICT-WM (span)</label><input type="number" id="g-ictwm" min="0" max="10" placeholder="0–10" oninput="calcAll()"><span class="mx">/10</span></div>
+    </div>
+    <div class="res-col" id="res-ict"></div>
+  </div>
+</div>
+
+<!-- DSR -->
+<div class="subtest-block">
+  <div class="subtest-hdr"><span class="sb">DSR</span><span class="sn">Digit Span Ratio — rapporto BDS/FDS</span></div>
+  <div class="subtest-body">
+    <div>
+      <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:8px">Calcolato automaticamente dai punteggi FDS e BDS inseriti sopra</div>
+      <div class="res-col" id="res-dsr-raw"></div>
+    </div>
+    <div class="res-col" id="res-dsr"></div>
+  </div>
+</div>
+
+<!-- Riepilogo -->
+<div class="sec-label">Riepilogo PE e Punteggio Equivalente Medio</div>
+<div class="summary-grid" id="summary-grid">
+  <div class="sum-card"><div class="s-name">FDS-T</div><div class="s-pc" id="pc-fdst">—</div><div class="s-es" id="se-fdst">—</div></div>
+  <div class="sum-card"><div class="s-name">FDS-S</div><div class="s-pc" id="pc-fdss">—</div><div class="s-es" id="se-fdss">—</div></div>
+  <div class="sum-card"><div class="s-name">BDS-T</div><div class="s-pc" id="pc-bdst">—</div><div class="s-es" id="se-bdst">—</div></div>
+  <div class="sum-card"><div class="s-name">BDS-WM</div><div class="s-pc" id="pc-bdswm">—</div><div class="s-es" id="se-bdswm">—</div></div>
+  <div class="sum-card"><div class="s-name">DOT-T</div><div class="s-pc" id="pc-dott">—</div><div class="s-es" id="se-dott">—</div></div>
+  <div class="sum-card"><div class="s-name">DOT-WM</div><div class="s-pc" id="pc-dotwm">—</div><div class="s-es" id="se-dotwm">—</div></div>
+  <div class="sum-card"><div class="s-name">ICT-T</div><div class="s-pc" id="pc-ictt">—</div><div class="s-es" id="se-ictt">—</div></div>
+  <div class="sum-card"><div class="s-name">ICT-WM</div><div class="s-pc" id="pc-ictwm">—</div><div class="s-es" id="se-ictwm">—</div></div>
+  <div class="sum-card"><div class="s-name">DSR-T</div><div class="s-pc" id="pc-dsrt">—</div><div class="s-es" id="se-dsrt">—</div></div>
+  <div class="sum-card"><div class="s-name">DSR-WM</div><div class="s-pc" id="pc-dsrwm">—</div><div class="s-es" id="se-dsrwm">—</div></div>
+</div>
+
+<div class="pem-bar">
+  <div>
+    <div class="pem-label">PEM-T (PE Medio Total)</div>
+    <div class="pem-val" id="pem-t">—</div>
+  </div>
+  <div>
+    <div class="pem-label">PEM-WM/S (PE Medio WM/Span)</div>
+    <div class="pem-val" id="pem-wm">—</div>
+  </div>
+  <div class="pem-note">PEM-T ≤ 1.4 → patologico &nbsp;|&nbsp; PEM-WM/S ≤ 1.2 → patologico</div>
+</div>
+
+<div class="report-btns">
+  <button class="btn-report" id="btn-elenco" onclick="copyOutput('elenco')" disabled>📋 Copia come elenco</button>
+  <button class="btn-report secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>⊞ Copia come tabella</button>
+</div>
+<div class="copy-feedback" id="copy-feedback"></div>
+<div class="report-output" id="report-output"></div>
+
+</div>
+<script>
+// ============================================================
+// FORMULE CORREZIONE — Pasotti et al. 2021, Tabelle 1-2-3
+// PC = PG - correzione(età, scol, [sesso])
+// ============================================================
+const MEAN_AGE = 48.41071;
+const MEAN_INV_SCOL = 0.101788;
+const MEAN_LN100A = 3.862482;
+const MEAN_AGE3 = 166465.803571;
+
+function ln100a(eta) { return Math.log(100 - eta); }
+function invScol(s)  { return 1 / s; }
+function age3(eta)   { return Math.pow(eta, 3); }
+
+// Correzioni (valore da sottrarre al grezzo)
+function corrFDST(eta, scol) {
+  return -2.082331*(ln100a(eta)-MEAN_LN100A) + 12.71517*(invScol(scol)-MEAN_INV_SCOL);
+}
+function corrFDSS(eta, scol) {
+  return 0.000003*(age3(eta)-MEAN_AGE3) + 6.09889*(invScol(scol)-MEAN_INV_SCOL);
+}
+function corrBDST(eta, scol, sesso) {
+  const sexAdj = sesso==='F' ? 0.587136 : -0.587136;
+  return 0.065689*(eta-MEAN_AGE) + 10.95221*(invScol(scol)-MEAN_INV_SCOL) + sexAdj;
+}
+// nota: per BDST la correzione dal grezzo è: PC = grezzo - corr ma la formula originale è +corr
+// "punteggio corretto = grezzo + 0.065689*(età-mean) + 10.95221*(1/scol-mean) ±sex"
+// quindi: PC = grezzo + Δ → correzione = -Δ (segno invertito rispetto ad altri test)
+function pcBDST(g, eta, scol, sesso) {
+  const sexAdj = sesso==='F' ? 0.587136 : -0.587136;
+  return g + 0.065689*(eta-MEAN_AGE) + 10.95221*(invScol(scol)-MEAN_INV_SCOL) + sexAdj;
+}
+function pcBDSWM(g, eta, scol, sesso) {
+  const sexAdj = sesso==='F' ? 0.278456 : -0.278456;
+  return g + 0.035249*(eta-MEAN_AGE) + 5.473036*(invScol(scol)-MEAN_INV_SCOL) + sexAdj;
+}
+function pcFDST(g, eta, scol) { return g - 2.082331*(ln100a(eta)-MEAN_LN100A) + 12.71517*(invScol(scol)-MEAN_INV_SCOL); }
+function pcFDSS(g, eta, scol) { return g + 0.000003*(age3(eta)-MEAN_AGE3) + 6.09889*(invScol(scol)-MEAN_INV_SCOL); }
+function pcDOTT(g, eta, scol) { return g - 1.590625*(ln100a(eta)-MEAN_LN100A) + 16.07802*(invScol(scol)-MEAN_INV_SCOL); }
+function pcDOTWM(g, eta, scol){ return g + 0.000002*(age3(eta)-MEAN_AGE3) + 8.9739*(invScol(scol)-MEAN_INV_SCOL); }
+function pcICTT(g, eta, scol) { return g - 2.087459*(ln100a(eta)-MEAN_LN100A) + 15.88892*(invScol(scol)-MEAN_INV_SCOL); }
+function pcICTWM(g, eta, scol){ return g + 0.000003*(age3(eta)-MEAN_AGE3) + 8.691697*(invScol(scol)-MEAN_INV_SCOL); }
+function pcDSRT(g, eta, sesso) {
+  const sexAdj = sesso==='F' ? 0.037286 : -0.037286;
+  return g + 0.156681*(Math.log(eta)-3.791483) + sexAdj;
+}
+function pcDSRWM(g, eta) {
+  return g - 4.081518*(1/eta - 0.024893);
+}
+
+// ============================================================
+// ES THRESHOLDS — Pasotti et al. 2021, Tabella 4
+// Format: [LTe, LTi] = cutoff ES 0, ES 1
+// ES: <LTe=0, LTe-LTi=1, then 2,3,4 by percentile
+// ============================================================
+const ES_TH = {
+  FDST:  {t0:6.42,  t1:7.35,  t2:8.49,  t3:9.88},
+  FDSS:  {t0:4.45,  t1:5.17,  t2:5.58,  t3:6.31},
+  BDST:  {t0:3.35,  t1:4.26,  t2:5.67,  t3:7.16},
+  BDSWM: {t0:2.77,  t1:3.41,  t2:4.26,  t3:4.88},
+  DOTT:  {t0:3.27,  t1:4.72,  t2:5.76,  t3:7.35},
+  DOTWM: {t0:4.05,  t1:4.57,  t2:5.42,  t3:6.31},
+  ICTT:  {t0:2.48,  t1:4.14,  t2:5.70,  t3:7.03},
+  ICTWM: {t0:3.69,  t1:4.22,  t2:5.19,  t3:6.19},
+  DSRT:  {t0:0.393, t1:0.502, t2:0.638, t3:0.735},
+  DSRWM: {t0:0.461, t1:0.550, t2:0.659, t3:0.786},
+};
+
+function pcToES(pc, key) {
+  const t = ES_TH[key];
+  if (pc < t.t0) return 0;
+  if (pc < t.t1) return 1;
+  if (pc < t.t2) return 2;
+  if (pc < t.t3) return 3;
+  return 4;
+}
+
+window._w = {};
+
+function calcAll() {
+  const eta  = parseFloat(document.getElementById('p-eta').value);
+  const scol = parseFloat(document.getElementById('p-scol').value);
+  const sesso = document.getElementById('p-sesso').value;
+  const hasDemo = !isNaN(eta) && !isNaN(scol) && sesso !== '';
+
+  const gFDST  = parseFloat(document.getElementById('g-fdst').value);
+  const gFDSS  = parseFloat(document.getElementById('g-fdss').value);
+  const gBDST  = parseFloat(document.getElementById('g-bdst').value);
+  const gBDSWM = parseFloat(document.getElementById('g-bdswm').value);
+  const gDOTT  = parseFloat(document.getElementById('g-dott').value);
+  const gDOTWM = parseFloat(document.getElementById('g-dotwm').value);
+  const gICTT  = parseFloat(document.getElementById('g-ictt').value);
+  const gICTWM = parseFloat(document.getElementById('g-ictwm').value);
+
+  window._w = {};
+
+  function proc(gVal, pcFn, key, displayId, pcSumId, esSumId, negate) {
+    if (!hasDemo || isNaN(gVal)) {
+      if(displayId) document.getElementById(displayId).innerHTML = '';
+      document.getElementById(pcSumId).textContent = '—';
+      document.getElementById(esSumId).textContent = '—';
+      document.getElementById(esSumId).className = 's-es';
+      return null;
+    }
+    const pc = pcFn(gVal, eta, scol, sesso);
+    const es = pcToES(pc, key);
+    const ast = es<=1?'*':'';
+    if(displayId){
+      document.getElementById(displayId).innerHTML +=
+        `<div class="res-row">${key}: <strong>${gVal}</strong> → PC <strong>${pc.toFixed(2)}${ast}</strong> ES <span class="es-badge es-${es}">${es}</span></div>`;
+    }
+    document.getElementById(pcSumId).textContent = pc.toFixed(2)+(ast);
+    const esEl = document.getElementById(esSumId);
+    esEl.textContent = es;
+    esEl.className = `s-es es-${es}`;
+    window._w[key] = {g:gVal, pc, es, ast};
+    return {g:gVal, pc, es, ast};
+  }
+
+  // Clear result areas
+  ['res-fds','res-bds','res-dot','res-ict'].forEach(id => document.getElementById(id).innerHTML='');
+
+  proc(gFDST,  (g)=>pcFDST(g,eta,scol),  'FDST',  'res-fds',  'pc-fdst',  'se-fdst');
+  proc(gFDSS,  (g)=>pcFDSS(g,eta,scol),  'FDSS',  'res-fds',  'pc-fdss',  'se-fdss');
+  proc(gBDST,  (g)=>pcBDST(g,eta,scol,sesso), 'BDST', 'res-bds', 'pc-bdst', 'se-bdst');
+  proc(gBDSWM, (g)=>pcBDSWM(g,eta,scol,sesso),'BDSWM','res-bds','pc-bdswm','se-bdswm');
+  proc(gDOTT,  (g)=>pcDOTT(g,eta,scol),  'DOTT',  'res-dot',  'pc-dott',  'se-dott');
+  proc(gDOTWM, (g)=>pcDOTWM(g,eta,scol), 'DOTWM', 'res-dot',  'pc-dotwm', 'se-dotwm');
+  proc(gICTT,  (g)=>pcICTT(g,eta,scol),  'ICTT',  'res-ict',  'pc-ictt',  'se-ictt');
+  proc(gICTWM, (g)=>pcICTWM(g,eta,scol), 'ICTWM', 'res-ict',  'pc-ictwm', 'se-ictwm');
+
+  // DSR — calcolato dai punteggi corretti se disponibili
+  document.getElementById('res-dsr').innerHTML = '';
+  document.getElementById('res-dsr-raw').innerHTML = '';
+
+  if (hasDemo && window._w.FDST && window._w.BDST) {
+    const dsrT_raw = gBDST / gFDST;
+    const dsrT_pc  = pcDSRT(dsrT_raw, eta, sesso);
+    const dsrT_es  = pcToES(dsrT_pc, 'DSRT');
+    window._w.DSRT = {g:dsrT_raw, pc:dsrT_pc, es:dsrT_es, ast:dsrT_es<=1?'*':''};
+    document.getElementById('res-dsr-raw').innerHTML =
+      `<div class="res-row">DSR-T grezzo (BDS-T/FDS-T): <strong>${dsrT_raw.toFixed(3)}</strong></div>`;
+    document.getElementById('res-dsr').innerHTML +=
+      `<div class="res-row">DSR-T: PC <strong>${dsrT_pc.toFixed(3)}${window._w.DSRT.ast}</strong> ES <span class="es-badge es-${dsrT_es}">${dsrT_es}</span></div>`;
+    document.getElementById('pc-dsrt').textContent = dsrT_pc.toFixed(3)+(window._w.DSRT.ast);
+    const el=document.getElementById('se-dsrt'); el.textContent=dsrT_es; el.className=`s-es es-${dsrT_es}`;
+  } else {
+    document.getElementById('pc-dsrt').textContent='—';
+    document.getElementById('se-dsrt').textContent='—';
+    document.getElementById('se-dsrt').className='s-es';
+  }
+
+  if (hasDemo && window._w.FDSS && window._w.BDSWM) {
+    const dsrWM_raw = gBDSWM / gFDSS;
+    const dsrWM_pc  = pcDSRWM(dsrWM_raw, eta);
+    const dsrWM_es  = pcToES(dsrWM_pc, 'DSRWM');
+    window._w.DSRWM = {g:dsrWM_raw, pc:dsrWM_pc, es:dsrWM_es, ast:dsrWM_es<=1?'*':''};
+    document.getElementById('res-dsr-raw').innerHTML +=
+      `<div class="res-row">DSR-WM grezzo (BDS-WM/FDS-S): <strong>${dsrWM_raw.toFixed(3)}</strong></div>`;
+    document.getElementById('res-dsr').innerHTML +=
+      `<div class="res-row">DSR-WM: PC <strong>${dsrWM_pc.toFixed(3)}${window._w.DSRWM.ast}</strong> ES <span class="es-badge es-${dsrWM_es}">${dsrWM_es}</span></div>`;
+    document.getElementById('pc-dsrwm').textContent = dsrWM_pc.toFixed(3)+(window._w.DSRWM.ast);
+    const el=document.getElementById('se-dsrwm'); el.textContent=dsrWM_es; el.className=`s-es es-${dsrWM_es}`;
+  } else {
+    document.getElementById('pc-dsrwm').textContent='—';
+    document.getElementById('se-dsrwm').textContent='—';
+    document.getElementById('se-dsrwm').className='s-es';
+  }
+
+  // PEM
+  const tKeys  = ['FDST','BDST','DOTT','ICTT','DSRT'];
+  const wmKeys = ['FDSS','BDSWM','DOTWM','ICTWM','DSRWM'];
+  const tESVals  = tKeys.map(k=>window._w[k]?.es).filter(v=>v!==undefined);
+  const wmESVals = wmKeys.map(k=>window._w[k]?.es).filter(v=>v!==undefined);
+
+  if (tESVals.length>0) {
+    const pem = tESVals.reduce((a,b)=>a+b,0)/tESVals.length;
+    document.getElementById('pem-t').textContent = pem.toFixed(2);
+    document.getElementById('pem-t').style.color = pem<=1.4?'var(--err)':'var(--accent)';
+    window._w.PEMT = pem;
+  } else document.getElementById('pem-t').textContent='—';
+
+  if (wmESVals.length>0) {
+    const pem = wmESVals.reduce((a,b)=>a+b,0)/wmESVals.length;
+    document.getElementById('pem-wm').textContent = pem.toFixed(2);
+    document.getElementById('pem-wm').style.color = pem<=1.2?'var(--err)':'var(--accent)';
+    window._w.PEMWM = pem;
+  } else document.getElementById('pem-wm').textContent='—';
+
+  const hasAny = Object.keys(window._w).length>0;
+  if(hasAny&&hasDemo) enableButtons(); else disableButtons();
+}
+
+function enableButtons()  {document.getElementById('btn-elenco').disabled=false;document.getElementById('btn-tabella').disabled=false;}
+function disableButtons() {document.getElementById('btn-elenco').disabled=true;document.getElementById('btn-tabella').disabled=true;}
+
+// ============================================================
+// OUTPUT
+// ============================================================
+const KNAMES = {
+  FDST:'FDS-T',FDSS:'FDS-S',BDST:'BDS-T',BDSWM:'BDS-WM',
+  DOTT:'DOT-T',DOTWM:'DOT-WM',ICTT:'ICT-T',ICTWM:'ICT-WM',
+  DSRT:'DSR-T',DSRWM:'DSR-WM/S'
+};
+const KMAXG = {FDST:16,FDSS:9,BDST:14,BDSWM:8,DOTT:12,DOTWM:8,ICTT:16,ICTWM:10,DSRT:'ratio',DSRWM:'ratio'};
+
+function buildElenco() {
+  const w=window._w;
+  const esL=es=>es<=0?'(PE 0 — patologico)':es===1?'(PE 1 — borderline)':`(PE ${es})`;
+  let lines=['Working Memory Assessment Battery (WoMAB) (Pasotti et al., 2021):'];
+  const order=['FDST','FDSS','BDST','BDSWM','DOTT','DOTWM','ICTT','ICTWM','DSRT','DSRWM'];
+  order.forEach(k=>{
+    if(w[k]){
+      const d=w[k];
+      const gStr=KMAXG[k]==='ratio'?d.g.toFixed(3):`${d.g}/${KMAXG[k]}`;
+      lines.push(`  ${KNAMES[k]}: ${gStr} → ${d.pc.toFixed(2)}${d.ast} ${esL(d.es)}`);
+    }
+  });
+  if(w.PEMT!==undefined) lines.push(`  PEM-T: ${w.PEMT.toFixed(2)} (soglia patologica ≤ 1.4)`);
+  if(w.PEMWM!==undefined) lines.push(`  PEM-WM/S: ${w.PEMWM.toFixed(2)} (soglia patologica ≤ 1.2)`);
+  return lines.join('\n');
+}
+
+function buildTabellaHTML() {
+  const w=window._w;
+  const order=['FDST','FDSS','BDST','BDSWM','DOTT','DOTWM','ICTT','ICTWM','DSRT','DSRWM'];
+  let rows='';
+  order.forEach(k=>{
+    if(w[k]){
+      const d=w[k];
+      const gStr=KMAXG[k]==='ratio'?d.g.toFixed(3):`${d.g}/${KMAXG[k]}`;
+      const esito=d.es<=0?'patologico':d.es===1?'borderline':'normale';
+      rows+=`<tr><td>${KNAMES[k]}</td><td>${gStr}</td><td>${d.pc.toFixed(2)}${d.ast}</td><td>PE ${d.es} — ${esito}</td><td>—</td></tr>`;
+    }
+  });
+  if(w.PEMT!==undefined||w.PEMWM!==undefined){
+    rows+=`<tr><td colspan="5" style="font-size:11px;color:#666">PEM-T: ${w.PEMT?.toFixed(2)??'—'} (≤1.4 pat.) &nbsp;|&nbsp; PEM-WM/S: ${w.PEMWM?.toFixed(2)??'—'} (≤1.2 pat.)</td></tr>`;
+  }
+  return `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%">
+  <thead><tr style="font-weight:bold;background:#f2f2f2"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE (0–4)</b></td><td><b>Cut-off</b></td></tr></thead>
+  <tbody>
+  <tr><td colspan="5" style="background:#f9f9f9;font-style:italic;font-size:11px"><b>WoMAB — Working Memory Assessment Battery</b> (Pasotti et al., 2021)</td></tr>
+  ${rows}
+  </tbody></table>`;
+}
+
+function copyOutput(tipo){
+  const out=document.getElementById('report-output'),fb=document.getElementById('copy-feedback');
+  if(tipo==='elenco'){const t=buildElenco();out.textContent=t;out.style.display='block';navigator.clipboard.writeText(t).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{selOut(out);fb.textContent='⚠ Seleziona e Ctrl+C';});}
+  else{const h=buildTabellaHTML();out.textContent='[Tabella] WoMAB';out.style.display='block';try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([h],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata — Ctrl+V in Google Docs';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(h,fb));}catch(e){fbH(h,fb);}}
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+function selOut(el){const r=document.createRange();r.selectNodeContents(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+
+document.getElementById('p-data').value=new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

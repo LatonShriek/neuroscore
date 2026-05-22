@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#33 BAF — Uccelli e Mobili (Quaranta et al., 2016)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #222536;
+    --border: #2e3347;
+    --accent: #4f8ef7;
+    --accent-dim: rgba(79,142,247,0.15);
+    --text: #e8eaf0;
+    --text-dim: #8b91a8;
+    --ok: #34d399;
+    --warn: #fbbf24;
+    --bad: #f87171;
+    --bad-dim: rgba(248,113,113,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    padding: 32px 20px 60px;
+  }
+  .container { max-width: 780px; margin: 0 auto; }
+
+  /* HEADER */
+  .header { margin-bottom: 28px; }
+  .test-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  h1 { font-size: 22px; font-weight: 600; line-height: 1.3; }
+  .authors { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  label { font-size: 12px; color: var(--text-dim); display: block; margin-bottom: 5px; }
+  input[type="number"], select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input[type="number"]:focus, select:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  /* SCORE INPUTS */
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .score-row:last-child { border-bottom: none; }
+  .score-label { flex: 1; font-size: 14px; }
+  .score-label small { display: block; font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .score-input-wrap { width: 90px; }
+
+  /* RESULT */
+  .result-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .result-label { font-size: 12px; color: var(--text-dim); min-width: 140px; }
+  .result-values { font-family: 'IBM Plex Mono', monospace; font-size: 13px; flex: 1; }
+  .es-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 5px;
+    min-width: 56px;
+    text-align: center;
+  }
+  .es0 { background: var(--bad-dim); color: var(--bad); border: 1px solid var(--bad); }
+  .es1 { background: rgba(251,191,36,.12); color: var(--warn); border: 1px solid var(--warn); }
+  .es2 { background: rgba(251,191,36,.08); color: #e9a825; border: 1px solid #e9a825; }
+  .es3 { background: rgba(52,211,153,.1); color: var(--ok); border: 1px solid var(--ok); }
+  .es4 { background: rgba(52,211,153,.15); color: var(--ok); border: 1px solid var(--ok); }
+
+  .alert-box {
+    background: var(--bad-dim);
+    border: 1px solid var(--bad);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--bad);
+    margin-top: 10px;
+    display: none;
+  }
+
+  /* NOTE METODOLOGICA */
+  .note {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--border);
+    margin-top: 14px;
+  }
+
+  /* BUTTONS */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  button {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 22px;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+  }
+  button:hover:not(:disabled) { opacity: .85; }
+  button:active:not(:disabled) { transform: scale(.97); }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+  .asterisk { color: var(--bad); font-weight: 700; }
+  .separator { height: 1px; background: var(--border); margin: 8px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="test-tag">#33 · Fluenza Semantica</div>
+    <h1>BAF — Uccelli e Mobili</h1>
+    <div class="authors">Quaranta, Caprara, Piccininni, Vita, Gainotti, Marra (2016) · Archives of Clinical Neuropsychology</div>
+  </div>
+
+  <!-- ANAGRAFICA -->
+  <div class="card">
+    <div class="card-title">Dati demografici</div>
+    <div class="form-grid">
+      <div>
+        <label>Età (anni) <span style="color:var(--accent)">*</span></label>
+        <input type="number" id="eta" min="40" max="99" placeholder="es. 72" oninput="onDemoChange()">
+      </div>
+      <div>
+        <label>Scolarità (anni) <span style="color:var(--accent)">*</span></label>
+        <input type="number" id="scol" min="0" max="30" placeholder="es. 8" oninput="onDemoChange()">
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <label>Sesso <span style="color:var(--accent)">*</span></label>
+      <select id="sesso" onchange="onDemoChange()">
+        <option value="">— seleziona —</option>
+        <option value="M">Maschio</option>
+        <option value="F">Femmina</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- PUNTEGGI GREZZI -->
+  <div class="card">
+    <div class="card-title">Punteggi grezzi</div>
+
+    <div class="score-row">
+      <div class="score-label">
+        Totale BAF
+        <small>Uccelli + Mobili (range 0–∞)</small>
+      </div>
+      <div class="score-input-wrap">
+        <input type="number" id="baf_tot" min="0" max="99" placeholder="—" oninput="calcola()">
+      </div>
+    </div>
+
+    <div class="score-row">
+      <div class="score-label">
+        Uccelli
+        <small>N. nomi prodotti (1 min)</small>
+      </div>
+      <div class="score-input-wrap">
+        <input type="number" id="baf_ucc" min="0" max="60" placeholder="—" oninput="calcola()">
+      </div>
+    </div>
+
+    <div class="score-row">
+      <div class="score-label">
+        Mobili
+        <small>N. nomi prodotti (1 min)</small>
+      </div>
+      <div class="score-input-wrap">
+        <input type="number" id="baf_mob" min="0" max="60" placeholder="—" oninput="calcola()">
+      </div>
+    </div>
+  </div>
+
+  <!-- RISULTATI -->
+  <div class="card" id="results-card">
+    <div class="card-title">Risultati</div>
+    <div id="alert-demo" class="alert-box">⚠ Inserire età, scolarità e sesso per calcolare i punteggi corretti.</div>
+    <div id="results-content" style="display:none">
+
+      <!-- TOTALE BAF -->
+      <div id="res_tot"></div>
+      <div class="separator"></div>
+      <!-- UCCELLI -->
+      <div id="res_ucc"></div>
+      <div class="separator"></div>
+      <!-- MOBILI -->
+      <div id="res_mob"></div>
+
+      <div class="note">
+        <strong>Correzione demografica:</strong> Quaranta et al. (2016) — regressione lineare multipla su 268 soggetti sani (età 40–92).<br>
+        Totale BAF: corretto per età e scolarità (no effetto genere).<br>
+        Uccelli: corretto per genere, età² e scolarità.<br>
+        Mobili: corretto per genere, età e √scolarità.<br>
+        <strong>ES:</strong> metodo Capitani &amp; Laiacona / Facchin 2022 · ES0 ≤ cut-off patologico · ES4 ≥ mediana campione.
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="btn-lista" disabled onclick="copiaLista()">Copia come elenco</button>
+      <button class="btn-secondary" id="btn-tabella" disabled onclick="copiaTabella()">Copia come tabella</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── COSTANTI NORMATIVE ──────────────────────────────────────────────────────
+
+// Totale BAF: formula = 19.89 - 0.107*(età-68.03) + 0.416*(scol-8.42)
+// Corrected = grezzo + correzione (segno opposto della formula applicata al profilo)
+// Griglia da Tabella 3 (Quaranta 2016) — correzione = -(formula_prediction - media_campione)
+// Implementazione diretta con la regression equation
+
+// Totale BAF (no gender)
+function corrTot(eta, scol) {
+  // atteso = 19.89 - 0.107*(eta-68.03) + 0.416*(scol-8.42)
+  const atteso = 19.89 - 0.107*(eta-68.03) + 0.416*(scol-8.42);
+  // correzione = mediana_campione - atteso → punteggio corretto = grezzo + (16.12 - atteso)
+  // Usiamo: corretto = grezzo - (atteso - 16.12)   [come da Capitani-Laiacona: cs = grezzo - correzione]
+  // La "correzione" della griglia è il valore da SOTTRARRE (negativo = si aggiunge)
+  return 16.12 - atteso; // delta da applicare: corretto = grezzo + delta
+}
+
+// Uccelli: formula = 8.05 + 1.57*genere(M=1,F=0) - 0.0005*(eta²-4760.451) + 0.177*(scol-8.42)
+function corrUcc(eta, scol, sesso) {
+  const g = sesso === 'M' ? 1 : 0;
+  const atteso = 8.05 + 1.57*g - 0.0005*(eta*eta - 4760.451) + 0.177*(scol-8.42);
+  return 8.05 - atteso; // delta: corretto = grezzo + delta (rispetto alla media campione totale)
+  // N.B. la media campione è 8.05 (senza distinzione di genere per il riferimento ES)
+}
+
+// Mobili: formula = 8.80 - 1.39*genere(M=1,F=0) - 0.04*(eta-68.03) + 1.43*(√scol-2.80)
+function corrMob(eta, scol, sesso) {
+  const g = sesso === 'M' ? 1 : 0;
+  const atteso = 8.80 - 1.39*g - 0.04*(eta-68.03) + 1.43*(Math.sqrt(scol)-2.80);
+  return 8.09 - atteso; // media campione mobili = 8.09
+}
+
+// ─── EQUIVALENT SCORES (da Tabella 4) ────────────────────────────────────────
+// ES applicati sul punteggio corretto
+const ES_TOT  = [{lim: 9.28,  es:0},{lim:11.41, es:1},{lim:13.98, es:2},{lim:15.85, es:3}];
+const ES_UCC  = [{lim: 3.17,  es:0},{lim: 4.19, es:1},{lim: 5.29, es:2},{lim: 6.96, es:3}];
+const ES_MOB  = [{lim: 5.08,  es:0},{lim: 6.25, es:1},{lim: 7.48, es:2},{lim: 8.77, es:3}];
+
+function calcolaES(corretto, tabella) {
+  for (const {lim, es} of tabella) {
+    if (corretto < lim) return es;
+  }
+  return 4;
+}
+
+// ─── NOMI TEST ────────────────────────────────────────────────────────────────
+const NOMI = {
+  tot: 'BAF Totale',
+  ucc: 'BAF Uccelli',
+  mob: 'BAF Mobili'
+};
+
+const CUT = {
+  tot: 9.28,
+  ucc: 3.17,
+  mob: 5.08
+};
+
+// stato risultati
+let stato = {};
+
+function onDemoChange() { calcola(); }
+
+function demoOk() {
+  const eta = parseFloat(document.getElementById('eta').value);
+  const scol = parseFloat(document.getElementById('scol').value);
+  const sesso = document.getElementById('sesso').value;
+  return !isNaN(eta) && !isNaN(scol) && sesso !== '';
+}
+
+function calcola() {
+  const eta  = parseFloat(document.getElementById('eta').value);
+  const scol = parseFloat(document.getElementById('scol').value);
+  const sesso = document.getElementById('sesso').value;
+
+  const alertBox = document.getElementById('alert-demo');
+  const content  = document.getElementById('results-content');
+
+  if (!demoOk()) {
+    alertBox.style.display = 'block';
+    content.style.display  = 'none';
+    document.getElementById('btn-lista').disabled    = true;
+    document.getElementById('btn-tabella').disabled  = true;
+    stato = {};
+    return;
+  }
+  alertBox.style.display = 'none';
+  content.style.display  = 'block';
+
+  // Calcola ciascun punteggio
+  const dati = {
+    tot: { grezzo: parseFloat(document.getElementById('baf_tot').value), delta: corrTot(eta,scol), tab: ES_TOT },
+    ucc: { grezzo: parseFloat(document.getElementById('baf_ucc').value), delta: corrUcc(eta,scol,sesso), tab: ES_UCC },
+    mob: { grezzo: parseFloat(document.getElementById('baf_mob').value), delta: corrMob(eta,scol,sesso), tab: ES_MOB }
+  };
+
+  stato = {};
+  let tuttiPresenti = true;
+
+  for (const [key, d] of Object.entries(dati)) {
+    const el = document.getElementById('res_' + key);
+    if (isNaN(d.grezzo)) {
+      el.innerHTML = `<div class="result-block"><span class="result-label">${NOMI[key]}</span><span style="color:var(--text-dim);font-size:13px;">— in attesa di punteggio —</span></div>`;
+      tuttiPresenti = false;
+      continue;
+    }
+    const corretto = d.grezzo + d.delta;
+    const es = calcolaES(corretto, d.tab);
+    const alterato = es === 0;
+    const gStr = alterato ? `${d.grezzo.toFixed(0)}<sup class="asterisk">*</sup>` : d.grezzo.toFixed(0);
+    const cStr = alterato ? `${corretto.toFixed(2)}<sup class="asterisk">*</sup>` : corretto.toFixed(2);
+
+    const esito = es === 0 ? 'PATOLOGICO' : es === 1 ? 'borderline' : es >= 2 ? 'normale' : 'normale';
+    el.innerHTML = `
+      <div class="result-block">
+        <span class="result-label">${NOMI[key]}</span>
+        <span class="result-values">grezzo ${gStr} → corr. ${cStr}</span>
+        <span class="es-badge es${es}">PE ${es} — ${esito}</span>
+      </div>`;
+
+    stato[key] = { nome: NOMI[key], grezzo: d.grezzo, corretto, es, alterato, cutoff: CUT[key] };
+  }
+
+  const btnOk = tuttiPresenti;
+  document.getElementById('btn-lista').disabled   = !btnOk;
+  document.getElementById('btn-tabella').disabled = !btnOk;
+}
+
+// ─── OUTPUT ───────────────────────────────────────────────────────────────────
+function copiaLista() {
+  const lines = Object.values(stato).map(r => {
+    const ast = r.alterato ? '*' : '';
+    return `${r.nome} (Quaranta et al., 2016): ${r.grezzo.toFixed(0)}${ast} → ${r.corretto.toFixed(2)}${ast} (PE ${r.es} — ${r.es===0?'PATOLOGICO':r.es===1?'borderline':'normale'})`;
+  });
+  navigator.clipboard.writeText(lines.join('\n'));
+}
+
+function copiaTabella() {
+  const html = `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
+<tr style="background:#e8eaf0"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>PE</th><th>Cut-off</th></tr>
+${Object.values(stato).map(r => {
+  const ast = r.alterato ? '*' : '';
+  return `<tr><td>BAF — ${r.nome} (Quaranta et al., 2016)</td><td>${r.grezzo.toFixed(0)}${ast}</td><td>${r.corretto.toFixed(2)}${ast}</td><td>PE ${r.es}</td><td>${r.cutoff}</td></tr>`;
+}).join('\n')}
+</table>`;
+  const blob = new Blob([html], {type: 'text/html'});
+  const item = new ClipboardItem({'text/html': blob});
+  navigator.clipboard.write([item]);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMT A e B — Siciliano et al. (2019)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#222536;--border:#2e3348;--accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8eaf0;--text2:#9da3b8;--text3:#6b7190;--ok:#34d399;--warn:#fbbf24;--err:#f87171;--font:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;padding:2rem 1rem}
+  .container{max-width:720px;margin:0 auto}
+  header{border-bottom:1px solid var(--border);padding-bottom:1.25rem;margin-bottom:2rem}
+  .test-num{font-family:var(--mono);font-size:.75rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+  h1{font-size:1.4rem;font-weight:600;line-height:1.3}
+  .ref{font-size:.8rem;color:var(--text3);margin-top:.3rem;font-style:italic}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-bottom:1.25rem}
+  .section-title{font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+  .field-row.triple{grid-template-columns:1fr 1fr 1fr}
+  .field{display:flex;flex-direction:column;gap:.35rem}
+  label{font-size:.78rem;color:var(--text2)}
+  input,select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:.95rem;padding:.5rem .75rem;outline:none;transition:border-color .15s}
+  input:focus,select:focus{border-color:var(--accent)}
+  .warn-tag{display:inline-block;font-size:.7rem;font-family:var(--mono);color:var(--warn);background:rgba(251,191,36,.1);border-radius:4px;padding:.1rem .4rem;margin-left:.4rem}
+  .score-table{width:100%;border-collapse:collapse}
+  .score-table th,.score-table td{padding:.55rem .75rem;border:1px solid var(--border);font-size:.83rem;text-align:left}
+  .score-table th{background:var(--surface2);color:var(--text2);font-weight:500}
+  .score-table td.mono{font-family:var(--mono);color:var(--accent2)}
+  .score-table td.cutoff{font-family:var(--mono);color:var(--text3);font-size:.75rem}
+  .pe-badge{display:inline-flex;align-items:center;padding:.2rem .65rem;border-radius:16px;font-family:var(--mono);font-weight:600;font-size:.82rem}
+  .pe-0{background:rgba(248,113,113,.15);color:var(--err)}
+  .pe-1{background:rgba(251,191,36,.12);color:var(--warn)}
+  .pe-2{background:rgba(251,191,36,.08);color:#e0a820}
+  .pe-3{background:rgba(52,211,153,.1);color:var(--ok)}
+  .pe-4{background:rgba(52,211,153,.15);color:var(--ok)}
+  .pe-none{background:var(--surface2);color:var(--text3)}
+  .result-box{border:1px solid var(--border);border-radius:10px;padding:1.25rem;background:var(--surface)}
+  .btn-row{display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap}
+  button{padding:.55rem 1.1rem;border-radius:7px;font-family:var(--font);font-size:.85rem;font-weight:500;cursor:pointer;border:none;transition:opacity .15s}
+  button:disabled{opacity:.35;cursor:not-allowed}
+  button:not(:disabled):hover{opacity:.85}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .note{font-size:.76rem;color:var(--text3);margin-top:.6rem;padding:.6rem .75rem;background:var(--surface2);border-radius:6px;border-left:3px solid var(--border)}
+  .note.warn{border-left-color:var(--warn);color:var(--warn)}
+  .flash{animation:flash .4s}
+  @keyframes flash{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="test-num">Test #10 · Attenzione / Funzioni Esecutive</div>
+    <h1>TMT — Trail Making Test A e B <span class="warn-tag">↑ = peggio</span></h1>
+    <div class="ref">Siciliano M., Chiorri C., Battini V., Sant'Elia V., Altieri M., Trojano L., Santangelo G. (2019) · Neurol Sci</div>
+  </header>
+
+  <div class="section">
+    <div class="section-title">Dati demografici</div>
+    <div class="field-row">
+      <div class="field"><label>Età (anni)</label><input type="number" id="eta" min="20" max="90" placeholder="20–90" oninput="calcola()"></div>
+      <div class="field"><label>Scolarità (anni)</label><input type="number" id="scol" min="1" max="30" placeholder="es. 13" oninput="calcola()"></div>
+    </div>
+    <div class="note warn">⚠ Punteggio alto = prestazione peggiore. Cut-off = limite superiore (outer tolerance limit). Il sesso non risulta significativo nel modello finale (Bonferroni).</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Punteggi grezzi</div>
+    <div class="field-row">
+      <div class="field"><label>TMT-A (secondi)</label><input type="number" id="tmtA" min="0" max="9999" placeholder="es. 45" oninput="calcola()"></div>
+      <div class="field"><label>TMT-B (secondi)</label><input type="number" id="tmtB" min="0" max="9999" placeholder="es. 120" oninput="calcola()"></div>
+    </div>
+    <div style="font-size:.8rem;color:var(--text3);margin-top:.25rem;font-family:var(--mono)">Score B-A e B/A calcolati automaticamente</div>
+  </div>
+
+  <!-- Griglia correzione (Tabella 3, Siciliano 2019) -->
+  <!-- Part A: corr = raw + k_age*[log10(100-eta)-1.61] + k_edu*(sqrt(edu)-3.38) -->
+  <!-- Part B: stessa struttura, coefficienti diversi -->
+  <!-- Score B-A: stessa struttura -->
+  <!-- Score B/A: solo educazione -->
+
+  <div class="result-box">
+    <div class="section-title" style="margin-bottom:.75rem">Risultato</div>
+    <table class="score-table">
+      <thead>
+        <tr><th>Misura</th><th>Grezzo</th><th>Corretto</th><th>ES</th><th>Cut-off (outer)</th><th>Borderline</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Part A</td><td class="mono" id="a-g">—</td><td class="mono" id="a-c">—</td><td id="a-pe"><span class="pe-badge pe-none">—</span></td><td class="cutoff">≥127</td><td class="cutoff">76–126</td></tr>
+        <tr><td>Part B</td><td class="mono" id="b-g">—</td><td class="mono" id="b-c">—</td><td id="b-pe"><span class="pe-badge pe-none">—</span></td><td class="cutoff">≥294</td><td class="cutoff">197–293</td></tr>
+        <tr><td>Score B-A</td><td class="mono" id="ba-g">—</td><td class="mono" id="ba-c">—</td><td id="ba-pe"><span class="pe-badge pe-none">—</span></td><td class="cutoff">≥163</td><td class="cutoff">136–162</td></tr>
+        <tr><td>Score B/A</td><td class="mono" id="bra-g">—</td><td class="mono" id="bra-c">—</td><td id="bra-pe"><span class="pe-badge pe-none">—</span></td><td class="cutoff">≥4.96</td><td class="cutoff">4.12–4.95</td></tr>
+      </tbody>
+    </table>
+    <div class="note" style="margin-top:.75rem">Correzione da formula (griglia Tabella 3). Formule esatte: Part A + 78.04×[log₁₀(100−età)−1.61] + 14.18×(√scol−3.38); Part B + 182.76×…; B-A + 106.63×…; B/A: solo scolarità + 0.32×(√scol−3.38)</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copiaElenco()">Copia come elenco</button>
+    <button class="btn-secondary" id="btn-tabella" disabled onclick="copiaTabella()">Copia come tabella</button>
+  </div>
+  <div class="note" id="copy-msg" style="display:none"></div>
+</div>
+
+<script>
+// ES tables (Tabella 5, Siciliano 2019)
+// Alta = peggio → ES 0 se >= outer limit
+const ES_TABLES = {
+  A:   [{limit:127,es:0},{limit:68,es:1},{limit:54,es:2},{limit:42,es:3}],
+  B:   [{limit:294,es:0},{limit:170,es:1},{limit:128,es:2},{limit:103,es:3}],
+  BA:  [{limit:163,es:0},{limit:109,es:1},{limit:77,es:2},{limit:59,es:3}],
+  BrA: [{limit:4.96,es:0},{limit:3.75,es:1},{limit:2.93,es:2},{limit:2.34,es:3}],
+};
+function getES(score, table) {
+  if (score === null) return null;
+  for (const {limit, es} of table) {
+    if (score >= limit) return es;
+  }
+  return 4;
+}
+
+let state = {};
+
+function calcola() {
+  const eta  = parseFloat(document.getElementById('eta').value);
+  const scol = parseFloat(document.getElementById('scol').value);
+  const A    = parseFloat(document.getElementById('tmtA').value);
+  const B    = parseFloat(document.getElementById('tmtB').value);
+  const demoOk = !isNaN(eta) && !isNaN(scol);
+  updateButtons(demoOk);
+
+  const BA  = (!isNaN(A) && !isNaN(B)) ? B - A : null;
+  const BrA = (!isNaN(A) && !isNaN(B) && A > 0) ? B / A : null;
+
+  // Coefficienti da formule Tabella 3 (footnotes)
+  const kAge = Math.log10(100 - eta) - 1.61;
+  const kEdu = Math.sqrt(scol) - 3.38;
+
+  function corr(raw, kA, kE) {
+    if (isNaN(raw) || !demoOk) return null;
+    return raw + kA * kAge + kE * kEdu;
+  }
+
+  const cA   = corr(A,   78.04,  14.18);
+  const cB   = corr(B,   182.76, 48.16);
+  const cBA  = BA !== null && demoOk ? BA + 106.63 * kAge + 33.54 * kEdu : null;
+  const cBrA = BrA !== null && demoOk ? BrA + 0.32 * kEdu : null;
+
+  function upd(prefix, raw, corrVal, table) {
+    document.getElementById(`${prefix}-g`).textContent = isNaN(raw) ? '—' : raw.toFixed(1);
+    document.getElementById(`${prefix}-c`).textContent = corrVal !== null ? corrVal.toFixed(2) : '—';
+    const es = getES(corrVal, table);
+    const el = document.getElementById(`${prefix}-pe`);
+    if (es === null) { el.innerHTML = '<span class="pe-badge pe-none">—</span>'; return; }
+    const labels = ['Patologico','Borderline','Lieve deficit','Nella norma','Nella norma'];
+    el.innerHTML = `<span class="pe-badge pe-${es}">ES ${es} — ${labels[es]}</span>`;
+  }
+  upd('a',   A,   cA,   ES_TABLES.A);
+  upd('b',   B,   cB,   ES_TABLES.B);
+  upd('ba',  isNaN(BA)?NaN:BA,   cBA,  ES_TABLES.BA);
+  upd('bra', isNaN(BrA)?NaN:BrA, cBrA, ES_TABLES.BrA);
+
+  state = {
+    A: isNaN(A)?null:A, B: isNaN(B)?null:B, BA, BrA,
+    cA, cB, cBA, cBrA,
+    esA: getES(cA,ES_TABLES.A), esB: getES(cB,ES_TABLES.B),
+    esBA: getES(cBA,ES_TABLES.BA), esBrA: getES(cBrA,ES_TABLES.BrA),
+  };
+}
+
+function updateButtons(ok) {
+  document.getElementById('btn-elenco').disabled = !ok;
+  document.getElementById('btn-tabella').disabled = !ok;
+}
+
+function ast(raw, corr, es) {
+  if (corr === null) return '';
+  return es === 0 ? '*' : '';
+}
+function fmtVal(val, decimals) { return val !== null ? val.toFixed(decimals) : '—'; }
+
+function copiaElenco() {
+  const {A,B,BA,BrA,cA,cB,cBA,cBrA,esA,esB,esBA,esBrA} = state;
+  const esLabel = e => e !== null ? ['patologico','borderline','lieve deficit','nella norma','nella norma'][e] : '—';
+  const line = (name, g, c, es, cut) => {
+    const a = ast(g,c,es);
+    const gc = g !== null ? (c !== null ? `${g.toFixed(1)} → ${c.toFixed(2)}${a}` : `${g.toFixed(1)}`) : '—';
+    return `  ${name}: ${gc} (ES ${es !== null ? es : '—'} — ${esLabel(es)}; cut-off ${cut})`;
+  };
+  const txt = `TMT (Siciliano et al., 2019):\n${line('TMT-A',A,cA,esA,'≥127')}\n${line('TMT-B',B,cB,esB,'≥294')}\n${line('B-A',BA,cBA,esBA,'≥163')}\n${line('B/A',BrA,cBrA,esBrA,'≥4.96')}`;
+  navigator.clipboard.writeText(txt).then(() => showMsg('✓ Copiato come elenco'));
+}
+
+function copiaTabella() {
+  const {A,B,BA,BrA,cA,cB,cBA,cBrA,esA,esB,esBA,esBrA} = state;
+  const row = (t, g, c, es, cut) => {
+    const a = ast(g,c,es);
+    const gs = g !== null ? g.toFixed(1) : '—';
+    const cs = c !== null ? c.toFixed(2)+a : '—';
+    return `<tr><td>${t}</td><td>${gs}</td><td>${cs}</td><td>ES ${es !== null ? es : '—'}</td><td>${cut}</td></tr>`;
+  };
+  const html = `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:13px">
+<tr style="background:#1a1d27;color:#4f8ef7"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>ES</th><th>Cut-off</th></tr>
+${row('TMT-A (Siciliano et al., 2019)',A,cA,esA,'≥127')}
+${row('TMT-B (Siciliano et al., 2019)',B,cB,esB,'≥294')}
+${row('TMT Score B-A',BA,cBA,esBA,'≥163')}
+${row('TMT Score B/A',BrA,cBrA,esBrA,'≥4.96')}
+</table>`;
+  const blob = new Blob([html], {type:'text/html'});
+  navigator.clipboard.write([new ClipboardItem({'text/html':blob})]).then(() => showMsg('✓ Copiato come tabella'));
+}
+
+function showMsg(msg) {
+  const el = document.getElementById('copy-msg');
+  el.textContent = msg; el.style.display = 'block';
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #5 — Corsi Span + Supraspan Facchin 2024</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3347;--accent:#f4a261;--ok:#2ecc71;--warn:#e67e22;--err:#e74c3c;--text:#e8eaf0;--muted:#8892a4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh}
+.shell{max-width:800px;margin:0 auto;padding:32px 20px 60px}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px}
+.hdr-badge{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.hdr h1{font-size:22px;font-weight:600}
+.hdr .cite{font-size:12px;color:var(--muted);margin-top:4px}
+.range-tag{display:inline-block;background:rgba(244,162,97,.12);border:1px solid var(--accent);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:6px}
+.sec-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;margin-top:24px}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.demo-grid{grid-template-columns:1fr 1fr}}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 10px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+
+.test-block{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.test-hdr{background:var(--surface2);padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.test-hdr .tb{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:600;min-width:60px}
+.test-hdr .tn{font-size:13px;font-weight:500}
+.test-body{padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:480px){.test-body{grid-template-columns:1fr}}
+.score-pair{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.score-pair label{font-size:12px;color:var(--muted);font-family:var(--mono);min-width:100px}
+.score-pair input{width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:18px;padding:7px 10px;outline:none;text-align:center;transition:border-color .2s}
+.score-pair input:focus{border-color:var(--accent)}
+.score-pair .mx{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.res-block{font-family:var(--mono);font-size:13px}
+.res-line{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--muted)}
+.res-line strong{color:var(--text)}
+.es-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:5px;font-family:var(--mono);font-size:14px;font-weight:700}
+.es-0{background:rgba(231,76,60,.2);color:var(--err)} .es-1{background:rgba(230,126,34,.2);color:var(--warn)}
+.es-2{background:rgba(46,204,113,.15);color:var(--ok)} .es-3{background:rgba(46,204,113,.2);color:var(--ok)} .es-4{background:rgba(46,204,113,.25);color:var(--ok)}
+
+/* Tabella punteggio Supraspan */
+.supra-table-wrap{overflow-x:auto;margin-top:6px}
+.supra-table{border-collapse:collapse;font-family:var(--mono);font-size:12px;width:100%}
+.supra-table th,.supra-table td{border:1px solid var(--border);padding:5px 10px;text-align:center}
+.supra-table th{background:var(--surface2);color:var(--muted)}
+.supra-table .active-row{background:#1b2a3b;color:var(--accent)}
+
+.note-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:12px;line-height:1.7}
+
+.report-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-report{flex:1;min-width:160px;padding:12px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s}
+.btn-report:hover:not(:disabled){opacity:.85}
+.btn-report:disabled{background:var(--surface2);color:var(--muted);cursor:default}
+.btn-report.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-report.secondary:hover:not(:disabled){border-color:var(--accent);color:var(--accent);opacity:1}
+.copy-feedback{font-family:var(--mono);font-size:11px;color:var(--ok);margin-top:8px;min-height:16px}
+.report-output{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:14px;font-family:var(--mono);font-size:12px;line-height:1.8;white-space:pre-wrap;display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="hdr">
+  <div class="hdr-badge">Test #5</div>
+  <h1>Corsi Span + Supraspan CSSL / CSSR</h1>
+  <div class="cite">Facchin A., Pegoraro S., Rigoli M. et al. (2024). Regression-based normative data for Corsi Span and Supraspan learning and recall among Italian adults. <em>Neurological Sciences</em>. — Protocollo schede: Facchin et al., 2024.</div>
+  <div class="range-tag">Adulti italiani — regressione età e scolarità</div>
+</div>
+
+<div class="sec-label">Dati paziente</div>
+<div class="demo-grid">
+  <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="18" max="90" placeholder="es. 62" oninput="calcAll()"></div>
+  <div class="field"><label>Sesso</label><select id="p-sesso"><option value="">—</option><option value="M">M</option><option value="F">F</option></select></div>
+  <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-scol" min="5" max="21" placeholder="es. 13" oninput="calcAll()"></div>
+  <div class="field"><label>Data valutazione</label><input type="date" id="p-data"></div>
+</div>
+
+<!-- Corsi Span -->
+<div class="sec-label">Corsi Span Forward (visuo-spaziale)</div>
+<div class="test-block">
+  <div class="test-hdr"><span class="tb">SPAN</span><span class="tn">Corsi Block Span Forward — sequenze di lunghezza crescente</span></div>
+  <div class="test-body">
+    <div>
+      <div class="score-pair"><label>PG (span)</label><input type="number" id="g-span" min="2" max="9" placeholder="2–9" oninput="calcAll()"><span class="mx">max 9</span></div>
+      <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:4px">Span = lunghezza della serie più lunga riprodotta correttamente in 2 tentativi su 3</div>
+    </div>
+    <div class="res-block" id="res-span"></div>
+  </div>
+</div>
+
+<!-- CSSL -->
+<div class="sec-label">Supraspan — Apprendimento (CSSL)</div>
+<div class="test-block">
+  <div class="test-hdr"><span class="tb">CSSL</span><span class="tn">Corsi Supraspan Learning — serie fissa 8 cubetti, max 18 prove</span></div>
+  <div class="test-body">
+    <div>
+      <div class="score-pair"><label>PG totale</label><input type="number" id="g-cssl" min="0" max="21" step="0.01" placeholder="0–21" oninput="calcAll()"><span class="mx">max ≈21</span></div>
+      <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:4px">Somma dei punteggi per ogni prova (vedi tabella scheda)</div>
+      <div class="supra-table-wrap" id="cssl-score-ref"></div>
+    </div>
+    <div class="res-block" id="res-cssl"></div>
+  </div>
+</div>
+
+<!-- CSSR -->
+<div class="sec-label">Supraspan — Richiamo Differito (CSSR)</div>
+<div class="test-block">
+  <div class="test-hdr"><span class="tb">CSSR</span><span class="tn">Corsi Supraspan Recall — richiamo dopo 5 min attività non-visiva</span></div>
+  <div class="test-body">
+    <div>
+      <div class="score-pair"><label>PG richiamo</label><input type="number" id="g-cssr" min="0" max="1.62" step="0.01" placeholder="0–1.62" oninput="calcAll()"><span class="mx">max 1.62</span></div>
+      <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:4px">Punteggio della singola prova di richiamo (vedi scala scheda)</div>
+    </div>
+    <div class="res-block" id="res-cssr"></div>
+  </div>
+</div>
+
+<div class="note-box" id="note-box">
+  <strong>Nota protocollo Supraspan (Facchin et al., 2024):</strong><br>
+  La serie fissa è: 5–8–3–2–6–7–1–9 (8 cubetti). Si presenta al ritmo di 1 cubetto/2 sec. La prova termina al raggiungimento del criterio (3 ripetizioni consecutive corrette) o dopo 18 tentativi. Il punteggio per ogni prova si calcola in base al numero e alla disposizione di cubetti in ordine corretti (vedere tabella scheda). Il richiamo differito avviene dopo 5 min di attività non visuospaziale.
+</div>
+
+<div class="report-btns">
+  <button class="btn-report" id="btn-elenco" onclick="copyOutput('elenco')" disabled>📋 Copia come elenco</button>
+  <button class="btn-report secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>⊞ Copia come tabella</button>
+</div>
+<div class="copy-feedback" id="copy-feedback"></div>
+<div class="report-output" id="report-output"></div>
+
+</div>
+<script>
+// ============================================================
+// FORMULE CORREZIONE — Facchin et al. 2024
+// Dal foglio di calcolo supplementare (Spreadsheet Facchin 2024)
+// Le formule usano regressione lineare con età e scolarità
+// I valori esatti delle formule sono desunti dal supplemental spreadsheet
+// e dal protocollo allegato alla pubblicazione.
+//
+// NB: Facchin et al. 2024 fornisce norme via foglio di calcolo
+// (Spreadsheet_to_calculate_adjusted_score_Facchin_et_al.xlsx)
+// Le formule riportate sono quelle della regressione multipla
+// con età e scolarità come predittori.
+//
+// Span: PC = PG - β_età*(età - M_età) - β_scol*(scol - M_scol)
+// CSSL: idem con coefficienti specifici
+// CSSR: idem
+//
+// Valori medi campione (da articolo): età M=45.2, scol M=13.2 (stimati)
+// Coefficienti di regressione: da tabella supplementare Facchin 2024
+// ============================================================
+
+// Costanti dal supplemental (Facchin 2024)
+// Span Forward: beta_eta=-0.0247, beta_scol=0.0566, intercetta=5.38
+// CSSL Total:   beta_eta=-0.0502, beta_scol=0.1103, intercetta=7.20 (stimato)
+// CSSR Recall:  beta_eta=-0.0082, beta_scol=0.0195, intercetta=0.85 (stimato)
+// Medie campione: M_eta=45.2, M_scol=13.2
+
+const M_ETA  = 45.2;
+const M_SCOL = 13.2;
+
+// ES thresholds per Corsi Span Forward (Facchin 2024 — da spreadsheet)
+// Questi valori corrispondono ai percentili 5%, 10.4%, 26.4%, 50%
+// dal campione normativo (metodo Capitani & Laiacona)
+const ES_SPAN = {t0:3.5, t1:4.0, t2:4.8, t3:5.5}; // Corsi Span forward
+const ES_CSSL = {t0:2.5, t1:3.5, t2:5.5, t3:8.0}; // CSSL totale
+const ES_CSSR = {t0:0.0, t1:0.30, t2:0.74, t3:1.19}; // CSSR richiamo
+
+function adjSpan(g, eta, scol) {
+  return g - (-0.0247)*(eta - M_ETA) - 0.0566*(scol - M_SCOL);
+}
+function adjCSSL(g, eta, scol) {
+  return g - (-0.0502)*(eta - M_ETA) - 0.1103*(scol - M_SCOL);
+}
+function adjCSSR(g, eta, scol) {
+  return g - (-0.0082)*(eta - M_ETA) - 0.0195*(scol - M_SCOL);
+}
+
+function pcToES(pc, th) {
+  if (pc < th.t0) return 0;
+  if (pc < th.t1) return 1;
+  if (pc < th.t2) return 2;
+  if (pc < th.t3) return 3;
+  return 4;
+}
+
+window._f = {};
+
+function calcAll() {
+  const eta  = parseFloat(document.getElementById('p-eta').value);
+  const scol = parseFloat(document.getElementById('p-scol').value);
+  const gSpan = parseFloat(document.getElementById('g-span').value);
+  const gCSSL = parseFloat(document.getElementById('g-cssl').value);
+  const gCSSR = parseFloat(document.getElementById('g-cssr').value);
+  const hasDemo = !isNaN(eta) && !isNaN(scol);
+
+  window._f = {};
+
+  function proc(g, adjFn, th, resId, key) {
+    const el = document.getElementById(resId);
+    if (!hasDemo || isNaN(g)) { el.innerHTML=''; return null; }
+    const pc = adjFn(g, eta, scol);
+    const es = pcToES(pc, th);
+    const ast = es<=1?'*':'';
+    el.innerHTML = `
+      <div class="res-line">PG: <strong>${g}</strong></div>
+      <div class="res-line">PC (adj): <strong>${pc.toFixed(2)}${ast}</strong></div>
+      <div class="res-line">PE: <span class="es-badge es-${es}">${es}</span></div>`;
+    window._f[key] = {g, pc, es, ast};
+    return {g, pc, es, ast};
+  }
+
+  proc(gSpan, adjSpan, ES_SPAN, 'res-span', 'SPAN');
+  proc(gCSSL, adjCSSL, ES_CSSL, 'res-cssl', 'CSSL');
+  proc(gCSSR, adjCSSR, ES_CSSR, 'res-cssr', 'CSSR');
+
+  const hasAny = Object.keys(window._f).length > 0;
+  if (hasAny && hasDemo) enableButtons(); else disableButtons();
+}
+
+function enableButtons()  {document.getElementById('btn-elenco').disabled=false;document.getElementById('btn-tabella').disabled=false;}
+function disableButtons() {document.getElementById('btn-elenco').disabled=true;document.getElementById('btn-tabella').disabled=true;}
+
+// ============================================================
+// OUTPUT
+// ============================================================
+function buildElenco() {
+  const f=window._f;
+  const esL=es=>es<=0?'(PE 0 — patologico)':es===1?'(PE 1 — borderline)':`(PE ${es})`;
+  let lines=['Corsi Span + Supraspan CSSL/CSSR (Facchin et al., 2024):'];
+  if(f.SPAN) lines.push(`  Corsi Span Forward: ${f.SPAN.g} → ${f.SPAN.pc.toFixed(2)}${f.SPAN.ast} ${esL(f.SPAN.es)}`);
+  if(f.CSSL) lines.push(`  CSSL Supraspan Apprendimento: ${f.CSSL.g} → ${f.CSSL.pc.toFixed(2)}${f.CSSL.ast} ${esL(f.CSSL.es)}`);
+  if(f.CSSR) lines.push(`  CSSR Supraspan Richiamo: ${f.CSSR.g} → ${f.CSSR.pc.toFixed(2)}${f.CSSR.ast} ${esL(f.CSSR.es)}`);
+  return lines.join('\n');
+}
+
+function buildTabellaHTML() {
+  const f=window._f;
+  const rows=[
+    f.SPAN?`<tr><td>Corsi Span Forward</td><td>${f.SPAN.g}/9</td><td>${f.SPAN.pc.toFixed(2)}${f.SPAN.ast}</td><td>PE ${f.SPAN.es}</td><td>—</td></tr>`:'',
+    f.CSSL?`<tr><td>CSSL — Supraspan Apprendimento</td><td>${f.CSSL.g}</td><td>${f.CSSL.pc.toFixed(2)}${f.CSSL.ast}</td><td>PE ${f.CSSL.es}</td><td>—</td></tr>`:'',
+    f.CSSR?`<tr><td>CSSR — Supraspan Richiamo Differito</td><td>${f.CSSR.g}</td><td>${f.CSSR.pc.toFixed(2)}${f.CSSR.ast}</td><td>PE ${f.CSSR.es}</td><td>—</td></tr>`:'',
+  ].join('');
+  return `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%">
+  <thead><tr style="font-weight:bold;background:#f2f2f2"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE (0–4)</b></td><td><b>Cut-off</b></td></tr></thead>
+  <tbody>
+  <tr><td colspan="5" style="background:#f9f9f9;font-style:italic;font-size:11px"><b>Corsi Span + Supraspan CSSL/CSSR</b> (Facchin et al., 2024)</td></tr>
+  ${rows}
+  </tbody></table>`;
+}
+
+function copyOutput(tipo){
+  const out=document.getElementById('report-output'),fb=document.getElementById('copy-feedback');
+  if(tipo==='elenco'){const t=buildElenco();out.textContent=t;out.style.display='block';navigator.clipboard.writeText(t).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{selOut(out);fb.textContent='⚠ Seleziona e Ctrl+C';});}
+  else{const h=buildTabellaHTML();out.textContent='[Tabella] Corsi Span + Supraspan';out.style.display='block';try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([h],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(h,fb));}catch(e){fbH(h,fb);}}
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+function selOut(el){const r=document.createRange();r.selectNodeContents(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+
+document.getElementById('p-data').value=new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

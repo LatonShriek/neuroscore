@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrici Attentive — Della Sala et al. (1992)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #222536;
+    --border: #2e3348; --accent: #4f8ef7; --accent2: #7eb3ff;
+    --text: #e8eaf0; --text2: #9da3b8; --text3: #6b7190;
+    --ok: #34d399; --warn: #fbbf24; --err: #f87171;
+    --font: 'IBM Plex Sans', sans-serif; --mono: 'IBM Plex Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  header { border-bottom: 1px solid var(--border); padding-bottom: 1.25rem; margin-bottom: 2rem; }
+  .test-num { font-family: var(--mono); font-size: .75rem; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .4rem; }
+  h1 { font-size: 1.4rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .ref { font-size: .8rem; color: var(--text3); margin-top: .3rem; font-style: italic; }
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.25rem; }
+  .section-title { font-size: .7rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: .75rem; }
+  .field-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+  .field { display: flex; flex-direction: column; gap: .35rem; }
+  label { font-size: .78rem; color: var(--text2); }
+  input, select {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: var(--mono); font-size: .95rem; padding: .5rem .75rem;
+    outline: none; transition: border-color .15s;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  /* Protocollo matrici */
+  .matrix-block { margin-bottom: 1rem; }
+  .matrix-title { font-size: .82rem; font-weight: 600; color: var(--text2); margin-bottom: .5rem; display: flex; align-items: center; gap: .5rem; }
+  .matrix-badge { font-family: var(--mono); font-size: .7rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: .1rem .4rem; color: var(--text3); }
+  .row-grid { display: grid; grid-template-columns: repeat(auto-fill, 48px); gap: .35rem; margin-bottom: .4rem; }
+  .cell-pair { display: flex; flex-direction: column; align-items: center; gap: .15rem; }
+  .cell-label { font-family: var(--mono); font-size: .65rem; color: var(--text3); text-align: center; }
+  .cell-input {
+    width: 44px; height: 36px; text-align: center;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 5px; color: var(--text); font-family: var(--mono); font-size: .85rem;
+    padding: 0;
+  }
+  .cell-input:focus { border-color: var(--accent); outline: none; }
+
+  .row-summary { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin-top: .4rem; font-size: .82rem; color: var(--text2); }
+  .row-summary span { font-family: var(--mono); color: var(--accent2); }
+
+  .totals-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; margin-top: .75rem; background: var(--surface2); border-radius: 8px; padding: .75rem; }
+  .total-item { display: flex; flex-direction: column; gap: .25rem; }
+  .total-label { font-size: .72rem; color: var(--text3); }
+  .total-val { font-family: var(--mono); font-size: 1.1rem; color: var(--text); font-weight: 500; }
+
+  /* Risultato */
+  .result-box { border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; background: var(--surface); }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; padding: .4rem 0; border-bottom: 1px solid var(--border); }
+  .result-row:last-child { border-bottom: none; }
+  .result-label { font-size: .82rem; color: var(--text2); }
+  .result-val { font-family: var(--mono); font-size: 1rem; font-weight: 500; }
+  .pe-badge { display: inline-flex; align-items: center; gap: .4rem; padding: .25rem .75rem; border-radius: 20px; font-family: var(--mono); font-weight: 600; font-size: .9rem; }
+  .pe-0 { background: rgba(248,113,113,.15); color: var(--err); }
+  .pe-1 { background: rgba(251,191,36,.12); color: var(--warn); }
+  .pe-2 { background: rgba(251,191,36,.08); color: #e0a820; }
+  .pe-3 { background: rgba(52,211,153,.1); color: var(--ok); }
+  .pe-4 { background: rgba(52,211,153,.15); color: var(--ok); }
+  .pe-none { background: var(--surface2); color: var(--text3); }
+
+  .btn-row { display: flex; gap: .75rem; margin-top: 1.25rem; flex-wrap: wrap; }
+  button {
+    padding: .55rem 1.1rem; border-radius: 7px; font-family: var(--font); font-size: .85rem;
+    font-weight: 500; cursor: pointer; border: none; transition: opacity .15s;
+  }
+  button:disabled { opacity: .35; cursor: not-allowed; }
+  button:not(:disabled):hover { opacity: .85; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+  .note { font-size: .76rem; color: var(--text3); margin-top: .6rem; padding: .6rem .75rem; background: var(--surface2); border-radius: 6px; border-left: 3px solid var(--border); }
+  .warn-note { border-left-color: var(--warn); color: var(--warn); }
+  .flash { animation: flash .4s; }
+  @keyframes flash { 0%,100%{opacity:1} 50%{opacity:.5} }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="test-num">Test #08 · Attenzione Visiva</div>
+    <h1>Matrici Attentive (Test di Attenzione Visiva)</h1>
+    <div class="ref">Della Sala S., Laiacona M., Trivelli C., Spinnler H. (1992) — Norme: Spinnler & Tognoni (1987)</div>
+  </header>
+
+  <!-- Dati demografici -->
+  <div class="section">
+    <div class="section-title">Dati demografici</div>
+    <div class="field-row triple">
+      <div class="field">
+        <label>Età (anni)</label>
+        <input type="number" id="eta" min="20" max="99" placeholder="es. 68" oninput="onDemoChange()">
+      </div>
+      <div class="field">
+        <label>Scolarità (anni)</label>
+        <input type="number" id="scol" min="0" max="30" placeholder="es. 8" oninput="onDemoChange()">
+      </div>
+      <div class="field">
+        <label>Sesso</label>
+        <select id="sesso" onchange="onDemoChange()">
+          <option value="">—</option>
+          <option value="M">Maschio</option>
+          <option value="F">Femmina</option>
+        </select>
+      </div>
+    </div>
+    <div class="note">Range normativo: 20–95 anni · Punteggio computo da II e III matrice (I = solo training)</div>
+  </div>
+
+  <!-- Protocollo II Matrice (su 20) -->
+  <div class="section">
+    <div class="section-title">Protocollo somministrazione</div>
+
+    <div class="matrix-block">
+      <div class="matrix-title">II Matrice <span class="matrix-badge">target: 2 e 6 · max 20</span></div>
+      <div id="mat2-rows"></div>
+      <div class="row-summary">Tot. II Matrice (entro 45″): <span id="tot2">0</span>/20
+        · Falsi Negativi II: <span id="fn2">0</span>
+      </div>
+    </div>
+
+    <div class="matrix-block" style="margin-top:1rem">
+      <div class="matrix-title">III Matrice <span class="matrix-badge">target: 1, 4 e 9 · max 30</span></div>
+      <div id="mat3-rows"></div>
+      <div class="row-summary">Tot. III Matrice (entro 45″): <span id="tot3">0</span>/30
+        · Falsi Negativi III: <span id="fn3">0</span>
+      </div>
+    </div>
+
+    <div class="totals-row">
+      <div class="total-item"><div class="total-label">Punteggio grezzo (B+C−FN)</div><div class="total-val" id="grezzo-disp">—</div></div>
+      <div class="total-item"><div class="total-label">Falsi Negativi totali</div><div class="total-val" id="fn-tot-disp">—</div></div>
+      <div class="total-item"><div class="total-label">Falsi Allarmi totali</div><div class="total-val" id="fa-disp">—</div></div>
+    </div>
+
+    <!-- FA separato -->
+    <div class="field" style="margin-top:.75rem; max-width:200px">
+      <label>Falsi Allarmi totali (su 170)</label>
+      <input type="number" id="fa" min="0" max="170" placeholder="0" oninput="calcola()">
+    </div>
+  </div>
+
+  <!-- Risultati -->
+  <div class="result-box">
+    <div class="section-title" style="margin-bottom:.75rem">Risultato</div>
+    <div class="result-row"><span class="result-label">Punteggio grezzo</span><span class="result-val" id="r-grezzo">—</span></div>
+    <div class="result-row"><span class="result-label">Correzione demografica</span><span class="result-val" id="r-corr">—</span></div>
+    <div class="result-row"><span class="result-label">Punteggio corretto</span><span class="result-val" id="r-corretto">—</span></div>
+    <div class="result-row"><span class="result-label">Cut-off</span><span class="result-val">23.9</span></div>
+    <div class="result-row"><span class="result-label">Punteggio Equivalente</span>
+      <span class="result-val"><span class="pe-badge pe-none" id="r-pe">—</span></span>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copiaElenco()">Copia come elenco</button>
+    <button class="btn-secondary" id="btn-tabella" disabled onclick="copiaTabella()">Copia come tabella</button>
+  </div>
+  <div class="note" id="copy-msg" style="display:none"></div>
+</div>
+
+<script>
+// ─── Struttura matrici ───
+// II Matrice: 11 righe, target 2 e 6 → massimo 20 hit
+// III Matrice: 11 righe, target 1, 4 e 9 → massimo 30 hit
+// Per ogni riga: colonne "Risp" (risposte corrette) e "Falsi Neg" (mancati)
+
+const mat2Data = [
+  {row:'I',   n_target:0, n_fn_possible:0},
+  {row:'II',  n_target:1, n_fn_possible:1},
+  {row:'III', n_target:1, n_fn_possible:1},
+  {row:'IV',  n_target:2, n_fn_possible:2},
+  {row:'V',   n_target:3, n_fn_possible:3},
+  {row:'VI',  n_target:2, n_fn_possible:2},
+  {row:'VII', n_target:4, n_fn_possible:4},
+  {row:'VIII',n_target:2, n_fn_possible:2},
+  {row:'IX',  n_target:3, n_fn_possible:3},
+  {row:'X',   n_target:1, n_fn_possible:1},
+  {row:'XI',  n_target:1, n_fn_possible:1},
+];
+
+const mat3Data = [
+  {row:'I',   n_target:1},
+  {row:'II',  n_target:4},
+  {row:'III', n_target:2},
+  {row:'IV',  n_target:1},
+  {row:'V',   n_target:2},
+  {row:'VI',  n_target:3},
+  {row:'VII', n_target:3},
+  {row:'VIII',n_target:3},
+  {row:'IX',  n_target:3},
+  {row:'X',   n_target:5},
+  {row:'XI',  n_target:3},
+];
+
+function buildMatrix(containerId, data, prefix) {
+  const el = document.getElementById(containerId);
+  let html = '';
+  data.forEach((r, i) => {
+    html += `<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem">
+      <span style="font-family:var(--mono);font-size:.75rem;color:var(--text3);min-width:32px">${r.row}</span>
+      <div class="field" style="flex-direction:row;align-items:center;gap:.3rem">
+        <label style="font-size:.72rem">Risp.</label>
+        <input class="cell-input" type="number" min="0" max="${r.n_target||0}" id="${prefix}_risp_${i}" oninput="updateMatrix('${prefix}')">
+      </div>
+      <div class="field" style="flex-direction:row;align-items:center;gap:.3rem">
+        <label style="font-size:.72rem">FN</label>
+        <input class="cell-input" type="number" min="0" max="${r.n_target||0}" id="${prefix}_fn_${i}" oninput="updateMatrix('${prefix}')">
+      </div>
+      <span style="font-size:.7rem;color:var(--text3)">(max ${r.n_target||0})</span>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+buildMatrix('mat2-rows', mat2Data, 'm2');
+buildMatrix('mat3-rows', mat3Data, 'm3');
+
+function updateMatrix(prefix) {
+  const data = prefix === 'm2' ? mat2Data : mat3Data;
+  let totRisp = 0, totFN = 0;
+  data.forEach((r, i) => {
+    const risp = parseInt(document.getElementById(`${prefix}_risp_${i}`)?.value) || 0;
+    const fn   = parseInt(document.getElementById(`${prefix}_fn_${i}`)?.value) || 0;
+    totRisp += risp;
+    totFN   += fn;
+  });
+  if (prefix === 'm2') {
+    document.getElementById('tot2').textContent = totRisp;
+    document.getElementById('fn2').textContent = totFN;
+  } else {
+    document.getElementById('tot3').textContent = totRisp;
+    document.getElementById('fn3').textContent = totFN;
+  }
+  calcola();
+}
+
+// ─── Griglia correzione ───
+// Colonne: scol ≤5, 5-7, 8-12, 13-15, ≥16
+// Righe età: 25,35,45,55,65,75,85,95
+const GRID_M = {
+  25: [-2.50, -5.30, -7.80, -10.40, -11.80],
+  35: [-1.20, -3.90, -6.50,  -9.10, -10.50],
+  45: [ 0.20, -2.50, -5.00,  -7.60,  -9.10],
+  55: [ 1.80, -0.90, -3.50,  -6.10,  -7.50],
+  65: [ 3.60,  0.80, -1.70,  -4.30,  -5.80],
+  75: [ 5.60,  2.80,  0.30,  -2.30,  -3.70],
+  85: [ 8.10,  5.30,  2.80,   0.20,  -1.20],
+  95: [11.70,  9.00,  6.40,   3.80,   2.40],
+};
+const GRID_F = {
+  25: [-0.10, -2.80, -5.40,  -8.00,  -9.40],
+  35: [ 1.20, -1.50, -4.00,  -6.60,  -8.10],
+  45: [ 2.70, -0.10, -2.60,  -5.20,  -6.70],
+  55: [ 4.20,  1.50, -1.00,  -3.60,  -5.10],
+  65: [ 6.00,  3.20,  0.70,  -1.90,  -3.30],
+  75: [ 8.00,  5.30,  2.70,   0.10,  -1.30],
+  85: [10.50,  7.80,  5.20,   2.60,   1.20],
+  95: [14.10, 11.40,  8.90,   6.20,   4.80],
+};
+
+function getScolaritaIdx(s) {
+  if (s <= 5)  return 0;
+  if (s <= 7)  return 1;
+  if (s <= 12) return 2;
+  if (s <= 15) return 3;
+  return 4;
+}
+
+function getCorrezione(eta, scol, sesso) {
+  const grid = sesso === 'F' ? GRID_F : GRID_M;
+  const ages = [25,35,45,55,65,75,85,95];
+  const si = getScolaritaIdx(scol);
+  // Trova le due età più vicine per interpolazione lineare
+  if (eta <= 25) return grid[25][si];
+  if (eta >= 95) return grid[95][si];
+  for (let i = 0; i < ages.length - 1; i++) {
+    if (eta >= ages[i] && eta < ages[i+1]) {
+      const a1 = ages[i], a2 = ages[i+1];
+      const c1 = grid[a1][si], c2 = grid[a2][si];
+      return c1 + (c2 - c1) * (eta - a1) / (a2 - a1);
+    }
+  }
+  return 0;
+}
+
+function getPE(corretto) {
+  if (corretto === null) return null;
+  if (corretto <= 23.9) return 0;
+  if (corretto <= 29.8) return 1;
+  if (corretto <= 36.2) return 2;
+  if (corretto <= 40.4) return 3;
+  return 4;
+}
+
+// Stato globale
+let state = { grezzo: null, corretto: null, correzione: null, pe: null };
+
+function calcola() {
+  const eta  = parseFloat(document.getElementById('eta').value);
+  const scol = parseFloat(document.getElementById('scol').value);
+  const sesso = document.getElementById('sesso').value;
+  const fa   = parseInt(document.getElementById('fa').value) || 0;
+
+  const t2  = parseInt(document.getElementById('tot2').textContent) || 0;
+  const t3  = parseInt(document.getElementById('tot3').textContent) || 0;
+  const fn2 = parseInt(document.getElementById('fn2').textContent) || 0;
+  const fn3 = parseInt(document.getElementById('fn3').textContent) || 0;
+  const fnTot = fn2 + fn3;
+  const grezzo = t2 + t3 - fnTot;
+
+  document.getElementById('fn-tot-disp').textContent = fnTot;
+  document.getElementById('fa-disp').textContent = fa;
+  document.getElementById('grezzo-disp').textContent = grezzo;
+
+  document.getElementById('r-grezzo').textContent = grezzo;
+
+  const demoOk = !isNaN(eta) && !isNaN(scol) && sesso;
+  updateButtons(demoOk);
+
+  if (!demoOk) {
+    state = { grezzo, corretto: null, correzione: null, pe: null };
+    setResult('r-corr', '—'); setResult('r-corretto', '—'); setPE(null);
+    return;
+  }
+
+  const correzione = getCorrezione(eta, scol, sesso);
+  const corretto = grezzo + correzione;
+  const pe = getPE(corretto);
+  state = { grezzo, corretto, correzione, pe, eta, scol, sesso };
+
+  setResult('r-corr', (correzione >= 0 ? '+' : '') + correzione.toFixed(2));
+  setResult('r-corretto', corretto.toFixed(2));
+  setPE(pe);
+}
+
+function setResult(id, val) { document.getElementById(id).textContent = val; }
+
+function setPE(pe) {
+  const el = document.getElementById('r-pe');
+  if (pe === null) { el.className = 'pe-badge pe-none'; el.textContent = '—'; return; }
+  const labels = ['Patologico','Borderline','Lieve deficit','Nella norma','Nella norma'];
+  el.className = `pe-badge pe-${pe}`;
+  el.textContent = `PE ${pe} — ${labels[pe]}`;
+}
+
+function onDemoChange() { calcola(); }
+
+function updateButtons(enabled) {
+  document.getElementById('btn-elenco').disabled = !enabled;
+  document.getElementById('btn-tabella').disabled = !enabled;
+}
+
+function copiaElenco() {
+  const { grezzo, corretto, pe } = state;
+  const asterG = (corretto !== null && corretto <= 23.9) ? '*' : '';
+  const asterC = (corretto !== null && corretto > 23.9 && grezzo <= 23.9) ? '*' : '';
+  const gStr = grezzo !== null ? `${grezzo}${(corretto === null || corretto <= 23.9) && grezzo <= 23.9 ? '*' : ''}` : '—';
+  const cStr = corretto !== null ? `${corretto.toFixed(2)}${corretto <= 23.9 ? '*' : ''}` : '—';
+  const peStr = pe !== null ? `PE ${pe}` : '—';
+  const esiti = ['patologico','borderline','lieve deficit','nella norma','nella norma'];
+  const esito = pe !== null ? esiti[pe] : '—';
+  const txt = `Matrici Attentive (Della Sala et al., 1992): ${gStr} → ${cStr} (${peStr} — ${esito})`;
+  navigator.clipboard.writeText(txt).then(() => showMsg('✓ Copiato come elenco'));
+}
+
+function copiaTabella() {
+  const { grezzo, corretto, pe } = state;
+  const cStr = corretto !== null ? corretto.toFixed(2) + (corretto <= 23.9 ? '*' : '') : '—';
+  const gStr = corretto === null && grezzo <= 23.9 ? grezzo + '*' : (grezzo ?? '—');
+  const peStr = pe !== null ? `PE ${pe}` : '—';
+  const html = `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:13px">
+<tr style="background:#1a1d27;color:#4f8ef7"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>PE</th><th>Cut-off</th></tr>
+<tr><td>Matrici Attentive (Della Sala et al., 1992)</td><td>${gStr}</td><td>${cStr}</td><td>${peStr}</td><td>23.9</td></tr>
+</table>`;
+  const blob = new Blob([html], {type: 'text/html'});
+  const item = new ClipboardItem({'text/html': blob});
+  navigator.clipboard.write([item]).then(() => showMsg('✓ Copiato come tabella (incolla in Google Docs)'));
+}
+
+function showMsg(msg) {
+  const el = document.getElementById('copy-msg');
+  el.textContent = msg; el.style.display = 'block';
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+</script>
+</body>
+</html>

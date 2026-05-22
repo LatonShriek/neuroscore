@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #7 — DC Disegno con i Cubi WAIS-IV</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3347;
+  --accent:#4f8ef7; --ok:#2ecc71; --warn:#e67e22; --err:#e74c3c;
+  --text:#e8eaf0; --muted:#8892a4;
+  --sans:'IBM Plex Sans',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh}
+.shell{max-width:780px;margin:0 auto;padding:32px 20px 60px}
+
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px}
+.hdr-badge{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.hdr h1{font-size:22px;font-weight:600}
+.hdr .cite{font-size:12px;color:var(--muted);margin-top:4px}
+.range-tag{display:inline-block;background:rgba(79,142,247,.12);border:1px solid var(--accent);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:6px}
+
+.sec-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;margin-top:24px}
+
+.demo-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.demo-grid{grid-template-columns:1fr 1fr}}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 10px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+
+.age-warn{background:#2d1f0e;border:1px solid var(--warn);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--warn);margin-top:10px;display:none}
+.ln-warn{background:#1a1a2e;border:1px solid var(--muted);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--muted);margin-top:10px;display:none}
+
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.score-card .sc-label{font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:8px}
+.score-card .sc-title{font-size:13px;font-weight:500;margin-bottom:10px}
+.score-card input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:20px;padding:8px 12px;outline:none;text-align:center;transition:border-color .2s}
+.score-card input:focus{border-color:var(--accent)}
+.score-card .sc-max{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:4px;text-align:center}
+
+.result-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-top:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.pp-display .num{font-size:42px;font-weight:500;color:var(--accent);line-height:1;font-family:var(--mono)}
+.pp-display .lbl{font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em}
+.verdict{flex:1;min-width:180px}
+.verdict .v-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.verdict .v-text{font-size:15px;font-weight:500}
+.v-ok{color:var(--ok)} .v-err{color:var(--err)} .v-na{color:var(--muted)}
+.pp-info{font-size:12px;color:var(--muted);font-family:var(--mono)}
+
+.norm-wrap{margin-top:16px;overflow-x:auto}
+.norm-table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:12px}
+.norm-table th,.norm-table td{border:1px solid var(--border);padding:5px 10px;text-align:center}
+.norm-table th{background:var(--surface2);color:var(--muted)}
+.norm-table td{color:var(--text)}
+.norm-table .hl{background:#1b2a3b;color:var(--accent);font-weight:600}
+.norm-table .hl-pp{background:#0d2e1a;color:var(--ok);font-weight:700}
+
+.report-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-report{flex:1;min-width:160px;padding:12px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s}
+.btn-report:hover:not(:disabled){opacity:.85}
+.btn-report:disabled{background:var(--surface2);color:var(--muted);cursor:default}
+.btn-report.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-report.secondary:hover:not(:disabled){border-color:var(--accent);color:var(--accent);opacity:1}
+.copy-feedback{font-family:var(--mono);font-size:11px;color:var(--ok);margin-top:8px;min-height:16px}
+.report-output{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:14px;font-family:var(--mono);font-size:12px;line-height:1.8;white-space:pre-wrap;display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="hdr">
+  <div class="hdr-badge">Test #7 · WAIS-IV</div>
+  <h1>DC — Disegno con i Cubi</h1>
+  <div class="cite">Orsini A., Pezzuti L. (2013). <em>WAIS-IV. Contributo alla taratura italiana.</em> O.S. Organizzazioni Speciali, Firenze. — Tabelle A-1.1 (16–69 aa), A-1.2 (70–74), A-1.3 (75–79), A-1.4 (80–84), A-1.5 (85–90).</div>
+  <div class="range-tag">Età: 16–90 anni</div>
+</div>
+
+<div class="sec-label">Dati paziente</div>
+<div class="demo-grid">
+  <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="16" max="90" placeholder="es. 72" oninput="checkAge();calcResult()"></div>
+  <div class="field"><label>Sesso</label><select id="p-sesso" onchange="calcResult()"><option value="">—</option><option value="M">M</option><option value="F">F</option></select></div>
+  <div class="field"><label>Scolarità (aa)</label><input type="number" id="p-scol" min="0" max="30" placeholder="es. 13" oninput="calcResult()"></div>
+  <div class="field"><label>Data valutazione</label><input type="date" id="p-data"></div>
+</div>
+<div class="age-warn" id="age-warn">⚠ Range normativo: 16–90 anni.</div>
+
+<div class="sec-label">Punteggi grezzi</div>
+<div class="score-grid">
+  <div class="score-card">
+    <div class="sc-label">Punteggio principale</div>
+    <div class="sc-title">DC — con bonus rapidità</div>
+    <input type="number" id="g-dc" min="0" max="66" placeholder="0–66" oninput="calcResult()">
+    <div class="sc-max">Max = 66</div>
+  </div>
+  <div class="score-card">
+    <div class="sc-label">Punteggio di processo (opz.)</div>
+    <div class="sc-title">DCs — senza bonus rapidità</div>
+    <input type="number" id="g-dcs" min="0" max="48" placeholder="0–48" oninput="calcResult()">
+    <div class="sc-max">Max = 48</div>
+  </div>
+</div>
+
+<div class="result-bar">
+  <div class="pp-display">
+    <div class="lbl">Pp DC</div>
+    <div class="num" id="pp-dc">—</div>
+  </div>
+  <div class="pp-display">
+    <div class="lbl">Pp DCs</div>
+    <div class="num" id="pp-dcs" style="font-size:28px;color:var(--muted)">—</div>
+  </div>
+  <div class="verdict">
+    <div class="v-label">Fascia</div>
+    <div class="v-text v-na" id="verdict-text">Inserire dati</div>
+  </div>
+  <div class="pp-info" id="pp-info">—</div>
+</div>
+
+<div class="sec-label" style="margin-top:24px">Tabella normativa — DC (grezzo → Pp per fascia d'età)</div>
+<div class="norm-wrap" id="norm-wrap"></div>
+
+<div class="report-btns">
+  <button class="btn-report" id="btn-elenco" onclick="copyOutput('elenco')" disabled>📋 Copia come elenco</button>
+  <button class="btn-report secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>⊞ Copia come tabella</button>
+</div>
+<div class="copy-feedback" id="copy-feedback"></div>
+<div class="report-output" id="report-output"></div>
+
+</div>
+<script>
+// ============================================================
+// TABELLE Pp — Orsini & Pezzuti 2013
+// Struttura: array[19] dove indice 0 = Pp 1 ... indice 18 = Pp 19
+// Ogni elemento: [min_grezzo, max_grezzo] oppure null (non definito)
+// ============================================================
+
+// DC — Disegno con i cubi (max 66 con bonus rapidità, max 48 senza)
+// Fonte: Tab A-1.1 col DC (16-69), A-1.2 (70-74), A-1.3 (75-79), A-1.4 (80-84), A-1.5 (85-90)
+const DC = {
+  '16-69': [
+    [0,3],[4,5],[6,8],[9,11],[12,13],[14,16],[17,19],[20,21],[22,24],[25,27],
+    [28,29],[30,32],[33,35],[36,37],[38,40],[41,43],[44,45],[46,48],[49,66]
+  ],
+  '70-74': [
+    [0,3],[4,5],[6,8],[9,11],[12,13],[14,16],[17,19],[20,21],[22,24],[25,27],
+    [28,29],[30,32],[33,35],[36,37],[38,40],[41,43],[44,45],[46,48],[49,66]
+  ],
+  '75-79': [
+    [0,2],[3,4],[5,7],[8,10],[11,12],[13,15],[16,17],[18,20],[21,22],[23,25],
+    [26,28],[29,30],[31,33],[34,35],[36,38],[39,40],[41,43],[44,46],[47,66]
+  ],
+  '80-84': [
+    [0,2],[3,4],[5,6],[7,9],[10,11],[11,13],[14,16],[17,18],[19,21],[22,24],
+    [25,27],[28,30],[31,33],[34,35],[36,38],[39,41],[42,44],[null,null],[45,66]
+  ],
+  '85-90': [
+    [0,1],[null,null],[2,4],[5,7],[8,10],[11,13],[14,16],[17,19],[20,21],[22,24],
+    [25,27],[28,30],[31,33],[34,36],[37,39],[40,42],[43,66],[null,null],[null,null]
+  ]
+};
+
+// DCs — senza bonus rapidità: stessa struttura ma grezzo max 48
+// Le tabelle Orsini non separano DCs per fascia anziani — usiamo lookup inverso
+// approssimato: Pp DCs = stessa tabella ma con grezzo 0-48
+// (il punteggio di processo non ha taratura separata per 70-90 nel testo)
+
+function ageBand(eta) {
+  if (eta < 16) return null;
+  if (eta <= 69) return '16-69';
+  if (eta <= 74) return '70-74';
+  if (eta <= 79) return '75-79';
+  if (eta <= 84) return '80-84';
+  if (eta <= 90) return '85-90';
+  return null;
+}
+
+function grezzoToPp(grezzo, table) {
+  for (let i = 0; i < table.length; i++) {
+    const r = table[i];
+    if (!r) continue;
+    if (grezzo >= r[0] && grezzo <= r[1]) return i + 1;
+  }
+  return null;
+}
+
+function ppLabel(pp) {
+  if (pp === null) return {text:'—', cls:'v-na'};
+  if (pp <= 5)  return {text:'Molto bassa', cls:'v-err'};
+  if (pp <= 7)  return {text:'Bassa', cls:'v-err'};
+  if (pp <= 9)  return {text:'Medio-bassa', cls:'v-warn'};
+  if (pp <= 11) return {text:'Media', cls:'v-ok'};
+  if (pp <= 13) return {text:'Medio-alta', cls:'v-ok'};
+  if (pp <= 15) return {text:'Alta', cls:'v-ok'};
+  return {text:'Molto alta', cls:'v-ok'};
+}
+
+function calcResult() {
+  const eta  = parseInt(document.getElementById('p-eta').value);
+  const gDC  = parseInt(document.getElementById('g-dc').value);
+  const gDCs = parseInt(document.getElementById('g-dcs').value);
+  const band = isNaN(eta) ? null : ageBand(eta);
+
+  const ppDCel  = document.getElementById('pp-dc');
+  const ppDCsel = document.getElementById('pp-dcs');
+  const verdEl  = document.getElementById('verdict-text');
+  const infoEl  = document.getElementById('pp-info');
+
+  if (!band) {
+    ppDCel.textContent = '—'; ppDCsel.textContent = '—';
+    verdEl.className = 'v-text v-na'; verdEl.textContent = 'Inserire età valida';
+    infoEl.textContent = ''; disableButtons(); buildNormTable(null, null, null); return;
+  }
+
+  const table = DC[band];
+
+  let ppDC = null, ppDCs = null;
+  if (!isNaN(gDC)) ppDC = grezzoToPp(gDC, table);
+  if (!isNaN(gDCs)) ppDCs = grezzoToPp(gDCs, table);
+
+  ppDCel.textContent = ppDC !== null ? ppDC : '—';
+  ppDCsel.textContent = ppDCs !== null ? ppDCs : '—';
+
+  if (ppDC !== null) {
+    const lbl = ppLabel(ppDC);
+    verdEl.className = 'v-text ' + lbl.cls;
+    verdEl.textContent = lbl.text;
+    infoEl.textContent = `Fascia età: ${band} aa`;
+    enableButtons();
+  } else {
+    verdEl.className = 'v-text v-na';
+    verdEl.textContent = isNaN(gDC) ? 'Inserire punteggio DC' : 'Valore fuori range';
+    infoEl.textContent = `Fascia età: ${band} aa`;
+    if (!isNaN(eta) && band) enableButtons(); else disableButtons();
+  }
+
+  buildNormTable(band, ppDC, ppDCs);
+}
+
+function buildNormTable(band, ppDC, ppDCs) {
+  const wrap = document.getElementById('norm-wrap');
+  if (!band) { wrap.innerHTML = '<div style="font-size:12px;color:var(--muted);font-family:var(--mono)">Inserire età per visualizzare la tabella.</div>'; return; }
+
+  const table = DC[band];
+  let html = `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-family:var(--mono)">Tabella A-1 — Fascia ${band} anni — Orsini & Pezzuti, 2013</div>`;
+  html += '<table class="norm-table"><thead><tr><th>Pp</th><th>Grezzo DC (con bonus)</th></tr></thead><tbody>';
+  for (let i = 0; i < 19; i++) {
+    const r = table[i];
+    const pp = i + 1;
+    const rng = r ? (r[0] === r[1] ? `${r[0]}` : `${r[0]}–${r[1]}`) : '—';
+    const hlPP = (pp === ppDC) ? ' class="hl-pp"' : '';
+    html += `<tr><td${hlPP}>${pp}</td><td${hlPP}>${rng}</td></tr>`;
+  }
+  html += '</tbody></table>';
+  html += '<div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">Pp 10 = media del gruppo d\'età. Patologico convenzionalmente: Pp ≤ 7.</div>';
+  wrap.innerHTML = html;
+}
+
+function enableButtons()  { document.getElementById('btn-elenco').disabled=false; document.getElementById('btn-tabella').disabled=false; }
+function disableButtons() { document.getElementById('btn-elenco').disabled=true;  document.getElementById('btn-tabella').disabled=true; }
+
+function checkAge() {
+  const a = parseInt(document.getElementById('p-eta').value);
+  document.getElementById('age-warn').style.display = (a && (a < 16 || a > 90)) ? 'block' : 'none';
+}
+
+// ============================================================
+// OUTPUT
+// ============================================================
+function getResultData() {
+  const eta  = parseInt(document.getElementById('p-eta').value);
+  const gDC  = parseInt(document.getElementById('g-dc').value);
+  const gDCs = parseInt(document.getElementById('g-dcs').value);
+  const band = isNaN(eta) ? null : ageBand(eta);
+  const table = band ? DC[band] : null;
+
+  const ppDC  = (table && !isNaN(gDC))  ? grezzoToPp(gDC, table)  : null;
+  const ppDCs = (table && !isNaN(gDCs)) ? grezzoToPp(gDCs, table) : null;
+
+  // Asterisco se patologico (Pp ≤ 7 convenzionale WAIS-IV)
+  const patol = ppDC !== null && ppDC <= 7;
+  const asterisco = patol ? '*' : '';
+
+  return { eta, gDC, gDCs, ppDC, ppDCs, band, patol, asterisco };
+}
+
+function buildElenco() {
+  const d = getResultData();
+  const dcStr  = !isNaN(d.gDC)  ? `${d.gDC}${d.asterisco}` : '—';
+  const ppStr  = d.ppDC  !== null ? `Pp ${d.ppDC}` : '—';
+  const dcsStr = (!isNaN(d.gDCs) && d.ppDCs !== null) ? ` | DCs: ${d.gDCs} → Pp ${d.ppDCs}` : '';
+  return `Disegno con i Cubi — DC (Orsini & Pezzuti, 2013): ${dcStr}/66 → ${ppStr}${dcsStr}`;
+}
+
+function buildTabellaHTML() {
+  const d = getResultData();
+  const dcStr  = !isNaN(d.gDC)  ? `${d.gDC}${d.asterisco}/66` : '—';
+  const ppStr  = d.ppDC  !== null ? `Pp ${d.ppDC}` : '—';
+  const dcsStr = (!isNaN(d.gDCs) && d.ppDCs !== null) ? `DCs: ${d.gDCs}/48 → Pp ${d.ppDCs}` : '—';
+  const esito  = d.patol ? 'sotto media (Pp ≤ 7)' : (d.ppDC !== null ? 'nella norma' : '—');
+
+  return `
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%">
+  <thead>
+    <tr style="font-weight:bold;background:#f2f2f2">
+      <td><b>Test</b></td>
+      <td><b>Punteggio grezzo</b></td>
+      <td><b>Punteggio corretto</b></td>
+      <td><b>Punteggio ponderato (Pp)</b></td>
+      <td><b>Cut-off</b></td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>Disegno con i Cubi — DC</b><br><i>(Orsini &amp; Pezzuti, 2013)</i></td>
+      <td>${dcStr}</td>
+      <td>—</td>
+      <td>${ppStr}</td>
+      <td>Pp ≤ 7 (${esito})</td>
+    </tr>
+    <tr>
+      <td>DCs — senza bonus rapidità (processo)</td>
+      <td>${!isNaN(d.gDCs) ? d.gDCs+'/48' : '—'}</td>
+      <td>—</td>
+      <td>${d.ppDCs !== null ? 'Pp '+d.ppDCs : '—'}</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>`;
+}
+
+function copyOutput(tipo) {
+  const out = document.getElementById('report-output');
+  const fb  = document.getElementById('copy-feedback');
+
+  if (tipo === 'elenco') {
+    const testo = buildElenco();
+    out.textContent = testo; out.style.display = 'block';
+    navigator.clipboard.writeText(testo).then(() => {
+      fb.textContent = '✓ Testo elenco copiato — incolla nel documento con Ctrl+V';
+      setTimeout(() => fb.textContent = '', 4000);
+    }).catch(() => { selectOutput(out); fb.textContent = '⚠ Seleziona il testo sopra e copia con Ctrl+C'; });
+  } else {
+    const html = buildTabellaHTML();
+    const d = getResultData();
+    out.textContent = `[Tabella] DC | ${!isNaN(d.gDC)?d.gDC+d.asterisco+'/66':'—'} | Pp ${d.ppDC??'—'} | ${d.patol?'sotto media':'nella norma'}`;
+    out.style.display = 'block';
+    try {
+      navigator.clipboard.write([new ClipboardItem({'text/html': new Blob([html], {type:'text/html'})})]).then(() => {
+        fb.textContent = '✓ Tabella copiata — incolla in Google Docs con Ctrl+V';
+        setTimeout(() => fb.textContent = '', 5000);
+      }).catch(() => fallbackHTML(html, fb));
+    } catch(e) { fallbackHTML(html, fb); }
+  }
+}
+
+function fallbackHTML(html, fb) {
+  const tmp = document.createElement('div');
+  tmp.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+  tmp.innerHTML = html; document.body.appendChild(tmp);
+  const r = document.createRange(); r.selectNodeContents(tmp);
+  window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
+  try { document.execCommand('copy'); fb.textContent = '✓ Tabella copiata — incolla in Google Docs con Ctrl+V'; }
+  catch(e) { fb.textContent = '⚠ Copia non riuscita'; }
+  window.getSelection().removeAllRanges(); document.body.removeChild(tmp);
+  setTimeout(() => fb.textContent = '', 5000);
+}
+
+function selectOutput(el) {
+  const r = document.createRange(); r.selectNodeContents(el);
+  window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
+}
+
+// Init
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+buildNormTable(null, null, null);
+</script>
+</body>
+</html>

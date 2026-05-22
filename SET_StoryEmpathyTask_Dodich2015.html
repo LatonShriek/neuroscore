@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SET — Story-Based Empathy Task (Dodich et al., 2015)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#222536;
+    --border:#2e3347; --accent:#4f8ef7; --accent-dim:rgba(79,142,247,0.15);
+    --text:#e8eaf0; --text-dim:#8b91a8;
+    --ok:#34d399; --warn:#fbbf24; --bad:#f87171; --bad-dim:rgba(248,113,113,0.15);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:15px; min-height:100vh; padding:32px 20px 60px; }
+  .container { max-width:760px; margin:0 auto; }
+  .test-tag { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:.12em; text-transform:uppercase; margin-bottom:6px; }
+  h1 { font-size:22px; font-weight:600; }
+  .authors { font-size:13px; color:var(--text-dim); margin-top:4px; margin-bottom:28px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:22px 24px; margin-bottom:16px; }
+  .card-title { font-size:11px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:16px; }
+  label { font-size:12px; color:var(--text-dim); display:block; margin-bottom:5px; }
+  input[type="number"] { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:14px; padding:8px 12px; outline:none; transition:border-color .2s; }
+  input:focus { border-color:var(--accent); }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .score-row { display:flex; align-items:center; gap:14px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .score-row:last-child { border-bottom:none; }
+  .score-label { flex:1; font-size:14px; }
+  .score-label small { display:block; font-size:11px; color:var(--text-dim); margin-top:1px; }
+  .score-input-wrap { width:80px; }
+  .result-block { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-top:8px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .result-label { font-size:12px; color:var(--text-dim); min-width:140px; }
+  .result-values { font-family:'IBM Plex Mono',monospace; font-size:13px; flex:1; }
+  .es-badge { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; padding:4px 12px; border-radius:5px; min-width:56px; text-align:center; }
+  .es0 { background:var(--bad-dim); color:var(--bad); border:1px solid var(--bad); }
+  .es1 { background:rgba(251,191,36,.12); color:var(--warn); border:1px solid var(--warn); }
+  .es2 { background:rgba(251,191,36,.08); color:#e9a825; border:1px solid #e9a825; }
+  .es3 { background:rgba(52,211,153,.1); color:var(--ok); border:1px solid var(--ok); }
+  .es4 { background:rgba(52,211,153,.15); color:var(--ok); border:1px solid var(--ok); }
+  .separator { height:1px; background:var(--border); margin:6px 0; }
+  .alert-box { background:var(--bad-dim); border:1px solid var(--bad); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--bad); display:none; margin-bottom:10px; }
+  .info-box { background:var(--accent-dim); border:1px solid var(--accent); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--accent); margin-bottom:14px; line-height:1.6; }
+  .note { font-size:12px; color:var(--text-dim); line-height:1.6; padding:12px 0 0; border-top:1px solid var(--border); margin-top:14px; }
+  .btn-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  button { font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:500; padding:10px 22px; border-radius:7px; border:none; cursor:pointer; transition:opacity .2s,transform .1s; }
+  button:hover:not(:disabled) { opacity:.85; }
+  button:active:not(:disabled) { transform:scale(.97); }
+  button:disabled { opacity:.35; cursor:not-allowed; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  .asterisk { color:var(--bad); font-weight:700; }
+  .subtask-chips { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:8px; }
+  .subtask-chip { background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:10px 12px; text-align:center; }
+  .subtask-chip .sc-label { font-size:11px; color:var(--text-dim); margin-bottom:4px; }
+  .subtask-chip .sc-val { font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:600; }
+  .subtask-chip .sc-es { font-size:11px; font-family:'IBM Plex Mono',monospace; margin-top:3px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="test-tag">Cognizione Sociale · Theory of Mind</div>
+  <h1>SET — Story-Based Empathy Task</h1>
+  <div class="authors">Dodich, Cerami, Canessa, Crespi, Iannaccone, Marcone, Realmuto, Lettieri, Perani, Cappa (2015) · Neurological Sciences</div>
+
+  <div class="card">
+    <div class="info-box">
+      ℹ 18 item totali suddivisi in 3 sottoscale da 6: <strong>SET-IA</strong> (attribuzione di intenzioni — ToM cognitiva) · <strong>SET-EA</strong> (attribuzione di emozioni — ToM affettiva) · <strong>SET-CI</strong> (inferenza causale — condizione di controllo). Durata: ~15–20 min. Materiale non verbale (vignette).
+    </div>
+  </div>
+
+  <!-- ANAGRAFICA -->
+  <div class="card">
+    <div class="card-title">Dati demografici</div>
+    <div class="form-grid">
+      <div>
+        <label>Età (anni) <span style="color:var(--accent)">*</span></label>
+        <input type="number" id="eta" min="20" max="79" placeholder="es. 58" oninput="calcola()">
+      </div>
+      <div>
+        <label>Scolarità (anni) <span style="color:var(--accent)">*</span></label>
+        <input type="number" id="scol" min="5" max="30" placeholder="es. 13" oninput="calcola()">
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--text-dim)">
+      Sesso: non influenza il punteggio SET (escluso dal modello di regressione).
+    </div>
+  </div>
+
+  <!-- PUNTEGGI -->
+  <div class="card">
+    <div class="card-title">Punteggi grezzi</div>
+    <div class="score-row">
+      <div class="score-label">SET-GS — Punteggio Globale<small>Somma IA + EA + CI (0–18)</small></div>
+      <div class="score-input-wrap"><input type="number" id="gs" min="0" max="18" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">SET-IA — Attribuzione Intenzioni<small>ToM cognitiva (0–6)</small></div>
+      <div class="score-input-wrap"><input type="number" id="ia" min="0" max="6" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">SET-EA — Attribuzione Emozioni<small>ToM affettiva (0–6)</small></div>
+      <div class="score-input-wrap"><input type="number" id="ea" min="0" max="6" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">SET-CI — Inferenza Causale<small>Condizione di controllo (0–6)</small></div>
+      <div class="score-input-wrap"><input type="number" id="ci" min="0" max="6" placeholder="—" oninput="calcola()"></div>
+    </div>
+  </div>
+
+  <!-- RISULTATI -->
+  <div class="card">
+    <div class="card-title">Risultati</div>
+    <div id="alert-demo" class="alert-box">⚠ Inserire età e scolarità per calcolare i punteggi corretti.</div>
+    <div id="results-content" style="display:none">
+      <div id="res_gs"></div>
+      <div id="res_sub" style="margin-top:10px"></div>
+      <div class="note">
+        <strong>Correzione demografica:</strong> Dodich et al. (2015) — 136 soggetti sani, età 20–79 anni. Predittori: log(100−età) e √scolarità. Genere non significativo.<br>
+        Formule:<br>
+        SET-GS: CS = grezzo − 0.371×(log(100−età)−1.679) − 0.277×(√scol−3.619)<br>
+        SET-IA: CS = grezzo − 0.203×(log(100−età)−1.679) − 0.194×(√scol−3.619)<br>
+        SET-EA: CS = grezzo − 0.317×(log(100−età)−1.679) − 0.176×(√scol−3.619)<br>
+        SET-CI: CS = grezzo − 0.332×(log(100−età)−1.679) − 0.270×(√scol−3.619)<br>
+        <strong>ES (Tabella 4):</strong> GS: ES0 ≤8.29 · ES1 8.30–10.93 · ES2 10.94–13.57 · ES3 13.58–16.20 · ES4 ≥16.21<br>
+        IA: ES0 ≤2.34 · ES1 2.35–3.56 · ES2 3.57–4.78 · ES3 4.79–5.99 · ES4 =6<br>
+        EA: ES0 ≤2.20 · ES1 2.21–3.43 · ES2 3.44–4.66 · ES3 4.67–5.88 · ES4 ≥5.89<br>
+        CI: ES0 ≤2.41 · ES1 2.42–3.35 · ES2 3.36–4.28 · ES3 4.29–5.22 · ES4 ≥5.22
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary"   id="btn-lista"   disabled onclick="copiaLista()">Copia come elenco</button>
+      <button class="btn-secondary" id="btn-tabella" disabled onclick="copiaTabella()">Copia come tabella</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── FORMULE DI CORREZIONE ───────────────────────────────────────────────────
+const LOG_MEAN = 1.679;  // log(100-50.12) ≈ media log(100-age) del campione
+const SQRT_MEAN = 3.619; // √13.44 ≈ media √scol del campione
+
+function corr(grezzo, eta, scol, bAge, bScol) {
+  return grezzo - bAge*(Math.log10(100-eta) / Math.log10(Math.E) - LOG_MEAN)
+                - bScol*(Math.sqrt(scol) - SQRT_MEAN);
+  // N.B.: "log" nel paper = logaritmo naturale (ln)
+}
+// Usiamo ln (Math.log)
+function corrV2(grezzo, eta, scol, bAge, bScol) {
+  return grezzo - bAge*(Math.log(100-eta) - LOG_MEAN)
+                - bScol*(Math.sqrt(scol) - SQRT_MEAN);
+}
+
+// ES per ciascun punteggio
+const ES_DEF = {
+  gs: [{lim:8.29,es:0},{lim:10.93,es:1},{lim:13.57,es:2},{lim:16.20,es:3}],
+  ia: [{lim:2.34,es:0},{lim:3.56,es:1},{lim:4.78,es:2},{lim:5.99,es:3}],
+  ea: [{lim:2.20,es:0},{lim:3.43,es:1},{lim:4.66,es:2},{lim:5.88,es:3}],
+  ci: [{lim:2.41,es:0},{lim:3.35,es:1},{lim:4.28,es:2},{lim:5.22,es:3}]
+};
+function calcolaES(corretto, tabella) {
+  for (const {lim,es} of tabella) { if (corretto <= lim) return es; }
+  return 4;
+}
+
+const NOMI = { gs:'SET-GS (Globale)', ia:'SET-IA (Intenzioni)', ea:'SET-EA (Emozioni)', ci:'SET-CI (Causale)' };
+const COEFF = { gs:[0.371,0.277], ia:[0.203,0.194], ea:[0.317,0.176], ci:[0.332,0.270] };
+const MAX = { gs:18, ia:6, ea:6, ci:6 };
+
+let stato = {};
+
+function calcola() {
+  const eta  = parseFloat(document.getElementById('eta').value);
+  const scol = parseFloat(document.getElementById('scol').value);
+
+  const alertBox = document.getElementById('alert-demo');
+  const content  = document.getElementById('results-content');
+
+  if (isNaN(eta) || isNaN(scol)) {
+    alertBox.style.display='block'; content.style.display='none';
+    disableButtons(); stato={}; return;
+  }
+  alertBox.style.display='none'; content.style.display='block';
+
+  stato = {};
+  let anyPresent = false;
+
+  ['gs','ia','ea','ci'].forEach(key => {
+    const grezzo = parseFloat(document.getElementById(key).value);
+    if (isNaN(grezzo)) return;
+    anyPresent = true;
+    const [bA, bS] = COEFF[key];
+    const corretto = corrV2(grezzo, eta, scol, bA, bS);
+    const es = calcolaES(corretto, ES_DEF[key]);
+    const alterato = es === 0;
+    stato[key] = { nome:NOMI[key], grezzo, corretto, es, alterato, max:MAX[key] };
+  });
+
+  // GS display
+  const elGS = document.getElementById('res_gs');
+  if (stato.gs) {
+    const r = stato.gs;
+    const ast = r.alterato ? '<sup class="asterisk">*</sup>' : '';
+    const esito = r.es===0?'PATOLOGICO':r.es===1?'borderline':'normale';
+    elGS.innerHTML = `<div class="result-block">
+      <span class="result-label">${r.nome}</span>
+      <span class="result-values">grezzo ${r.grezzo}${ast} → corr. ${r.corretto.toFixed(2)}${ast}</span>
+      <span class="es-badge es${r.es}">PE ${r.es} — ${esito}</span>
+    </div>`;
+  } else {
+    elGS.innerHTML = `<div class="result-block"><span class="result-label">SET-GS</span><span style="color:var(--text-dim);font-size:13px;">— in attesa di punteggio —</span></div>`;
+  }
+
+  // Sottoscale
+  const chips = ['ia','ea','ci'].map(key => {
+    if (!stato[key]) return `<div class="subtask-chip"><div class="sc-label">${key.toUpperCase()}</div><div class="sc-val" style="color:var(--text-dim)">—</div></div>`;
+    const r = stato[key];
+    const ast = r.alterato ? '*' : '';
+    const esito = r.es===0?'PATOL':r.es===1?'border.':'normale';
+    const col = r.es===0?'var(--bad)':r.es===1?'var(--warn)':'var(--ok)';
+    return `<div class="subtask-chip">
+      <div class="sc-label">${key.toUpperCase()}</div>
+      <div class="sc-val" style="color:${col}">${r.grezzo}${ast}/${r.max}</div>
+      <div class="sc-es" style="color:${col}">PE ${r.es} — ${esito}</div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:2px">corr. ${r.corretto.toFixed(2)}</div>
+    </div>`;
+  });
+  document.getElementById('res_sub').innerHTML = `<div class="subtask-chips">${chips.join('')}</div>`;
+
+  document.getElementById('btn-lista').disabled   = !anyPresent;
+  document.getElementById('btn-tabella').disabled = !anyPresent;
+}
+
+function disableButtons() {
+  document.getElementById('btn-lista').disabled   = true;
+  document.getElementById('btn-tabella').disabled = true;
+}
+
+function copiaLista() {
+  const lines = Object.values(stato).map(r => {
+    const ast = r.alterato ? '*' : '';
+    return `${r.nome} (Dodich et al., 2015): ${r.grezzo}${ast}/${r.max} → ${r.corretto.toFixed(2)}${ast} (PE ${r.es} — ${r.es===0?'PATOLOGICO':r.es===1?'borderline':'normale'})`;
+  });
+  navigator.clipboard.writeText(lines.join('\n'));
+}
+
+function copiaTabella() {
+  const html = `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
+<tr style="background:#e8eaf0"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>PE</th><th>Cut-off</th></tr>
+${Object.values(stato).map(r=>{
+  const ast = r.alterato ? '*' : '';
+  return `<tr><td>${r.nome} (Dodich et al., 2015)</td><td>${r.grezzo}${ast}/${r.max}</td><td>${r.corretto.toFixed(2)}${ast}</td><td>PE ${r.es}</td><td>ES0 ≤ ${ES_DEF[Object.keys(stato).find(k=>stato[k]===r)][0].lim}</td></tr>`;
+}).join('\n')}
+</table>`;
+  navigator.clipboard.write([new ClipboardItem({'text/html': new Blob([html],{type:'text/html'})})]);
+}
+</script>
+</body>
+</html>

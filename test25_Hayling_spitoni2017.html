@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hayling Sentence Completion Test — Spitoni et al., 2017</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3050;
+  --accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8ecf8;--muted:#7a84a0;
+  --ok:#3ddc84;--warn:#f7b731;--err:#ff5c5c;--borderline:#f7b731;
+}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.6;padding:24px;max-width:960px;margin:0 auto}
+h1{font-size:1.25rem;font-weight:700;color:var(--accent);letter-spacing:.01em;margin-bottom:4px}
+.subtitle{font-size:.82rem;color:var(--muted);margin-bottom:20px;font-family:'IBM Plex Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none;transition:border .2s}
+input[type=number]:focus{border-color:var(--accent)}
+input[type=number]:disabled{opacity:.4;cursor:not-allowed}
+.hint{font-size:.73rem;color:var(--muted);font-style:italic}
+.result-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border)}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:.82rem;color:var(--muted)}
+.result-val{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:600}
+.es0{color:var(--err)}
+.es1{color:#ff9a3c}
+.es2{color:var(--warn)}
+.es3{color:var(--ok)}
+.es4{color:var(--ok)}
+.esN{color:var(--muted)}
+.alert{background:#1e1830;border:1px solid #5b4af7;border-radius:8px;padding:12px 16px;font-size:.82rem;color:#b8aaff;margin-top:10px;display:none}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{padding:10px 20px;border-radius:7px;border:none;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2);color:#0f1117}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-sec:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.btn-sec:disabled{opacity:.35;cursor:not-allowed}
+.output-area{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--text);white-space:pre-wrap;display:none;margin-top:10px}
+.feedback{font-size:.8rem;color:var(--ok);margin-top:6px;min-height:1.2em}
+.section-note{background:#0d1a2e;border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.8rem;color:#8ab4f8;margin-bottom:14px}
+table.norm-info{width:100%;border-collapse:collapse;font-size:.78rem;margin-top:8px}
+table.norm-info th{background:var(--surface2);color:var(--muted);padding:5px 8px;text-align:left;font-weight:600;border:1px solid var(--border)}
+table.norm-info td{padding:5px 8px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:.76rem}
+.highlight-row td{background:#1a2040}
+</style>
+</head>
+<body>
+<h1>Hayling Sentence Completion Test</h1>
+<div class="subtitle">Spitoni, Bevacqua, Cerini et al. — Archives of Clinical Neuropsychology, 2017</div>
+
+<div class="card">
+  <h2>Dati paziente</h2>
+  <div class="grid3">
+    <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="16" max="90" placeholder="es. 65" oninput="onDemoChange()"></div>
+    <div class="field"><label>Data</label><input type="date" id="p-data"></div>
+    <div class="field"><label>Codice / Iniziali</label><input type="text" id="p-code" placeholder="opzionale" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none"></div>
+  </div>
+  <div id="nota-norma" class="alert" style="margin-top:10px"></div>
+</div>
+
+<div class="card">
+  <h2>Sezione 1 — Automatica</h2>
+  <div class="section-note">Inserire i tempi totali (secondi) per l'intera sezione (15 frasi), arrotondati al secondo inferiore.</div>
+  <div class="grid2">
+    <div class="field"><label>Tempo S1 totale (sec)</label><input type="number" id="s1-time" min="0" max="900" placeholder="es. 8" oninput="calcola()"></div>
+    <div class="field"><label>Errori S1 (di solito 0)</label><input type="number" id="s1-err" min="0" max="15" value="0" oninput="calcola()"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Sezione 2 — Inibizione</h2>
+  <div class="section-note">Errore A = risposta connessa alla frase; Errore B = risposta tangenzialmente connessa.</div>
+  <div class="grid3">
+    <div class="field"><label>Tempo S2 totale (sec)</label><input type="number" id="s2-time" min="0" max="900" placeholder="es. 45" oninput="calcola()"></div>
+    <div class="field"><label>Errori A (connessi)</label><input type="number" id="s2-errA" min="0" max="15" placeholder="0–15" oninput="calcola()"></div>
+    <div class="field"><label>Errori B (tangenziali)</label><input type="number" id="s2-errB" min="0" max="15" placeholder="0–15" oninput="calcola()"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Risultati</h2>
+  <div id="results-area"><p style="color:var(--muted);font-size:.85rem">Inserisci età e punteggi per vedere i risultati.</p></div>
+
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copyOutput('elenco')">Copia come elenco</button>
+    <button class="btn-sec" id="btn-tabella" disabled onclick="copyOutput('tabella')">Copia come tabella</button>
+  </div>
+  <div id="output-area" class="output-area"></div>
+  <div id="copy-feedback" class="feedback"></div>
+</div>
+
+<div class="card">
+  <h2>Tavole normative — Scaled score (S2+1)/(S1+1) — Tempo</h2>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Scaled score 1–19 (media=10, DS=3). Valori = range del ratio tempo per ogni fascia d'età. <b>Più basso il ratio = prestazione migliore.</b></p>
+  <table class="norm-info">
+    <tr><th>SS</th><th>%ile</th><th>Classe</th><th>16–29</th><th>30–39</th><th>40–49</th><th>50–59</th><th>60–69</th><th>70–90</th></tr>
+    <tr><td>1</td><td>&lt;1</td><td style="color:var(--err)">Deficit</td><td>&gt;23</td><td>&gt;20</td><td>&gt;18</td><td>&gt;16</td><td>&gt;14</td><td>&gt;10</td></tr>
+    <tr><td>2</td><td>&lt;1</td><td style="color:var(--err)">Deficit</td><td>22–23</td><td>19–20</td><td>17–18</td><td>16</td><td>14</td><td>10</td></tr>
+    <tr><td>3</td><td>1</td><td style="color:#ff9a3c">Anormale</td><td>20–21</td><td>18</td><td>16</td><td>14–15</td><td>13</td><td>—</td></tr>
+    <tr><td>4</td><td>2</td><td style="color:#ff9a3c">Anormale</td><td>18–19</td><td>16–17</td><td>14–15</td><td>—13</td><td>11–12</td><td>9</td></tr>
+    <tr><td>5</td><td>5</td><td style="color:var(--warn)">Scarso</td><td>16–17</td><td>14–15</td><td>13</td><td>11–12</td><td>10</td><td>8</td></tr>
+    <tr><td>6</td><td>9</td><td style="color:var(--warn)">Basso</td><td>14–15</td><td>12–13</td><td>11–12</td><td>10</td><td>9</td><td>7</td></tr>
+    <tr><td>7</td><td>16</td><td style="color:var(--warn)">Basso</td><td>12–13</td><td>10–11</td><td>10</td><td>9</td><td>8</td><td>6</td></tr>
+    <tr class="highlight-row"><td>8</td><td>25</td><td style="color:var(--ok)">Nella norma</td><td>10–11</td><td>9</td><td>8–9</td><td>7–8</td><td>6–7</td><td>5</td></tr>
+    <tr class="highlight-row"><td>9</td><td>37</td><td style="color:var(--ok)">Nella norma</td><td>8–9</td><td>7–8</td><td>6–7</td><td>6</td><td>5</td><td>4</td></tr>
+    <tr class="highlight-row"><td>10</td><td>50</td><td style="color:var(--ok)">Nella norma</td><td>6–7</td><td>5–6</td><td>5</td><td>4–5</td><td>4</td><td>3</td></tr>
+    <tr class="highlight-row"><td>11</td><td>63</td><td style="color:var(--ok)">Nella norma</td><td>4–5</td><td>3–4</td><td>3–4</td><td>3</td><td>3</td><td>2</td></tr>
+    <tr class="highlight-row"><td>12</td><td>75</td><td style="color:var(--ok)">Nella norma</td><td>2–3</td><td>2</td><td>2</td><td>2</td><td>2</td><td>—</td></tr>
+    <tr class="highlight-row"><td>13</td><td>84</td><td style="color:var(--ok)">Nella norma</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+    <tr class="highlight-row"><td>19</td><td>&gt;99</td><td style="color:var(--ok)">Superiore</td><td>&lt;1</td><td>&lt;1</td><td>&lt;1</td><td>&lt;1</td><td>&lt;1</td><td>&lt;1</td></tr>
+  </table>
+</div>
+
+<script>
+// ── NORME HAYLING ──────────────────────────────────────────────
+// Fasce età: 0=16-29, 1=30-39, 2=40-49, 3=50-59, 4=60-69, 5=70-90
+// Scaled scores per ratio TEMPO (S2+1)/(S1+1) — più alto ratio = peggio
+// Tabella: [SS] -> [max_ratio_per_fascia] (sopra → SS-1)
+// Legenda: il ratio è inverso — SS alto = prestazione buona = ratio basso
+// Implementazione: data ratio, trovo SS confrontando con cut-points
+
+// Cut-points per SS (limite SUPERIORE del ratio per ogni fascia, per SS=1..19)
+// SS1 = ratio > soglia, SS2 = tra soglia-1 e soglia, ...
+// Uso la tabella 4: ogni SS ha range per fascia.
+// Strategia: lista di soglie [soglia_ss1, soglia_ss2, ...] per ogni fascia
+// ratio >= soglia_ss1 → SS=1; ratio in range ss2 → SS=2; etc.
+
+// Tabella 4 — soglie superiori del ratio per SS 1..19 (da paper)
+// Index = fascia età [0..5], valore = upper bound del ratio per SS=1
+// Per SS: se ratio > SS1_bound → SS=1; altrimenti confronta con SS2_bound etc.
+
+const SS_TIME_BOUNDS = [
+  // fascia 0: 16-29
+  // SS1:>23, SS2:22-23, SS3:20-21, SS4:18-19, SS5:16-17, SS6:14-15,
+  // SS7:12-13, SS8:10-11, SS9:8-9, SS10:6-7, SS11:4-5, SS12:2-3,
+  // SS13:1, SS14-18: —, SS19:<1
+  // Array: upper bound per SS 1,2,3,4,5,6,7,8,9,10,11,12,13,19
+  [Infinity, 23, 21, 19, 17, 15, 13, 11, 9, 7, 5, 3, 1, 1],
+  // fascia 1: 30-39
+  [Infinity, 20, 18, 17, 15, 13, 11, 9, 8, 6, 4, 2, 1, 1],
+  // fascia 2: 40-49
+  [Infinity, 18, 16, 15, 13, 12, 10, 9, 7, 5, 4, 2, 1, 1],
+  // fascia 3: 50-59
+  [Infinity, 16, 15, 14, 12, 10, 9, 8, 6, 5, 3, 2, 1, 1],
+  // fascia 4: 60-69
+  [Infinity, 14, 13, 12, 10, 9, 8, 7, 5, 4, 3, 2, 1, 1],
+  // fascia 5: 70-90
+  [Infinity, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2, null, 1, 1],
+];
+const SS_MAP = [1,2,3,4,5,6,7,8,9,10,11,12,13,19]; // SS corrispondenti
+
+// Tabella 5 — soglie superiori per SS errori (E2+1)/(E1+1)
+const SS_ERR_BOUNDS = [
+  // fascia 0: 16-29
+  [Infinity, 15, 13, 12, 11, 10, 9, 7, 6, 5, 4, 3, 1, 1],
+  // fascia 1: 30-39
+  [Infinity, 15, 15, 14, 13, 11, 10, 9, 7, 6, 5, 3, 2, 1],
+  // fascia 2: 40-49
+  [Infinity, 15, null, 15, 14, 13, 11, 10, 8, 7, 5, 4, 2, 1],
+  // fascia 3: 50-59
+  [Infinity, 15, null, null, 15, 14, 12, 11, 9, 8, 6, 5, 3, 1],
+  // fascia 4: 60-69
+  [Infinity, 15, null, null, null, 15, 14, 12, 10, 9, 7, 5, 3, 1],
+  // fascia 5: 70-90
+  [Infinity, 15, null, null, null, null, 15, 14, 12, 10, 8, 6, 4, 1],
+];
+
+function getFascia(eta) {
+  if (eta < 16) return -1;
+  if (eta <= 29) return 0;
+  if (eta <= 39) return 1;
+  if (eta <= 49) return 2;
+  if (eta <= 59) return 3;
+  if (eta <= 69) return 4;
+  if (eta <= 90) return 5;
+  return -1;
+}
+const FASCIA_LABELS = ['16–29','30–39','40–49','50–59','60–69','70–90'];
+
+function getSSFromRatio(ratio, bounds) {
+  // più alto ratio = peggio = SS più basso
+  // bounds[0]=Infinity (SS1 upper), bounds[1]=SS2 upper, ...
+  for (let i = 0; i < SS_MAP.length - 1; i++) {
+    if (bounds[i] === null) continue;
+    if (bounds[i+1] === null) continue;
+    if (ratio > bounds[i+1] && ratio <= bounds[i]) return SS_MAP[i+1];
+    // special: primo
+  }
+  // Se ratio > bounds[1] (soglia SS2) → SS=1
+  if (ratio > (bounds[1] ?? 999)) return 1;
+  // Se ratio <= 1 → SS=19
+  if (ratio < 1) return 19;
+  return 13; // fallback
+}
+
+function getSSTime(ratio, fascia) {
+  const b = SS_TIME_BOUNDS[fascia];
+  if (ratio > 23 && fascia === 0) return 1;
+  // Ricerca per fascia
+  if (ratio < 1) return 19;
+  for (let i = 1; i < b.length; i++) {
+    if (b[i] === null) continue;
+    if (ratio > b[i]) return SS_MAP[i-1];
+  }
+  return SS_MAP[SS_MAP.length-1];
+}
+
+function getSSErr(ratio, fascia) {
+  const b = SS_ERR_BOUNDS[fascia];
+  if (ratio < 1) return 19;
+  for (let i = 1; i < b.length; i++) {
+    if (b[i] === null) continue;
+    if (ratio > b[i]) return SS_MAP[i-1];
+  }
+  return SS_MAP[SS_MAP.length-1];
+}
+
+function ssLabel(ss) {
+  if (ss <= 2) return ['Deficitario','es0'];
+  if (ss <= 4) return ['Anormale','es0'];
+  if (ss <= 5) return ['Scarso','es1'];
+  if (ss <= 7) return ['Basso','es2'];
+  if (ss <= 12) return ['Nella norma','es3'];
+  if (ss <= 14) return ['Buono','es3'];
+  return ['Superiore','es4'];
+}
+
+let lastData = null;
+
+function onDemoChange() { calcola(); }
+
+function calcola() {
+  const eta = parseInt(document.getElementById('p-eta').value);
+  const s1t = parseFloat(document.getElementById('s1-time').value);
+  const s1e = parseFloat(document.getElementById('s1-err').value) || 0;
+  const s2t = parseFloat(document.getElementById('s2-time').value);
+  const s2eA = parseFloat(document.getElementById('s2-errA').value);
+  const s2eB = parseFloat(document.getElementById('s2-errB').value);
+
+  const nota = document.getElementById('nota-norma');
+  const resArea = document.getElementById('results-area');
+  const btnE = document.getElementById('btn-elenco');
+  const btnT = document.getElementById('btn-tabella');
+
+  // Controllo età
+  const fascia = getFascia(eta);
+  if (fascia < 0 && !isNaN(eta)) {
+    nota.style.display = 'block';
+    nota.textContent = '⚠ Età fuori range normativo (16–90 anni). Nessuna norma disponibile.';
+    btnE.disabled = true; btnT.disabled = true;
+    return;
+  } else {
+    nota.style.display = 'none';
+  }
+
+  // Bisogna avere almeno età e dati
+  if (isNaN(eta) || isNaN(s1t) || isNaN(s2t) || isNaN(s2eA) || isNaN(s2eB)) {
+    btnE.disabled = true; btnT.disabled = true;
+    resArea.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Completa età e tutti i tempi/errori.</p>';
+    return;
+  }
+
+  // Calcolo ratio tempo: (S2+1)/(S1+1)
+  const ratioT = (s2t + 1) / (s1t + 1);
+  const e2 = s2eA + s2eB;
+  const ratioE = (e2 + 1) / (s1e + 1);
+
+  const ssT = getSSTime(ratioT, fascia);
+  const ssE = getSSErr(ratioE, fascia);
+  const [lblT, clsT] = ssLabel(ssT);
+  const [lblE, clsE] = ssLabel(ssE);
+
+  // Mostra anche raw per sezione 1 e 2
+  resArea.innerHTML = `
+  <div class="result-box">
+    <div class="result-row"><span class="result-label">Fascia d'età normativa</span><span class="result-val" style="color:var(--accent)">${FASCIA_LABELS[fascia]}</span></div>
+    <div class="result-row"><span class="result-label">Tempo S1 totale</span><span class="result-val">${s1t} sec</span></div>
+    <div class="result-row"><span class="result-label">Tempo S2 totale</span><span class="result-val">${s2t} sec</span></div>
+    <div class="result-row"><span class="result-label">Errori S2 (A+B)</span><span class="result-val">${e2} (A:${s2eA}, B:${s2eB})</span></div>
+    <div class="result-row"><span class="result-label">Ratio Tempo (S2+1)/(S1+1)</span><span class="result-val">${ratioT.toFixed(2)}</span></div>
+    <div class="result-row"><span class="result-label">Ratio Errori (E2+1)/(E1+1)</span><span class="result-val">${ratioE.toFixed(2)}</span></div>
+    <div class="result-row"><span class="result-label">Scaled Score Tempo</span><span class="result-val ${clsT}">SS ${ssT} — ${lblT}</span></div>
+    <div class="result-row"><span class="result-label">Scaled Score Errori</span><span class="result-val ${clsE}">SS ${ssE} — ${lblE}</span></div>
+  </div>`;
+
+  lastData = {fascia, ssT, ssE, lblT, lblE, clsT, clsE, ratioT, ratioE, s1t, s2t, e2, s2eA, s2eB};
+
+  btnE.disabled = false; btnT.disabled = false;
+}
+
+function ssToES(ss) {
+  // Mappa SS (1-19) a ES (0-4) in modo approssimativo per output
+  // SS 1-4 = ES 0-1, SS 5-7 = ES 1-2, SS 8-12 = ES 3, SS 13+ = ES 4
+  if (ss <= 2) return 0;
+  if (ss <= 4) return 1;
+  if (ss <= 7) return 2;
+  if (ss <= 12) return 3;
+  return 4;
+}
+
+function buildElenco() {
+  if (!lastData) return '';
+  const d = lastData;
+  const astT = d.ssT <= 1 ? '*' : '';
+  const astE = d.ssE <= 1 ? '*' : '';
+  const c = document.getElementById('p-code').value;
+  const hdr = c ? `${c} — ` : '';
+  return `${hdr}Hayling (Spitoni et al., 2017): Ratio Tempo ${d.ratioT.toFixed(2)}${astT} (SS ${d.ssT} — ${d.lblT}) | Ratio Errori ${d.ratioE.toFixed(2)}${astE} (SS ${d.ssE} — ${d.lblE})`;
+}
+
+function buildTabella() {
+  const d = lastData;
+  const astT = d.ssT <= 1 ? '*' : '';
+  const astE = d.ssE <= 1 ? '*' : '';
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>Hayling Sentence Completion Test (Spitoni et al., 2017)</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>Scaled Score</b></td><td><b>Cut-off</b></td></tr>
+  </thead>
+  <tbody>
+    <tr><td>Hayling — Ratio Tempo</td><td>(S2+1)/(S1+1) = ${d.ratioT.toFixed(2)}${astT}</td><td>—</td><td>SS ${d.ssT}${astT} — ${d.lblT}</td><td>SS ≥ 5</td></tr>
+    <tr><td>Hayling — Ratio Errori</td><td>(E2+1)/(E1+1) = ${d.ratioE.toFixed(2)}${astE}</td><td>—</td><td>SS ${d.ssE}${astE} — ${d.lblE}</td><td>SS ≥ 5</td></tr>
+  </tbody>
+</table>`;
+}
+
+function copyOutput(tipo) {
+  const out = document.getElementById('output-area');
+  const fb = document.getElementById('copy-feedback');
+  if (tipo === 'elenco') {
+    const txt = buildElenco();
+    out.textContent = txt; out.style.display = 'block';
+    navigator.clipboard.writeText(txt).then(() => { fb.textContent = '✓ Testo copiato'; setTimeout(() => fb.textContent = '', 4000); })
+      .catch(() => { out.select?.(); fb.textContent = '⚠ Seleziona e Ctrl+C'; });
+  } else {
+    const html = buildTabella();
+    out.textContent = '[Tabella Hayling]'; out.style.display = 'block';
+    try {
+      navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }) })]).then(() => {
+        fb.textContent = '✓ Tabella copiata — incolla in Google Docs'; setTimeout(() => fb.textContent = '', 5000);
+      }).catch(() => fbH(html, fb));
+    } catch(e) { fbH(html, fb); }
+  }
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

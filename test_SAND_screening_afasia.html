@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAND — Screening for Aphasia in NeuroDegeneration</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3050;--accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8ecf8;--muted:#7a84a0;--ok:#3ddc84;--warn:#f7b731;--err:#ff5c5c}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.6;padding:24px;max-width:1020px;margin:0 auto}
+h1{font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.subtitle{font-size:.82rem;color:var(--muted);margin-bottom:20px;font-family:'IBM Plex Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none;transition:border .2s}
+input[type=number]:focus{border-color:var(--accent)}
+select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:.92rem;padding:8px 12px;width:100%;outline:none;cursor:pointer}
+select:focus{border-color:var(--accent)}
+.result-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:4px}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:.82rem;color:var(--muted);min-width:220px}
+.result-val{font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:600;text-align:right}
+.norm-ok{color:var(--ok)}.norm-pat{color:var(--err)}.norm-na{color:var(--muted)}
+.alert{background:#1e1830;border:1px solid #5b4af7;border-radius:8px;padding:12px 16px;font-size:.82rem;color:#b8aaff;display:none;margin-top:10px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{padding:10px 20px;border-radius:7px;border:none;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2);color:#0f1117}
+.btn-primary:disabled,.btn-sec:disabled{opacity:.35;cursor:not-allowed}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-sec:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.output-area{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;white-space:pre-wrap;display:none;margin-top:10px}
+.feedback{font-size:.8rem;color:var(--ok);margin-top:6px;min-height:1.2em}
+.probe-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.probe-card{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px}
+.probe-card h3{font-size:.75rem;font-weight:700;color:var(--accent);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.probe-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.probe-lbl{font-size:.76rem;color:var(--muted);min-width:120px}
+.probe-input{background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.88rem;padding:4px 8px;width:60px;outline:none}
+.probe-max{font-size:.72rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<h1>SAND — Screening for Aphasia in NeuroDegeneration</h1>
+<div class="subtitle">Versione italiana — protocollo SAND (Società Italiana di Neuropsicologia)</div>
+
+<div class="card">
+  <h2>Dati paziente</h2>
+  <div class="grid4">
+    <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="45" max="85" placeholder="es. 65" oninput="calcola()"></div>
+    <div class="field"><label>Scolarità (anni)</label>
+      <select id="p-sco" onchange="calcola()">
+        <option value="">— seleziona —</option>
+        <option value="5">5 anni</option>
+        <option value="8">8 anni</option>
+        <option value="13">13 anni</option>
+        <option value="17">17 anni</option>
+      </select>
+    </div>
+    <div class="field"><label>Sesso (per Descr. figura)</label>
+      <select id="p-sex" onchange="calcola()">
+        <option value="">— seleziona —</option>
+        <option value="M">Maschio</option>
+        <option value="F">Femmina</option>
+      </select>
+    </div>
+    <div class="field"><label>Data</label><input type="date" id="p-data"></div>
+  </div>
+  <div id="nota-norma" class="alert"></div>
+</div>
+
+<div class="card">
+  <h2>Punteggi grezzi — 8 sottoprove</h2>
+  <div class="probe-grid">
+
+    <div class="probe-card">
+      <h3>1. Denominazione</h3>
+      <div class="probe-row"><span class="probe-lbl">Totale</span><input class="probe-input" type="number" id="den-tot" min="0" max="14" oninput="calcola()"><span class="probe-max">/14</span></div>
+      <div class="probe-row"><span class="probe-lbl">Viventi (V)</span><input class="probe-input" type="number" id="den-v" min="0" max="7" oninput="calcola()"><span class="probe-max">/7</span></div>
+      <div class="probe-row"><span class="probe-lbl">Non viventi (NV)</span><input class="probe-input" type="number" id="den-nv" min="0" max="7" oninput="calcola()"><span class="probe-max">/7 (cut-off fisso ≤5)</span></div>
+    </div>
+
+    <div class="probe-card">
+      <h3>2. Comprensione di frasi</h3>
+      <div class="probe-row"><span class="probe-lbl">Totale</span><input class="probe-input" type="number" id="cf-tot" min="0" max="8" oninput="calcola()"><span class="probe-max">/8</span></div>
+    </div>
+
+    <div class="probe-card">
+      <h3>3. Comprensione di parole</h3>
+      <div class="probe-row"><span class="probe-lbl">Totale</span><input class="probe-input" type="number" id="cp-tot" min="0" max="12" oninput="calcola()"><span class="probe-max">/12</span></div>
+      <div class="probe-row"><span class="probe-lbl">Viventi (V)</span><input class="probe-input" type="number" id="cp-v" min="0" max="6" oninput="calcola()"><span class="probe-max">/6</span></div>
+      <div class="probe-row"><span class="probe-lbl">Non viventi (NV)</span><input class="probe-input" type="number" id="cp-nv" min="0" max="6" oninput="calcola()"><span class="probe-max">/6</span></div>
+    </div>
+
+    <div class="probe-card">
+      <h3>4. Ripetizione parole e non-parole</h3>
+      <div class="probe-row"><span class="probe-lbl">Totale</span><input class="probe-input" type="number" id="rp-tot" min="0" max="10" oninput="calcola()"><span class="probe-max">/10</span></div>
+      <div class="probe-row"><span class="probe-lbl">Parole (P)</span><input class="probe-input" type="number" id="rp-p" min="0" max="6" oninput="calcola()"><span class="probe-max">/6</span></div>
+      <div class="probe-row"><span class="probe-lbl">Non parole (NP)</span><input class="probe-input" type="number" id="rp-np" min="0" max="4" oninput="calcola()"><span class="probe-max">/4</span></div>
+    </div>
+
+    <div class="probe-card">
+      <h3>5. Ripetizione di frasi</h3>
+      <div class="probe-row"><span class="probe-lbl">Totale</span><input class="probe-input" type="number" id="rf-tot" min="0" max="6" oninput="calcola()"><span class="probe-max">/6</span></div>
+      <div class="probe-row"><span class="probe-lbl">Frasi prevedibili (fPr)</span><input class="probe-input" type="number" id="rf-pr" min="0" max="3" oninput="calcola()"><span class="probe-max">/3</span></div>
+      <div class="probe-row"><span class="probe-lbl">Frasi imprevedibili (fImp)</span><input class="probe-input" type="number" id="rf-imp" min="0" max="3" oninput="calcola()"><span class="probe-max">/3</span></div>
+    </div>
+
+    <div class="probe-card">
+      <h3>6. Lettura</h3>
+      <div class="probe-row"><span class="probe-lbl">Totale</span><input class="probe-input" type="number" id="let-tot" min="0" max="16" oninput="calcola()"><span class="probe-max">/16</span></div>
+      <div class="probe-row"><span class="probe-lbl">Parole (P)</span><input class="probe-input" type="number" id="let-p" min="0" max="12" oninput="calcola()"><span class="probe-max">/12</span></div>
+      <div class="probe-row"><span class="probe-lbl">Non parole (NP)</span><input class="probe-input" type="number" id="let-np" min="0" max="4" oninput="calcola()"><span class="probe-max">/4</span></div>
+    </div>
+
+    <div class="probe-card">
+      <h3>7. Scrittura — UI</h3>
+      <div class="probe-row"><span class="probe-lbl">UI (Unità Informative)</span><input class="probe-input" type="number" id="scr-ui" min="0" max="6" oninput="calcola()"><span class="probe-max">/6</span></div>
+    </div>
+
+    <div class="probe-card">
+      <h3>8. Associazione semantica</h3>
+      <div class="probe-row"><span class="probe-lbl">Totale</span><input class="probe-input" type="number" id="as-tot" min="0" max="4" oninput="calcola()"><span class="probe-max">/4</span></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="card">
+  <h2>Risultati</h2>
+  <div id="results-area"><p style="color:var(--muted);font-size:.85rem">Inserisci età e scolarità per vedere i risultati corretti.</p></div>
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copyOutput('elenco')">Copia come elenco</button>
+    <button class="btn-sec" id="btn-tabella" disabled onclick="copyOutput('tabella')">Copia come tabella</button>
+  </div>
+  <div id="output-area" class="output-area"></div>
+  <div id="copy-feedback" class="feedback"></div>
+</div>
+
+<script>
+// ── TABELLE DI CORREZIONE SAND ──────────────────────────────────
+// Per ogni prova: fattore da SOTTRARRE al grezzo per ottenere corretto
+// Poi confrontare con cut-off: se corretto <= cut-off → PATOLOGICO
+
+// Età: 45,50,55,60,65,70,75,80,85 → indici 0-8
+// Scolarità: 5,8,13,17 → indici 0-3
+
+const ETA_VALS = [45,50,55,60,65,70,75,80,85];
+const SCO_VALS = [5,8,13,17];
+
+// Denominazione TOTALE
+const DEN_TOT = [
+  [0.01,0.105,0.2,0.295,0.39,0.485,0.58,0.675,0.77],  // scol 5
+  [-0.202,-0.107,-0.012,0.083,0.178,0.273,0.368,0.463,0.558], // scol 8
+  [-0.48,-0.385,-0.29,-0.195,-0.1,-0.005,0.09,0.185,0.28],   // scol 13
+  [-0.666,-0.571,-0.476,-0.381,-0.286,-0.191,-0.096,-0.001,0.094] // scol 17
+];
+// Denominazione VIVENTI
+const DEN_V = [
+  [-0.067,0.028,0.123,0.218,0.313,0.408,0.503,0.598,0.693],
+  [-0.233,-0.138,-0.043,0.052,0.147,0.242,0.337,0.423,0.527],
+  [-0.452,-0.357,-0.262,-0.167,-0.072,0.023,0.118,0.213,0.308],
+  [-0.597,-0.502,-0.407,-0.346,-0.217,-0.122,-0.027,0.068,0.163]
+];
+// Comprensione frasi TOTALE (solo scolarità, no età)
+const CF_TOT_SCO = [0.157,0.079,-0.051,-0.155]; // per scol 5,8,13,17
+// Comprensione parole TOTALE
+const CP_TOT_SCO = [0.258,0.105,-0.096,-0.230];
+const CP_V_SCO = [0.119,0.048,-0.044,-0.106];
+const CP_NV_SCO = [0.140,0.057,-0.052,-0.124];
+// Ripetizione parole+non parole TOTALE
+const RP_TOT = [
+  [-0.322,-0.162,-0.002,0.158,0.318,0.478,0.683,0.798,0.958],
+  [-0.478,-0.318,-0.158,0.002,0.162,0.322,0.482,0.642,0.802],
+  [-0.683,-0.523,-0.363,-0.203,-0.043,0.117,0.277,0.473,0.597],
+  [-0.819,-0.659,-0.499,-0.339,-0.179,-0.019,0.141,0.301,0.461]
+];
+// Ripetizione PAROLE (solo età)
+const RP_P_ETA = [-0.128,-0.093,-0.058,-0.023,0.012,0.047,0.082,0.117,0.152];
+// Ripetizione NON PAROLE
+const RP_NP = [
+  [-0.227,-0.102,0.023,0.148,0.273,0.398,0.523,0.648,0.773],
+  [-0.364,-0.239,-0.114,0.011,0.136,0.261,0.386,0.511,0.636],
+  [-0.542,-0.417,-0.292,-0.167,-0.042,0.083,0.208,0.333,0.458],
+  [-0.661,-0.536,-0.411,-0.286,-0.161,-0.036,0.089,0.214,0.339]
+];
+// Ripetizione frasi TOTALE (solo scolarità)
+const RF_TOT_SCO = [0.455,0.185,-0.169,-0.405];
+const RF_PR_SCO = [0.223,0.112,-0.073,-0.221];
+const RF_IMP_SCO = [0.214,0.087,-0.08,-0.19];
+// Lettura TOTALE
+const LET_TOT_SCO = [0.489,0.199,-0.182,-0.436];
+const LET_P_SCO = [0.261,0.106,-0.097,-0.233];
+const LET_NP_SCO = [0.228,0.093,-0.085,-0.204];
+// Scrittura UI
+const SCR_UI = [
+  [0.132,0.217,0.302,0.387,0.472,0.557,0.642,0.727,0.812],
+  [-0.131,-0.046,0.039,0.124,0.209,0.294,0.379,0.464,0.594],
+  [-0.476,-0.391,-0.306,-0.221,-0.136,-0.051,0.034,0.119,0.204],
+  [-0.706,-0.621,-0.536,-0.451,-0.366,-0.281,-0.196,-0.111,-0.03]
+];
+// Associazione semantica (solo scolarità)
+const AS_SCO = [0.282,0.115,-0.105,-0.252];
+
+// CUT-OFF (confronto: se corretto <= cut-off → patologico)
+const CUTOFFS = {
+  den_tot: 9.969, den_v: 3.829, den_nv: 5,  // NV: cut-off fisso, no correzione
+  cf_tot: 6.157,
+  cp_tot: 10.258, cp_v: 5.048, cp_nv: 4.876,
+  rp_tot: 6.349, rp_p: 4.928, rp_np: 0.483,
+  rf_tot: 2.455, rf_pr: 1.001, rf_imp: 0.784,
+  let_tot: 13.489, let_p: 10.106, let_np: 2.228,
+  scr_ui: 2.132,
+  as_tot: 1.166,
+};
+
+function interp(eta, scoIdx, table) {
+  if (!table || !table[scoIdx]) return 0;
+  const row = table[scoIdx];
+  if (eta <= ETA_VALS[0]) return row[0];
+  if (eta >= ETA_VALS[ETA_VALS.length-1]) return row[ETA_VALS.length-1];
+  for (let i=0;i<ETA_VALS.length-1;i++) {
+    if (eta>=ETA_VALS[i]&&eta<=ETA_VALS[i+1]) {
+      const t=(eta-ETA_VALS[i])/(ETA_VALS[i+1]-ETA_VALS[i]);
+      return row[i]+t*(row[i+1]-row[i]);
+    }
+  }
+  return 0;
+}
+
+function interpEta(eta, row) {
+  if (eta<=ETA_VALS[0]) return row[0];
+  if (eta>=ETA_VALS[ETA_VALS.length-1]) return row[ETA_VALS.length-1];
+  for (let i=0;i<ETA_VALS.length-1;i++) {
+    if (eta>=ETA_VALS[i]&&eta<=ETA_VALS[i+1]) {
+      const t=(eta-ETA_VALS[i])/(ETA_VALS[i+1]-ETA_VALS[i]);
+      return row[i]+t*(row[i+1]-row[i]);
+    }
+  }
+  return 0;
+}
+
+function getScoIdx(sco) {
+  const s=parseInt(sco);
+  return [5,8,13,17].indexOf(s);
+}
+
+function proc(pg, corr_factor, cutoff, label, max) {
+  if (isNaN(pg)||pg===null||pg==='') return null;
+  const pc = pg - corr_factor;
+  const esito = pc <= cutoff ? 'Patologico' : 'Norma';
+  const cls = pc <= cutoff ? 'norm-pat' : 'norm-ok';
+  const ast = pc <= cutoff ? '*' : '';
+  return {pg,pc,corr_factor,cutoff,esito,cls,ast,label,max};
+}
+
+let lastData = null;
+
+function calcola() {
+  const eta = parseFloat(document.getElementById('p-eta').value);
+  const scoVal = document.getElementById('p-sco').value;
+  const nota = document.getElementById('nota-norma');
+  const resArea = document.getElementById('results-area');
+  const btnE = document.getElementById('btn-elenco'), btnT = document.getElementById('btn-tabella');
+
+  if (isNaN(eta)||!scoVal) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci età e scolarità per calcolare i punteggi corretti.</p>';
+    btnE.disabled=true;btnT.disabled=true;return;
+  }
+  nota.style.display='none';
+  const si = getScoIdx(scoVal);
+
+  function g(id){const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}
+
+  const results = [];
+
+  // DENOMINAZIONE
+  const den_tot=g('den-tot'), den_v=g('den-v'), den_nv=g('den-nv');
+  if(den_tot!==null) results.push(proc(den_tot, interp(eta,si,DEN_TOT), CUTOFFS.den_tot, 'Denominazione — Totale', 14));
+  if(den_v!==null) results.push(proc(den_v, interp(eta,si,DEN_V), CUTOFFS.den_v, 'Denominazione — Viventi', 7));
+  if(den_nv!==null) results.push({pg:den_nv,pc:den_nv,corr_factor:0,cutoff:CUTOFFS.den_nv,esito:den_nv<=CUTOFFS.den_nv?'Patologico':'Norma',cls:den_nv<=CUTOFFS.den_nv?'norm-pat':'norm-ok',ast:den_nv<=CUTOFFS.den_nv?'*':'',label:'Denominazione — Non viventi (cut-off fisso)',max:7});
+  // CF
+  const cf_tot=g('cf-tot');
+  if(cf_tot!==null) results.push(proc(cf_tot, CF_TOT_SCO[si], CUTOFFS.cf_tot, 'Comprensione frasi — Totale', 8));
+  // CP
+  const cp_tot=g('cp-tot'), cp_v=g('cp-v'), cp_nv=g('cp-nv');
+  if(cp_tot!==null) results.push(proc(cp_tot, CP_TOT_SCO[si], CUTOFFS.cp_tot, 'Comprensione parole — Totale', 12));
+  if(cp_v!==null) results.push(proc(cp_v, CP_V_SCO[si], CUTOFFS.cp_v, 'Comprensione parole — Viventi', 6));
+  if(cp_nv!==null) results.push(proc(cp_nv, CP_NV_SCO[si], CUTOFFS.cp_nv, 'Comprensione parole — Non viventi', 6));
+  // RP
+  const rp_tot=g('rp-tot'), rp_p=g('rp-p'), rp_np=g('rp-np');
+  if(rp_tot!==null) results.push(proc(rp_tot, interp(eta,si,RP_TOT), CUTOFFS.rp_tot, 'Ripetiz. parole+NP — Totale', 10));
+  if(rp_p!==null) results.push(proc(rp_p, interpEta(eta,RP_P_ETA), CUTOFFS.rp_p, 'Ripetiz. parole — Parole', 6));
+  if(rp_np!==null) results.push(proc(rp_np, interp(eta,si,RP_NP), CUTOFFS.rp_np, 'Ripetiz. parole — Non parole', 4));
+  // RF
+  const rf_tot=g('rf-tot'), rf_pr=g('rf-pr'), rf_imp=g('rf-imp');
+  if(rf_tot!==null) results.push(proc(rf_tot, RF_TOT_SCO[si], CUTOFFS.rf_tot, 'Ripetiz. frasi — Totale', 6));
+  if(rf_pr!==null) results.push(proc(rf_pr, RF_PR_SCO[si], CUTOFFS.rf_pr, 'Ripetiz. frasi — Prevedibili', 3));
+  if(rf_imp!==null) results.push(proc(rf_imp, RF_IMP_SCO[si], CUTOFFS.rf_imp, 'Ripetiz. frasi — Imprevedibili', 3));
+  // LETTURA
+  const let_tot=g('let-tot'), let_p=g('let-p'), let_np=g('let-np');
+  if(let_tot!==null) results.push(proc(let_tot, LET_TOT_SCO[si], CUTOFFS.let_tot, 'Lettura — Totale', 16));
+  if(let_p!==null) results.push(proc(let_p, LET_P_SCO[si], CUTOFFS.let_p, 'Lettura — Parole', 12));
+  if(let_np!==null) results.push(proc(let_np, LET_NP_SCO[si], CUTOFFS.let_np, 'Lettura — Non parole', 4));
+  // SCRITTURA
+  const scr_ui=g('scr-ui');
+  if(scr_ui!==null) results.push(proc(scr_ui, interp(eta,si,SCR_UI), CUTOFFS.scr_ui, 'Scrittura — Unità Informative', 6));
+  // ASSOCIAZIONE SEMANTICA
+  const as_tot=g('as-tot');
+  if(as_tot!==null) results.push(proc(as_tot, AS_SCO[si], CUTOFFS.as_tot, 'Associazione semantica — Totale', 4));
+
+  if (results.length===0) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci almeno un punteggio.</p>';
+    btnE.disabled=true;btnT.disabled=true;return;
+  }
+
+  let html='<div class="result-box">';
+  for(const r of results) {
+    html+=`<div class="result-row">
+      <span class="result-label">${r.label}</span>
+      <span class="result-val">grezzo <b>${r.pg}${r.ast}/${r.max}</b> → corretto <b>${r.pc.toFixed(2)}${r.ast}</b> &nbsp; <span class="${r.cls}" style="font-size:.82rem">${r.esito}${r.ast} (cut-off ≤${r.cutoff})</span></span>
+    </div>`;
+  }
+  html+='</div>';
+  resArea.innerHTML=html;
+  lastData={results};
+  btnE.disabled=false;btnT.disabled=false;
+}
+
+function buildElenco(){
+  if(!lastData)return'';
+  const c=document.getElementById('p-code')?.value||'';
+  const hdr=c?`${c} — `:'';
+  const parts=lastData.results.map(r=>`${r.label}: ${r.pg}${r.ast}/${r.max} → ${r.pc.toFixed(2)}${r.ast} (${r.esito})`);
+  return `${hdr}SAND: ${parts.join(' | ')}`;
+}
+
+function buildTabella(){
+  let rows=lastData.results.map(r=>`<tr><td>${r.label}</td><td>${r.pg}${r.ast}/${r.max}</td><td>${r.pc.toFixed(2)}${r.ast}</td><td>${r.esito}${r.ast}</td><td>≤ ${r.cutoff}</td></tr>`).join('');
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:11px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>SAND — Screening for Aphasia in NeuroDegeneration</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>Esito</b></td><td><b>Cut-off</b></td></tr>
+  </thead>
+  <tbody>${rows}</tbody>
+</table>`;
+}
+
+function copyOutput(tipo){
+  const out=document.getElementById('output-area'),fb=document.getElementById('copy-feedback');
+  if(tipo==='elenco'){const txt=buildElenco();out.textContent=txt;out.style.display='block';navigator.clipboard.writeText(txt).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{fb.textContent='⚠ Ctrl+C';});}
+  else{const html=buildTabella();out.textContent='[Tabella SAND]';out.style.display='block';try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(html,fb));}catch(e){fbH(html,fb);}}
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

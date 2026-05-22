@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tinkertoy Test — Crippa et al., 2016</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--surface:#181c27;--surface2:#1e2333;--border:#2a3050;--accent:#4f8ef7;--accent2:#7eb3ff;--text:#e8ecf8;--muted:#7a84a0;--ok:#3ddc84;--warn:#f7b731;--err:#ff5c5c}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.6;padding:24px;max-width:900px;margin:0 auto}
+h1{font-size:1.25rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.subtitle{font-size:.82rem;color:var(--muted);margin-bottom:20px;font-family:'IBM Plex Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:4px}
+label{font-size:.78rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none;transition:border .2s}
+input[type=number]:focus{border-color:var(--accent)}
+select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:.92rem;padding:8px 12px;width:100%;outline:none;cursor:pointer}
+select:focus{border-color:var(--accent)}
+.result-box{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:.82rem;color:var(--muted)}
+.result-val{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:600}
+.es0{color:var(--err)}.es1{color:#ff9a3c}.es2{color:var(--warn)}.es3{color:var(--ok)}.es4{color:var(--ok)}
+.alert{background:#1e1830;border:1px solid #5b4af7;border-radius:8px;padding:12px 16px;font-size:.82rem;color:#b8aaff;display:none;margin-top:10px}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+button{padding:10px 20px;border-radius:7px;border:none;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;transition:all .18s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2);color:#0f1117}
+.btn-primary:disabled,.btn-sec:disabled{opacity:.35;cursor:not-allowed}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-sec:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.output-area{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;white-space:pre-wrap;display:none;margin-top:10px}
+.feedback{font-size:.8rem;color:var(--ok);margin-top:6px;min-height:1.2em}
+.section-note{background:#0d1a2e;border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.8rem;color:#8ab4f8;margin-bottom:14px}
+table.norm-info{width:100%;border-collapse:collapse;font-size:.76rem;margin-top:8px}
+table.norm-info th{background:var(--surface2);color:var(--muted);padding:5px 8px;text-align:center;font-weight:600;border:1px solid var(--border)}
+table.norm-info td{padding:5px 8px;border:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:.74rem;text-align:center}
+.var-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.var-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px}
+.var-card label{font-size:.78rem;color:var(--accent);font-weight:700;display:block;margin-bottom:6px}
+.score-btns{display:flex;gap:4px;flex-wrap:wrap}
+.sbtn{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;padding:0 6px;border-radius:5px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:.8rem;cursor:pointer;transition:all .15s}
+.sbtn:hover{border-color:var(--accent);color:var(--accent)}
+.sbtn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+</style>
+</head>
+<body>
+<h1>Tinkertoy Test (TTT)</h1>
+<div class="subtitle">Lezak (1982) · Norme italiane: Crippa, Cesana &amp; Daini — F1000Research, 2016</div>
+
+<div class="card">
+  <h2>Dati paziente</h2>
+  <div class="grid4">
+    <div class="field"><label>Scolarità (anni)</label>
+      <select id="p-sco" onchange="calcola()">
+        <option value="">— seleziona —</option>
+        <option value="0">≤ 5 anni</option>
+        <option value="1">6–8 anni</option>
+        <option value="2">9–13 anni</option>
+        <option value="3">14–16 anni</option>
+        <option value="4">≥ 17 anni</option>
+      </select>
+    </div>
+    <div class="field"><label>Sesso</label>
+      <select id="p-sex" onchange="calcola()">
+        <option value="">— seleziona —</option>
+        <option value="M">Maschio</option>
+        <option value="F">Femmina</option>
+      </select>
+    </div>
+    <div class="field"><label>Data</label><input type="date" id="p-data"></div>
+    <div class="field"><label>Codice</label><input type="text" id="p-code" placeholder="opzionale" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:8px 12px;width:100%;outline:none"></div>
+  </div>
+  <p style="font-size:.75rem;color:var(--muted);margin-top:8px">N=256, età 15–86, nessun effetto età significativo (collineare con scolarità). Solo sesso ed educazione correggono il punteggio.</p>
+  <div id="nota-norma" class="alert"></div>
+</div>
+
+<div class="card">
+  <h2>Scoring — 7 variabili (max 12 punti)</h2>
+  <div class="section-note">
+    Punteggio di complessità: somma dei 7 punteggi (max 12). Gli errori sottraggono 1 punto ciascuno.
+  </div>
+  <div class="var-grid">
+    <div class="var-card">
+      <label>1. Costruzione realizzata (MD)</label>
+      <div class="score-btns">
+        <button class="sbtn" id="v1-0" onclick="setVar(1,0)">0</button>
+        <button class="sbtn" id="v1-1" onclick="setVar(1,1)">1</button>
+      </div>
+    </div>
+    <div class="var-card">
+      <label>2. Numero di pezzi usati (NP)</label>
+      <div class="score-btns">
+        <button class="sbtn" id="v2-0" onclick="setVar(2,0)">0</button>
+        <button class="sbtn" id="v2-1" onclick="setVar(2,1)">1 (≤20)</button>
+        <button class="sbtn" id="v2-2" onclick="setVar(2,2)">2 (≤30)</button>
+        <button class="sbtn" id="v2-3" onclick="setVar(2,3)">3 (≤40)</button>
+        <button class="sbtn" id="v2-4" onclick="setVar(2,4)">4 (≤50)</button>
+      </div>
+    </div>
+    <div class="var-card">
+      <label>3. Nome appropriato (N)</label>
+      <div class="score-btns">
+        <button class="sbtn" id="v3-0" onclick="setVar(3,0)">0 (nessuno)</button>
+        <button class="sbtn" id="v3-1" onclick="setVar(3,1)">1 (descrizione/post hoc)</button>
+        <button class="sbtn" id="v3-2" onclick="setVar(3,2)">2 (vago)</button>
+        <button class="sbtn" id="v3-3" onclick="setVar(3,3)">3 (appropriato)</button>
+      </div>
+    </div>
+    <div class="var-card">
+      <label>4. Mobilità — ruote (Ma) + parti mobili (Mb)</label>
+      <div class="score-btns">
+        <button class="sbtn" id="v4-0" onclick="setVar(4,0)">0</button>
+        <button class="sbtn" id="v4-1" onclick="setVar(4,1)">1 (solo Ma o Mb)</button>
+        <button class="sbtn" id="v4-2" onclick="setVar(4,2)">2 (Ma + Mb)</button>
+      </div>
+    </div>
+    <div class="var-card">
+      <label>5. Tridimensionalità (3D)</label>
+      <div class="score-btns">
+        <button class="sbtn" id="v5-0" onclick="setVar(5,0)">0</button>
+        <button class="sbtn" id="v5-1" onclick="setVar(5,1)">1</button>
+      </div>
+    </div>
+    <div class="var-card">
+      <label>6. Autoportante (S)</label>
+      <div class="score-btns">
+        <button class="sbtn" id="v6-0" onclick="setVar(6,0)">0</button>
+        <button class="sbtn" id="v6-1" onclick="setVar(6,1)">1</button>
+      </div>
+    </div>
+    <div class="var-card" style="grid-column:span 2">
+      <label>7. Errori (E) — −1 per ogni errore: misfit, incomplete fit, pezzi caduti non raccolti</label>
+      <div class="score-btns">
+        <button class="sbtn" id="v7-0" onclick="setVar(7,0)">0 errori</button>
+        <button class="sbtn" id="v7-m1" onclick="setVar(7,-1)">−1</button>
+        <button class="sbtn" id="v7-m2" onclick="setVar(7,-2)">−2</button>
+        <button class="sbtn" id="v7-m3" onclick="setVar(7,-3)">−3</button>
+        <button class="sbtn" id="v7-m4" onclick="setVar(7,-4)">−4</button>
+        <button class="sbtn" id="v7-m5" onclick="setVar(7,-5)">−5+</button>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:14px;display:flex;align-items:center;gap:16px">
+    <div class="field" style="max-width:200px">
+      <label>Oppure: punteggio grezzo diretto (max 12)</label>
+      <input type="number" id="pg-direct" min="-5" max="12" placeholder="inserisci grezzo" oninput="onDirectScore()">
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:.9rem;margin-top:16px">Grezzo calcolato: <span id="tot-calc" style="color:var(--accent);font-weight:700">—</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Risultati</h2>
+  <div id="results-area"><p style="color:var(--muted);font-size:.85rem">Inserisci scolarità, sesso e punteggio.</p></div>
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-elenco" disabled onclick="copyOutput('elenco')">Copia come elenco</button>
+    <button class="btn-sec" id="btn-tabella" disabled onclick="copyOutput('tabella')">Copia come tabella</button>
+  </div>
+  <div id="output-area" class="output-area"></div>
+  <div id="copy-feedback" class="feedback"></div>
+</div>
+
+<div class="card">
+  <h2>Griglia correzione (Tabella 4, Crippa 2016)</h2>
+  <p style="font-size:.78rem;color:var(--muted);margin-bottom:8px">Punteggio corretto = grezzo + fattore (aggiungere). Maschi coded=0, Femmine coded=1.</p>
+  <table class="norm-info">
+    <tr><th>Sesso</th><th>Scol. ≤5</th><th>Scol. 6–8</th><th>Scol. 9–13</th><th>Scol. 14–16</th><th>Scol. ≥17</th></tr>
+    <tr><td>Femmina (F)</td><td>+1.06</td><td>+0.85</td><td>+0.62</td><td>+0.38</td><td>−0.28</td></tr>
+    <tr><td>Maschio (M)</td><td>−0.25</td><td>−0.44</td><td>−0.68</td><td>−0.88</td><td>−1.04</td></tr>
+  </table>
+  <p style="font-size:.78rem;color:var(--muted);margin-top:10px;font-weight:700">Punteggi Equivalenti (ES 0–4) — punteggio corretto:</p>
+  <table class="norm-info" style="max-width:380px;margin-top:6px">
+    <tr><th>Punteggio corretto</th><th>ES</th><th>Densità (N)</th></tr>
+    <tr><td>0 – 5.85</td><td style="color:var(--err);font-weight:700">0</td><td>10</td></tr>
+    <tr><td>5.86 – 7.02</td><td style="color:#ff9a3c;font-weight:700">1</td><td>20</td></tr>
+    <tr><td>7.03 – 8.08</td><td style="color:var(--warn);font-weight:700">2</td><td>41</td></tr>
+    <tr><td>8.09 – 9.02</td><td style="color:var(--ok);font-weight:700">3</td><td>56</td></tr>
+    <tr><td>≥ 9.03</td><td style="color:var(--ok);font-weight:700">4</td><td>128</td></tr>
+  </table>
+  <p style="font-size:.73rem;color:var(--muted);margin-top:6px">oTL (ES=0): 5.85 | iTL: 6.44 | N=256</p>
+</div>
+
+<script>
+// Variabili scoring: v1(0/1), v2(0-4), v3(0-3), v4(0-2), v5(0/1), v6(0/1), v7(0/-1/-2/-3/-4/-5)
+const varScores = {1:null,2:null,3:null,4:null,5:null,6:null,7:null};
+const VAR_IDS = {1:[0,1], 2:[0,1,2,3,4], 3:[0,1,2,3], 4:[0,1,2], 5:[0,1], 6:[0,1], 7:[0,-1,-2,-3,-4,-5]};
+
+function setVar(v, val) {
+  varScores[v] = val;
+  // Update buttons
+  const ids = VAR_IDS[v];
+  ids.forEach(id => {
+    const key = v===7 ? `v7-${id===0?'0':'m'+Math.abs(id)}` : `v${v}-${id}`;
+    const b = document.getElementById(key);
+    if (b) b.className = 'sbtn' + (varScores[v]===id?' active':'');
+  });
+  // Update total
+  const allFilled = Object.values(varScores).every(v=>v!==null);
+  if (allFilled) {
+    const tot = Object.values(varScores).reduce((a,b)=>a+b,0);
+    document.getElementById('tot-calc').textContent = tot;
+    document.getElementById('pg-direct').value = tot;
+  }
+  calcola();
+}
+
+function onDirectScore() { calcola(); }
+
+// ── CORREZIONE ──────────────────────────────────────────────────
+// Tabella 4: [F/M][edu 0..4]
+const CORR = {
+  F: [1.06, 0.85, 0.62, 0.38, -0.28],
+  M: [-0.25, -0.44, -0.68, -0.88, -1.04]
+};
+
+function getES(pc) {
+  if (pc <= 5.85) return 0;
+  if (pc <= 7.02) return 1;
+  if (pc <= 8.08) return 2;
+  if (pc <= 9.02) return 3;
+  return 4;
+}
+const ES_LABELS={0:'Deficitario',1:'Borderline',2:'Basso',3:'Nella norma',4:'Nella norma'};
+const ES_CLS={0:'es0',1:'es1',2:'es2',3:'es3',4:'es4'};
+const SCO_LABELS=['≤5','6–8','9–13','14–16','≥17'];
+
+let lastData=null;
+
+function calcola() {
+  const scoIdx = parseInt(document.getElementById('p-sco').value);
+  const sex = document.getElementById('p-sex').value;
+  const pg = parseFloat(document.getElementById('pg-direct').value);
+  const nota = document.getElementById('nota-norma');
+  const resArea = document.getElementById('results-area');
+  const btnE = document.getElementById('btn-elenco'), btnT = document.getElementById('btn-tabella');
+
+  if (isNaN(scoIdx)||!sex) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Seleziona scolarità e sesso.</p>';
+    btnE.disabled=true;btnT.disabled=true;return;
+  }
+  if (isNaN(pg)) {
+    resArea.innerHTML='<p style="color:var(--muted);font-size:.85rem">Inserisci il punteggio grezzo.</p>';
+    btnE.disabled=true;btnT.disabled=true;return;
+  }
+  nota.style.display='none';
+
+  const cf = CORR[sex][scoIdx];
+  const pc = pg + cf;
+  const es = getES(pc);
+  const ast = es<=1?'*':'';
+
+  resArea.innerHTML=`<div class="result-box">
+    <div class="result-row"><span class="result-label">Punteggio grezzo</span><span class="result-val">${pg}/12${ast}</span></div>
+    <div class="result-row"><span class="result-label">Fattore correzione (${sex}, scol. ${SCO_LABELS[scoIdx]})</span><span class="result-val">${cf>=0?'+':''}${cf}</span></div>
+    <div class="result-row"><span class="result-label">Punteggio corretto</span><span class="result-val">${pc.toFixed(2)}${ast}</span></div>
+    <div class="result-row"><span class="result-label">ES (0–4)</span><span class="result-val ${ES_CLS[es]}">ES ${es}${ast} — ${ES_LABELS[es]}</span></div>
+    <div class="result-row" style="color:var(--muted);font-size:.75rem"><span>oTL: 5.85 | Cut-off ES=0: ≤5.85</span><span>N=256, età 15–86</span></div>
+  </div>`;
+
+  lastData={pg,pc,es,ast,sex,scoIdx};
+  btnE.disabled=false;btnT.disabled=false;
+}
+
+function buildElenco(){
+  if(!lastData)return'';
+  const d=lastData;
+  const c=document.getElementById('p-code').value;
+  const hdr=c?`${c} — `:'';
+  return `${hdr}Tinkertoy (Crippa et al., 2016): ${d.pg}${d.ast}/12 → ${d.pc.toFixed(2)}${d.ast} (ES ${d.es} — ${ES_LABELS[d.es]})`;
+}
+function buildTabella(){
+  const d=lastData;
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px">
+  <thead>
+    <tr style="background:#d0d8f2"><td colspan="5"><b>Tinkertoy Test (Crippa et al., 2016)</b></td></tr>
+    <tr style="background:#e8ecf8"><td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>ES (0–4)</b></td><td><b>Cut-off</b></td></tr>
+  </thead>
+  <tbody>
+    <tr><td>Tinkertoy — Complessità</td><td>${d.pg}${d.ast}/12</td><td>${d.pc.toFixed(2)}${d.ast}</td><td>ES ${d.es}${d.ast} — ${ES_LABELS[d.es]}</td><td>&gt; 5.85</td></tr>
+  </tbody>
+</table>`;
+}
+function copyOutput(tipo){
+  const out=document.getElementById('output-area'),fb=document.getElementById('copy-feedback');
+  if(tipo==='elenco'){const txt=buildElenco();out.textContent=txt;out.style.display='block';navigator.clipboard.writeText(txt).then(()=>{fb.textContent='✓ Testo copiato';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{fb.textContent='⚠ Ctrl+C';});}
+  else{const html=buildTabella();out.textContent='[Tabella TTT]';out.style.display='block';try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbH(html,fb));}catch(e){fbH(html,fb);}}
+}
+function fbH(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

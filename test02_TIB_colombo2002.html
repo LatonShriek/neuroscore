@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #2 — TIB Test Breve di Intelligenza</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2e3347;--accent:#e8a04a;--ok:#2ecc71;--warn:#e67e22;--err:#e74c3c;--text:#e8eaf0;--muted:#8892a4;--sans:'IBM Plex Sans',sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;min-height:100vh}
+.shell{max-width:780px;margin:0 auto;padding:32px 20px 60px}
+.hdr{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px}
+.hdr-badge{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.hdr h1{font-size:22px;font-weight:600}
+.hdr .cite{font-size:12px;color:var(--muted);margin-top:4px}
+.range-tag{display:inline-block;background:rgba(232,160,74,.12);border:1px solid var(--accent);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:6px}
+.sec-label{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px;margin-top:24px}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+@media(max-width:560px){.demo-grid{grid-template-columns:1fr 1fr}}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono)}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:14px;padding:8px 10px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+
+/* Protocollo parole */
+.word-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;margin-top:4px}
+.word-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .15s;user-select:none}
+.word-item:hover{border-color:var(--accent)}
+.word-item.errore{background:#2d1a0a;border-color:var(--err)}
+.word-item.controllo{opacity:.5}
+.word-item.controllo.errore{background:#2d0a0a;border-color:var(--err)}
+.word-label{font-family:var(--mono);font-size:13px;font-weight:500}
+.word-item.tib .word-label{color:var(--text)}
+.word-item.controllo .word-label{color:var(--muted);font-style:italic;font-weight:400}
+.word-err-badge{font-size:10px;font-family:var(--mono);color:var(--err);display:none}
+.word-item.errore .word-err-badge{display:block}
+.word-num{font-size:10px;color:var(--muted);font-family:var(--mono);margin-right:8px}
+
+.counter-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-top:16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.count-block .num{font-size:32px;font-weight:500;font-family:var(--mono);line-height:1}
+.count-block .lbl{font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase}
+.count-block.tib-count .num{color:var(--accent)}
+.count-block.ctrl-count .num{color:var(--err);font-size:20px}
+
+/* Risultati QI */
+.qi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:4px}
+@media(max-width:480px){.qi-grid{grid-template-columns:1fr}}
+.qi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.qi-card .lbl{font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:6px}
+.qi-card .val{font-size:36px;font-weight:500;font-family:var(--mono);line-height:1;color:var(--accent)}
+.qi-card .range{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:4px}
+.qi-card.patol .val{color:var(--err)}
+.qi-card.border-range .val{color:var(--warn)}
+
+.norm-note{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-top:12px;font-size:12px;color:var(--muted);font-family:var(--mono);line-height:1.7}
+
+.report-btns{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-report{flex:1;min-width:160px;padding:12px 16px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s}
+.btn-report:hover:not(:disabled){opacity:.85}
+.btn-report:disabled{background:var(--surface2);color:var(--muted);cursor:default}
+.btn-report.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-report.secondary:hover:not(:disabled){border-color:var(--accent);color:var(--accent);opacity:1}
+.copy-feedback{font-family:var(--mono);font-size:11px;color:var(--ok);margin-top:8px;min-height:16px}
+.report-output{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:14px;font-family:var(--mono);font-size:12px;line-height:1.8;white-space:pre-wrap;display:none}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="hdr">
+  <div class="hdr-badge">Test #2</div>
+  <h1>TIB — Test Breve di Intelligenza</h1>
+  <div class="cite">Colombo M., Sartori G., Brivio C. (2002). <em>La stima del quoziente intellettivo tramite il Test Breve di Intelligenza (TIB).</em> Giornale Italiano di Psicologia, 29(2), 613–637. — Protocollo: Kit del Neuropsicologo Italiano (Barletta-Rodolfi, Gasparini, Ghidoni, 2011).</div>
+  <div class="range-tag">Valido per adulti — stima QI pre-morboso</div>
+</div>
+
+<div class="sec-label">Dati paziente</div>
+<div class="demo-grid">
+  <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="18" max="100" placeholder="es. 68" oninput="calcQI()"></div>
+  <div class="field"><label>Sesso</label><select id="p-sesso" onchange="calcQI()"><option value="">—</option><option value="1">M (sex=1)</option><option value="0">F (sex=0)</option></select></div>
+  <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-scol" min="0" max="30" placeholder="es. 13" oninput="calcQI()"></div>
+  <div class="field"><label>Data valutazione</label><input type="date" id="p-data"></div>
+</div>
+
+<div class="sec-label">Protocollo — 54 parole (clicca per segnare errore)</div>
+<div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-family:var(--mono)">
+  <span style="color:var(--text)">■ MAIUSCOLO = parole TIB</span> (34 item da scorare) &nbsp;|&nbsp;
+  <span style="color:var(--muted)">■ corsivo = parole di controllo</span> (non contano nel punteggio) &nbsp;|&nbsp;
+  Clicca per segnare errore ●
+</div>
+<div class="word-grid" id="word-grid"></div>
+
+<div class="counter-bar">
+  <div class="count-block tib-count">
+    <div class="lbl">Errori TIB (su 34)</div>
+    <div class="num" id="cnt-tib">0</div>
+  </div>
+  <div class="count-block ctrl-count">
+    <div class="lbl">Errori controllo (attenzione!)</div>
+    <div class="num" id="cnt-ctrl">0</div>
+  </div>
+  <div style="flex:1;font-size:12px;color:var(--muted);font-family:var(--mono)">
+    Valore normale TIB: ≤ 19.80 errori<br>
+    Stima QI totale normale: ≥ 93.1
+  </div>
+</div>
+
+<div class="sec-label">Stime QI (Colombo et al., 2002)</div>
+<div class="qi-grid" id="qi-grid">
+  <div class="qi-card"><div class="lbl">QI Verbale</div><div class="val" id="qiv">—</div><div class="range">QIV ≥ 93.1 = normale</div></div>
+  <div class="qi-card"><div class="lbl">QI Performance</div><div class="val" id="qip">—</div><div class="range">QIP ≥ 93.1 = normale</div></div>
+  <div class="qi-card"><div class="lbl">QI Totale</div><div class="val" id="qit">—</div><div class="range">QIT ≥ 93.1 = normale</div></div>
+</div>
+<div class="norm-note" id="norm-note" style="display:none"></div>
+
+<div class="report-btns">
+  <button class="btn-report" id="btn-elenco" onclick="copyOutput('elenco')" disabled>📋 Copia come elenco</button>
+  <button class="btn-report secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>⊞ Copia come tabella</button>
+</div>
+<div class="copy-feedback" id="copy-feedback"></div>
+<div class="report-output" id="report-output"></div>
+
+</div>
+<script>
+// ============================================================
+// PAROLE TIB (54 totali: 34 TIB + 20 controllo)
+// Fonte: Colombo et al. 2002 / Kit Neuropsicologo Italiano 2011
+// ============================================================
+const WORDS = [
+  {n:1,  w:'DÀRSENA',    tipo:'tib'},
+  {n:2,  w:'mattìna',    tipo:'ctrl'},
+  {n:3,  w:'SEQUÈLA',    tipo:'tib'},
+  {n:4,  w:'DÀLMATA',    tipo:'tib'},
+  {n:5,  w:'domènica',   tipo:'ctrl'},
+  {n:6,  w:'soldàto',    tipo:'ctrl'},
+  {n:7,  w:'MISÒGINO',   tipo:'tib'},
+  {n:8,  w:'DÈMONE',     tipo:'tib'},
+  {n:9,  w:'STÌGMATE',   tipo:'tib'},
+  {n:10, w:'pòvero',     tipo:'ctrl'},
+  {n:11, w:'SENÌLE',     tipo:'tib'},
+  {n:12, w:'RETRÒGRADO', tipo:'tib'},
+  {n:13, w:'RECÒNDITO',  tipo:'tib'},
+  {n:14, w:'persòna',    tipo:'ctrl'},
+  {n:15, w:'FORBÌTO',    tipo:'tib'},
+  {n:16, w:'màcchina',   tipo:'ctrl'},
+  {n:17, w:'ÈREMO',      tipo:'tib'},
+  {n:18, w:'PÒSTERI',    tipo:'tib'},
+  {n:19, w:'CÈRNITA',    tipo:'tib'},
+  {n:20, w:'EGÈMONE',    tipo:'tib'},
+  {n:21, w:'amìco',      tipo:'ctrl'},
+  {n:22, w:'NEÒFITA',    tipo:'tib'},
+  {n:23, w:'ENDÒCRINO',  tipo:'tib'},
+  {n:24, w:'ARCÀNO',     tipo:'tib'},
+  {n:25, w:'àlbero',     tipo:'ctrl'},
+  {n:26, w:'BÌPEDE',     tipo:'tib'},
+  {n:27, w:'AMÀZZONE',   tipo:'tib'},
+  {n:28, w:'famòso',     tipo:'ctrl'},
+  {n:29, w:'NECRÒFORO',  tipo:'tib'},
+  {n:30, w:'FEDÌFRAGO',  tipo:'tib'},
+  {n:31, w:'lontàno',    tipo:'ctrl'},
+  {n:32, w:'SACRÌLEGO',  tipo:'tib'},
+  {n:33, w:'èdera',      tipo:'ctrl'},
+  {n:34, w:'fortùna',    tipo:'ctrl'},
+  {n:35, w:'ÌNFERI',     tipo:'tib'},
+  {n:36, w:'CHIMÈRA',    tipo:'tib'},
+  {n:37, w:'lèttera',    tipo:'ctrl'},
+  {n:38, w:'ALÌQUOTA',   tipo:'tib'},
+  {n:39, w:'ARENÌLE',    tipo:'tib'},
+  {n:40, w:'problèma',   tipo:'ctrl'},
+  {n:41, w:'catèna',     tipo:'ctrl'},
+  {n:42, w:'TECNÒCRATE', tipo:'tib'},
+  {n:43, w:'animàle',    tipo:'ctrl'},
+  {n:44, w:'SCIPÌTO',    tipo:'tib'},
+  {n:45, w:'MACÈDONE',   tipo:'tib'},
+  {n:46, w:'inùtile',    tipo:'ctrl'},
+  {n:47, w:'CICLÒPE',    tipo:'tib'},
+  {n:48, w:'perìcolo',   tipo:'ctrl'},
+  {n:49, w:'ERMAFRODÌTO',tipo:'tib'},
+  {n:50, w:'APÒSTATA',   tipo:'tib'},
+  {n:51, w:'polìtico',   tipo:'ctrl'},
+  {n:52, w:'EPÌTETO',    tipo:'tib'},
+  {n:53, w:'dèbito',     tipo:'ctrl'},
+  {n:54, w:'RÈMORA',     tipo:'tib'},
+];
+
+const errors = new Set();
+
+function buildGrid() {
+  const grid = document.getElementById('word-grid');
+  WORDS.forEach(w => {
+    const div = document.createElement('div');
+    div.className = `word-item ${w.tipo}`;
+    div.id = `w-${w.n}`;
+    div.innerHTML = `<span class="word-num">${w.n}.</span><span class="word-label">${w.w}</span><span class="word-err-badge">✕ errore</span>`;
+    div.onclick = () => toggleError(w.n, w.tipo);
+    grid.appendChild(div);
+  });
+}
+
+function toggleError(n, tipo) {
+  const el = document.getElementById(`w-${n}`);
+  if (errors.has(n)) { errors.delete(n); el.classList.remove('errore'); }
+  else { errors.add(n); el.classList.add('errore'); }
+  updateCounters();
+  calcQI();
+}
+
+function updateCounters() {
+  let tib = 0, ctrl = 0;
+  errors.forEach(n => {
+    const w = WORDS.find(x => x.n === n);
+    if (w.tipo === 'tib') tib++; else ctrl++;
+  });
+  document.getElementById('cnt-tib').textContent = tib;
+  document.getElementById('cnt-ctrl').textContent = ctrl;
+  if (ctrl > 0) {
+    document.getElementById('cnt-ctrl').style.color = 'var(--err)';
+  } else {
+    document.getElementById('cnt-ctrl').style.color = 'var(--muted)';
+  }
+}
+
+function getTIBErrors() {
+  let n = 0;
+  errors.forEach(id => { if (WORDS.find(x=>x.n===id).tipo==='tib') n++; });
+  return n;
+}
+
+// ============================================================
+// FORMULE QI — Colombo et al. 2002
+// QIV = 93.551 + 0.133×età + 3.3825×sex + 0.772×scol − 0.943×TIB
+// QIP = 102.938 + 0.198×età + 3.316×sex − 1.319×TIB
+// QIT = 98.471 + 0.168×età + 3.605×sex + 0.388×scol − 1.196×TIB
+// sex: M=1, F=0
+// ============================================================
+function calcQI() {
+  const eta  = parseFloat(document.getElementById('p-eta').value);
+  const sex  = parseFloat(document.getElementById('p-sesso').value);
+  const scol = parseFloat(document.getElementById('p-scol').value);
+  const tib  = getTIBErrors();
+
+  const qivEl = document.getElementById('qiv');
+  const qipEl = document.getElementById('qip');
+  const qitEl = document.getElementById('qit');
+  const noteEl = document.getElementById('norm-note');
+
+  if (isNaN(eta) || isNaN(sex) || isNaN(scol)) {
+    ['qiv','qip','qit'].forEach(id => document.getElementById(id).textContent = '—');
+    noteEl.style.display = 'none';
+    disableButtons(); return;
+  }
+
+  const qiv = 93.551 + 0.133*eta + 3.3825*sex + 0.772*scol - 0.943*tib;
+  const qip = 102.938 + 0.198*eta + 3.316*sex - 1.319*tib;
+  const qit = 98.471 + 0.168*eta + 3.605*sex + 0.388*scol - 1.196*tib;
+
+  const fmt = v => v.toFixed(1);
+
+  const setCard = (el, val, threshold=93.1) => {
+    el.textContent = fmt(val);
+    const card = el.closest('.qi-card');
+    card.classList.remove('patol','border-range');
+    if (val < 80) card.classList.add('patol');
+    else if (val < threshold) card.classList.add('border-range');
+  };
+
+  setCard(qivEl, qiv);
+  setCard(qipEl, qip);
+  setCard(qitEl, qit);
+
+  // Note interpretative
+  const tibOk = tib <= 19.80;
+  const qitOk = qit >= 93.1;
+  let note = `TIB grezzo: ${tib}/34 (v.n. ≤ 19.80 → ${tibOk ? '✓ nella norma' : '✗ oltre soglia'})\n`;
+  note += `QIT stimato: ${fmt(qit)} (v.n. ≥ 93.1 → ${qitOk ? '✓ nella norma' : '✗ sotto soglia'})\n`;
+  if (!tibOk) note += `⚠ Attenzione: ${tib} errori TIB. Se presenti molti errori di pronuncia, valutare invalidazione della prova.`;
+  noteEl.textContent = note;
+  noteEl.style.display = 'block';
+
+  enableButtons();
+
+  // Salva per output
+  window._tibResult = {eta, sex, scol, tib, qiv, qip, qit, tibOk, qitOk};
+}
+
+function enableButtons()  { document.getElementById('btn-elenco').disabled=false; document.getElementById('btn-tabella').disabled=false; }
+function disableButtons() { document.getElementById('btn-elenco').disabled=true;  document.getElementById('btn-tabella').disabled=true; }
+
+// ============================================================
+// OUTPUT
+// ============================================================
+function buildElenco() {
+  const r = window._tibResult;
+  if (!r) return '—';
+  const fmt = v => v.toFixed(1);
+  const tibPatol = r.tib > 19.80;
+  const tibStr = tibPatol ? `${r.tib}*` : `${r.tib}`;
+  const qitPatol = r.qit < 93.1;
+  const qitStr = qitPatol ? `${fmt(r.qit)}*` : fmt(r.qit);
+  return `TIB — Test Breve di Intelligenza (Colombo et al., 2002): errori ${tibStr}/34 → QIV ${fmt(r.qiv)} | QIP ${fmt(r.qip)} | QIT ${qitStr} (v.n. ≥ 93.1)`;
+}
+
+function buildTabellaHTML() {
+  const r = window._tibResult;
+  if (!r) return '';
+  const fmt = v => v.toFixed(1);
+  const tibPatol = r.tib > 19.80;
+  const tibStr = tibPatol ? `${r.tib}*/34` : `${r.tib}/34`;
+  const qitPatol = r.qit < 93.1;
+  const qitStr = qitPatol ? `${fmt(r.qit)}*` : fmt(r.qit);
+  const esito = qitPatol ? 'sotto soglia (QIT < 93.1)' : 'nella norma';
+
+  return `<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;width:100%">
+  <thead><tr style="font-weight:bold;background:#f2f2f2">
+    <td><b>Test</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE / Punteggio ponderato</b></td><td><b>Cut-off</b></td>
+  </tr></thead>
+  <tbody>
+    <tr>
+      <td><b>TIB — Test Breve di Intelligenza</b><br><i>(Colombo et al., 2002)</i></td>
+      <td>${tibStr} errori</td>
+      <td>—</td>
+      <td>QIV ${fmt(r.qiv)} | QIP ${fmt(r.qip)} | QIT ${qitStr}</td>
+      <td>QIT ≥ 93.1 (${esito})</td>
+    </tr>
+  </tbody>
+</table>`;
+}
+
+function copyOutput(tipo) {
+  const out = document.getElementById('report-output');
+  const fb  = document.getElementById('copy-feedback');
+  if (tipo === 'elenco') {
+    const t = buildElenco(); out.textContent=t; out.style.display='block';
+    navigator.clipboard.writeText(t).then(()=>{fb.textContent='✓ Testo copiato — Ctrl+V';setTimeout(()=>fb.textContent='',4000);}).catch(()=>{selectOut(out);fb.textContent='⚠ Seleziona e Ctrl+C';});
+  } else {
+    const h = buildTabellaHTML(); const r=window._tibResult;
+    out.textContent=`[Tabella] TIB | ${r?r.tib+'/34':'—'} errori | QIT ${r?r.qit.toFixed(1):'—'}`;
+    out.style.display='block';
+    try{navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([h],{type:'text/html'})})]).then(()=>{fb.textContent='✓ Tabella copiata — Ctrl+V in Google Docs';setTimeout(()=>fb.textContent='',5000);}).catch(()=>fbHTML(h,fb));}catch(e){fbHTML(h,fb);}
+  }
+}
+function fbHTML(h,fb){const t=document.createElement('div');t.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0';t.innerHTML=h;document.body.appendChild(t);const r=document.createRange();r.selectNodeContents(t);window.getSelection().removeAllRanges();window.getSelection().addRange(r);try{document.execCommand('copy');fb.textContent='✓ Tabella copiata';}catch(e){fb.textContent='⚠ Copia non riuscita';}window.getSelection().removeAllRanges();document.body.removeChild(t);setTimeout(()=>fb.textContent='',5000);}
+function selectOut(el){const r=document.createRange();r.selectNodeContents(el);window.getSelection().removeAllRanges();window.getSelection().addRange(r);}
+
+// Init
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+buildGrid();
+</script>
+</body>
+</html>

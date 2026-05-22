@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#35b COWAT-FAS — Gasparini et al., 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#222536;
+    --border:#2e3347; --accent:#4f8ef7; --accent-dim:rgba(79,142,247,0.15);
+    --text:#e8eaf0; --text-dim:#8b91a8;
+    --ok:#34d399; --warn:#fbbf24; --bad:#f87171;
+    --bad-dim:rgba(248,113,113,0.15);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:15px; min-height:100vh; padding:32px 20px 60px; }
+  .container { max-width:720px; margin:0 auto; }
+  .header { margin-bottom:28px; }
+  .test-tag { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:.12em; text-transform:uppercase; margin-bottom:6px; }
+  h1 { font-size:22px; font-weight:600; line-height:1.3; }
+  .authors { font-size:13px; color:var(--text-dim); margin-top:4px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:22px 24px; margin-bottom:16px; }
+  .card-title { font-size:11px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:16px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  label { font-size:12px; color:var(--text-dim); display:block; margin-bottom:5px; }
+  input[type="number"], select { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:14px; padding:8px 12px; outline:none; transition:border-color .2s; }
+  input:focus, select:focus { border-color:var(--accent); }
+  select option { background:var(--surface2); }
+  .score-row { display:flex; align-items:center; gap:14px; padding:12px 0; }
+  .score-label { flex:1; font-size:14px; }
+  .score-label small { display:block; font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .score-input-wrap { width:90px; }
+  .result-block { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 18px; margin-top:10px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .result-label { font-size:12px; color:var(--text-dim); min-width:130px; }
+  .result-values { font-family:'IBM Plex Mono',monospace; font-size:13px; flex:1; }
+  .es-badge { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; padding:4px 14px; border-radius:5px; min-width:60px; text-align:center; }
+  .es0 { background:var(--bad-dim); color:var(--bad); border:1px solid var(--bad); }
+  .es1 { background:rgba(251,191,36,.12); color:var(--warn); border:1px solid var(--warn); }
+  .es2 { background:rgba(251,191,36,.08); color:#e9a825; border:1px solid #e9a825; }
+  .es3 { background:rgba(52,211,153,.1); color:var(--ok); border:1px solid var(--ok); }
+  .es4 { background:rgba(52,211,153,.15); color:var(--ok); border:1px solid var(--ok); }
+  .alert-box { background:var(--bad-dim); border:1px solid var(--bad); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--bad); margin-top:10px; display:none; }
+  .info-box { background:var(--accent-dim); border:1px solid var(--accent); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--accent); margin-bottom:14px; }
+  .note { font-size:12px; color:var(--text-dim); line-height:1.6; padding:12px 0 0; border-top:1px solid var(--border); margin-top:14px; }
+  .btn-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  button { font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:500; padding:10px 22px; border-radius:7px; border:none; cursor:pointer; transition:opacity .2s,transform .1s; }
+  button:hover:not(:disabled) { opacity:.85; }
+  button:active:not(:disabled) { transform:scale(.97); }
+  button:disabled { opacity:.35; cursor:not-allowed; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  .asterisk { color:var(--bad); font-weight:700; }
+  .edu-badge { display:inline-block; background:var(--accent-dim); border:1px solid var(--accent); border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); padding:2px 8px; margin-left:8px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="test-tag">#35b · Fluenza Fonemica</div>
+    <h1>COWAT-FAS</h1>
+    <div class="authors">Gasparini, Scandola, Salati, Margiotta, Barbetti, Diana, Amato, Gambina, Bruno, Vanacore, Moro (2025) · J. Clinical and Experimental Neuropsychology</div>
+  </div>
+
+  <!-- INFO -->
+  <div class="card">
+    <div class="info-box">
+      ℹ Versione aggiornata 2025 (Flynn Effect). La correzione è basata solo sulla scolarità: età e sesso non influenzano significativamente il punteggio in questo campione. Campione: 364 soggetti sani, età ≥ 40 anni, Roma e provincia.
+    </div>
+  </div>
+
+  <!-- ANAGRAFICA -->
+  <div class="card">
+    <div class="card-title">Dati demografici</div>
+    <div class="info-box" style="margin-bottom:0">
+      ⚠ Solo la scolarità è richiesta per la correzione. Età e sesso non entrano nella formula (Gasparini et al., 2025).
+    </div>
+    <div style="margin-top:14px">
+      <label>Scolarità (anni) <span style="color:var(--accent)">*</span></label>
+      <input type="number" id="scol" min="0" max="30" placeholder="es. 13" oninput="calcola()">
+    </div>
+    <div style="margin-top:10px; font-size:12px; color:var(--text-dim)">
+      Fasce scolarità: <strong style="color:var(--text)">3–8 anni</strong> → correzione +10.258 &nbsp;|&nbsp; <strong style="color:var(--text)">9–13 anni</strong> → +2.700 &nbsp;|&nbsp; <strong style="color:var(--text)">&gt;14 anni</strong> → −4.855
+    </div>
+  </div>
+
+  <!-- PUNTEGGIO GREZZO -->
+  <div class="card">
+    <div class="card-title">Punteggio grezzo</div>
+    <div class="score-row">
+      <div class="score-label">
+        COWAT-FAS Totale
+        <small>Somma parole prodotte con F + A + S (3×60 s)</small>
+      </div>
+      <div class="score-input-wrap">
+        <input type="number" id="fas" min="0" max="150" placeholder="—" oninput="calcola()">
+      </div>
+    </div>
+  </div>
+
+  <!-- RISULTATI -->
+  <div class="card">
+    <div class="card-title">Risultati</div>
+    <div id="alert-demo" class="alert-box">⚠ Inserire la scolarità per calcolare il punteggio corretto.</div>
+    <div id="results-content" style="display:none">
+      <div id="res_fas"></div>
+      <div class="note">
+        <strong>Correzione demografica:</strong> Gasparini et al. (2025) — formula lineare: CS = grezzo + [1.365 × (scolarità − 12.989)]⁻¹<br>
+        Applicata per fasce: 3–8 anni (+10.258), 9–13 anni (+2.700), ≥14 anni (−4.855).<br>
+        Età e sesso: non significativi nel modello migliore (BIC selection).<br>
+        <strong>ES</strong> (Tab. 6): ES0 ≤ 20.98 · ES1 ≤ 28.52 · ES2 ≤ 32.52 · ES3 ≤ 35.52 · ES4 &gt; 35.52<br>
+        Cut-off (outer tolerance limit): 20.98 · Inner tolerance limit: 23.52
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary"    id="btn-lista"    disabled onclick="copiaLista()">Copia come elenco</button>
+      <button class="btn-secondary"  id="btn-tabella"  disabled onclick="copiaTabella()">Copia come tabella</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── CORREZIONE (Gasparini 2025) ─────────────────────────────────────────────
+// Formula: CS = grezzo - [1.365*(scol - 12.989)]
+// Ma la griglia (Tab 4) usa 3 fasce medie:
+//   3-8 anni → correzione = +10.258
+//   9-13 anni → correzione = +2.700
+//   >14 anni → correzione = -4.855
+// I valori tabellari sono più affidabili (media della fascia).
+// Usiamo la formula continua RS - [1.365*(scol-12.989)]:
+
+function corrFAS(scol) {
+  return -(1.365 * (scol - 12.989)); // da aggiungere al grezzo
+}
+
+// ES (Tabella 6)
+function calcolaES(corretto) {
+  if (corretto <= 20.98) return 0;
+  if (corretto <= 28.52) return 1;
+  if (corretto <= 32.52) return 2;
+  if (corretto <= 35.52) return 3;
+  return 4;
+}
+
+const CUTOFF = 20.98;
+let stato = {};
+
+function calcola() {
+  const scol = parseFloat(document.getElementById('scol').value);
+  const fas  = parseFloat(document.getElementById('fas').value);
+
+  const alertBox = document.getElementById('alert-demo');
+  const content  = document.getElementById('results-content');
+
+  if (isNaN(scol)) {
+    alertBox.style.display = 'block';
+    content.style.display  = 'none';
+    disableButtons();
+    stato = {};
+    return;
+  }
+  alertBox.style.display = 'none';
+  content.style.display  = 'block';
+
+  const el = document.getElementById('res_fas');
+
+  if (isNaN(fas)) {
+    el.innerHTML = `<div class="result-block"><span class="result-label">COWAT-FAS</span><span style="color:var(--text-dim);font-size:13px;">— in attesa di punteggio —</span></div>`;
+    disableButtons();
+    stato = {};
+    return;
+  }
+
+  // Fascia scolarità per display
+  let fasciaLabel = '';
+  if (scol <= 8)       fasciaLabel = '3–8 anni';
+  else if (scol <= 13) fasciaLabel = '9–13 anni';
+  else                 fasciaLabel = '≥14 anni';
+
+  const delta = corrFAS(scol);
+  const corretto = fas + delta;
+  const es = calcolaES(corretto);
+  const alterato = es === 0;
+  const esito = es===0?'PATOLOGICO':es===1?'borderline':'normale';
+  const ast = alterato ? '<sup class="asterisk">*</sup>' : '';
+
+  el.innerHTML = `<div class="result-block">
+    <span class="result-label">COWAT-FAS<span class="edu-badge">${fasciaLabel}</span></span>
+    <span class="result-values">grezzo ${fas.toFixed(0)}${ast} → corr. ${corretto.toFixed(2)}${ast}</span>
+    <span class="es-badge es${es}">PE ${es} — ${esito}</span>
+  </div>`;
+
+  stato = { fas: { nome:'COWAT-FAS', grezzo:fas, corretto, es, alterato, cutoff:CUTOFF } };
+  document.getElementById('btn-lista').disabled   = false;
+  document.getElementById('btn-tabella').disabled = false;
+}
+
+function disableButtons() {
+  document.getElementById('btn-lista').disabled   = true;
+  document.getElementById('btn-tabella').disabled = true;
+}
+
+function copiaLista() {
+  const r = stato.fas;
+  const ast = r.alterato ? '*' : '';
+  const line = `COWAT-FAS (Gasparini et al., 2025): ${r.grezzo.toFixed(0)}${ast} → ${r.corretto.toFixed(2)}${ast} (PE ${r.es} — ${r.es===0?'PATOLOGICO':r.es===1?'borderline':'normale'})`;
+  navigator.clipboard.writeText(line);
+}
+
+function copiaTabella() {
+  const r = stato.fas;
+  const ast = r.alterato ? '*' : '';
+  const html = `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
+<tr style="background:#e8eaf0"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>PE</th><th>Cut-off</th></tr>
+<tr><td>COWAT-FAS (Gasparini et al., 2025)</td><td>${r.grezzo.toFixed(0)}${ast}</td><td>${r.corretto.toFixed(2)}${ast}</td><td>PE ${r.es}</td><td>${r.cutoff}</td></tr>
+</table>`;
+  const blob = new Blob([html], {type:'text/html'});
+  navigator.clipboard.write([new ClipboardItem({'text/html': blob})]);
+}
+</script>
+</body>
+</html>

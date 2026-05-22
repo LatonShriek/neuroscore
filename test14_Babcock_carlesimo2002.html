@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test #14 — Babcock Raccontino (Carlesimo et al., 2002)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117; --surface: #1a1d27; --surface2: #232635;
+    --accent: #4f8ef7; --accent2: #7eb3ff; --text: #e8eaf0;
+    --text2: #9ba3b8; --border: #2e3347; --ok: #4caf82;
+    --warn: #f7a94f; --err: #f75f5f; --err-bg: rgba(247,95,95,0.08);
+    --warn-bg: rgba(247,169,79,0.08); --ok-bg: rgba(76,175,130,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px; line-height: 1.6; min-height: 100vh; }
+  .container { max-width: 820px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 18px; font-weight: 600; color: var(--accent2); margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: var(--text2); font-family: 'IBM Plex Mono', monospace; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; margin-bottom: 14px; }
+  .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text2); margin-bottom: 14px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+  label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
+  select, input[type=number], input[type=date] {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 7px 10px; border-radius: 5px; font-size: 13px; font-family: 'IBM Plex Sans', sans-serif;
+    width: 100%; outline: none; transition: border-color 0.2s;
+  }
+  select:focus, input:focus { border-color: var(--accent); }
+  .field { flex: 1; min-width: 110px; }
+  .field-sm { flex: 0 0 90px; }
+
+  /* racconto */
+  .story-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 14px 16px; font-size: 13px; line-height: 1.9; margin-bottom: 16px; color: var(--text); }
+  .story-box .seg { display: inline; cursor: default; }
+  .story-box .tok { display: inline; border-radius: 3px; padding: 1px 3px; }
+
+  /* scoring */
+  .score-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .score-block { background: var(--surface2); border-radius: 6px; border: 1px solid var(--border); padding: 14px; }
+  .score-block h4 { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text2); margin-bottom: 10px; letter-spacing: 0.06em; }
+  .item-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+  .item-label { font-size: 12px; color: var(--text2); flex: 1; }
+  .item-val { font-size: 12px; font-family: 'IBM Plex Mono', monospace; color: var(--accent2); min-width: 32px; text-align: right; }
+  .score-total { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .score-total .lbl { font-size: 11px; color: var(--text2); }
+  .score-total .val { font-size: 16px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; color: var(--accent); }
+  .btn-check { background: none; border: 1px solid var(--border); color: var(--text2); border-radius: 3px;
+    width: 22px; height: 22px; font-size: 13px; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+  .btn-check.checked { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .half-btn { display: flex; gap: 3px; }
+  .btn-half { background: none; border: 1px solid var(--border); color: var(--text2); border-radius: 3px;
+    padding: 2px 6px; font-size: 11px; cursor: pointer; font-family: 'IBM Plex Mono', monospace; transition: all 0.15s; }
+  .btn-half.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* result panel */
+  .result-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; margin-top: 14px; }
+  .res-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .res-row:last-child { border-bottom: none; }
+  .res-name { font-size: 13px; color: var(--text2); }
+  .res-vals { display: flex; gap: 12px; align-items: center; }
+  .res-raw { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--text); }
+  .res-corr { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--accent2); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+  .badge-ok { background: var(--ok-bg); color: var(--ok); border: 1px solid rgba(76,175,130,0.3); }
+  .badge-warn { background: var(--warn-bg); color: var(--warn); border: 1px solid rgba(247,169,79,0.3); }
+  .badge-err { background: var(--err-bg); color: var(--err); border: 1px solid rgba(247,95,95,0.3); }
+  .pe-chip { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text2); }
+
+  /* output */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .btn { padding: 9px 18px; border-radius: 5px; font-size: 13px; font-weight: 500; cursor: pointer;
+    border: none; transition: all 0.18s; font-family: 'IBM Plex Sans', sans-serif; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  #report-output { margin-top: 10px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 5px; padding: 12px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--text2); white-space: pre-wrap; display: none; }
+  #copy-feedback { font-size: 12px; color: var(--ok); margin-top: 6px; min-height: 18px; }
+
+  .warn-box { background: var(--warn-bg); border: 1px solid rgba(247,169,79,0.3); border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; color: var(--warn); margin-top: 12px; display: none; }
+  .info-row { font-size: 11px; color: var(--text2); font-family: 'IBM Plex Mono', monospace; margin-top: 4px; }
+
+  @media (max-width: 600px) {
+    .score-grid { grid-template-columns: 1fr; }
+    .row { gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Memoria di Prosa — Babcock Raccontino</h1>
+  <div class="subtitle">Carlesimo, Barletta-Rodolfi, Gasparini, Ghidoni (2002) · Kit del Neuropsicologo Italiano</div>
+
+  <!-- testo del racconto -->
+  <div class="card">
+    <div class="card-title">Testo del racconto</div>
+    <div class="story-box">
+      <span class="tok" style="background:rgba(79,142,247,0.12)" title="evento principale: +3">Sei</span> /
+      <span class="tok" style="background:rgba(79,142,247,0.12)" title="dettaglio data: +0.3">dicembre</span>. /
+      La scorsa / <span class="tok" style="background:rgba(79,142,247,0.12)" title="dettaglio data: +0.3">settimana</span> /
+      un fiume / <span class="tok" style="background:rgba(247,95,95,0.15)" title="EVENTO PRINCIPALE STRARIPAMENTO: +3 — attiva i dettagli">straripò</span> /
+      in una <span class="tok" style="background:rgba(79,142,247,0.12)" title="dettaglio: piccola città +0.3">piccola</span> /
+      <span class="tok" style="background:rgba(79,142,247,0.12)" title="dettaglio: città +0.3">città</span> /
+      situata a 20 km / da <span class="tok" style="background:rgba(79,142,247,0.12)" title="dettaglio: vicino Torino +0.3">Torino</span>. /
+      L'acqua / invase / le strade / e le case. /
+      <span class="tok" style="background:rgba(247,95,95,0.15)" title="EVENTO PRINCIPALE MORTI: +2 — attiva dettaglio numero">14</span> /
+      persone / <span class="tok" style="background:rgba(247,169,79,0.1)" title="evento: morti +2">annegarono</span> /
+      e <span class="tok" style="background:rgba(79,142,247,0.12)" title="dettaglio: 600 ± 100 = +0.2">600</span> /
+      si <span class="tok" style="background:rgba(247,169,79,0.1)" title="EVENTO PRINCIPALE AMMALATI: +1 — attiva dettaglio numero">ammalarono</span> /
+      a causa dell'umidità / e del freddo. /
+      Nel tentativo di salvare / un <span class="tok" style="background:rgba(79,142,247,0.12)" title="dettaglio: ragazzo +0.1">ragazzo</span> /
+      un uomo / si <span class="tok" style="background:rgba(247,169,79,0.1)" title="EVENTO PRINCIPALE TENTATIVO: +1">ferì</span> /
+      le mani.
+    </div>
+    <div class="info-row">Rievocazione immediata: dopo 30" (colloquio neutro) · Rievocazione differita: dopo 20' (prova non-verbale interposta)</div>
+  </div>
+
+  <!-- dati paziente -->
+  <div class="card">
+    <div class="card-title">Dati paziente</div>
+    <div class="row">
+      <div class="field-sm"><label>Data</label><input type="date" id="p-data"></div>
+      <div class="field"><label>Età (anni)</label><input type="number" id="p-eta" min="20" max="95" placeholder="es. 68" oninput="onDemoChange()"></div>
+      <div class="field"><label>Sesso</label>
+        <select id="p-sesso" onchange="onDemoChange()">
+          <option value="">—</option>
+          <option value="M">Maschio</option>
+          <option value="F">Femmina</option>
+        </select>
+      </div>
+      <div class="field"><label>Scolarità (anni)</label><input type="number" id="p-scol" min="0" max="21" placeholder="es. 13" oninput="onDemoChange()"></div>
+    </div>
+    <div id="norm-info" class="info-row"></div>
+  </div>
+
+  <!-- scoring immediata -->
+  <div class="card">
+    <div class="card-title">Scoring</div>
+    <div class="score-grid">
+      <!-- IMMEDIATA -->
+      <div class="score-block">
+        <h4>Rievocaz. Immediata (30")</h4>
+        <!-- STRARIPAMENTO -->
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border)">
+          STRARIPAMENTO (+3)
+        </div>
+        <div class="item-row">
+          <span class="item-label">Straripamento</span>
+          <button class="btn-check" id="ri_strap" onclick="toggleCheck('ri_strap',3,'ri')" title="+3">○</button>
+        </div>
+        <div id="ri_strap_det" style="display:none;padding-left:12px;margin-bottom:6px">
+          <div class="item-row">
+            <span class="item-label">Piccola città / Vicino Torino</span>
+            <div class="half-btn">
+              <button class="btn-half" id="ri_d1a" onclick="setHalf('ri_d1a','ri_d1b',0.3,'ri')">0.3</button>
+              <button class="btn-half" id="ri_d1b" onclick="setHalf('ri_d1b','ri_d1a',0.6,'ri')">+0.3</button>
+            </div>
+          </div>
+          <div class="item-row">
+            <span class="item-label">6 Dicembre / Scorsa settimana</span>
+            <div class="half-btn">
+              <button class="btn-half" id="ri_d2a" onclick="setHalf('ri_d2a','ri_d2b',0.3,'ri')">0.3</button>
+              <button class="btn-half" id="ri_d2b" onclick="setHalf('ri_d2b','ri_d2a',0.6,'ri')">+0.3</button>
+            </div>
+          </div>
+        </div>
+        <!-- MORTI -->
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px">
+          MORTI (+2)
+        </div>
+        <div class="item-row">
+          <span class="item-label">Morti (annegarono)</span>
+          <button class="btn-check" id="ri_mort" onclick="toggleCheck('ri_mort',2,'ri')" title="+2">○</button>
+        </div>
+        <div id="ri_mort_det" style="display:none;padding-left:12px;margin-bottom:6px">
+          <div class="item-row">
+            <span class="item-label">Numero morti (14 ± 5)</span>
+            <button class="btn-check" id="ri_d3" onclick="toggleCheck('ri_d3',0.2,'ri')" title="+0.2" style="font-size:10px">○</button>
+          </div>
+        </div>
+        <!-- AMMALATI -->
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px">
+          AMMALATI (+1)
+        </div>
+        <div class="item-row">
+          <span class="item-label">Ammalati</span>
+          <button class="btn-check" id="ri_amm" onclick="toggleCheck('ri_amm',1,'ri')" title="+1">○</button>
+        </div>
+        <div id="ri_amm_det" style="display:none;padding-left:12px;margin-bottom:6px">
+          <div class="item-row">
+            <span class="item-label">Numero ammalati (600 ± 100)</span>
+            <button class="btn-check" id="ri_d4" onclick="toggleCheck('ri_d4',0.1,'ri')" title="+0.1" style="font-size:10px">○</button>
+          </div>
+        </div>
+        <!-- TENTATIVO -->
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px">
+          SALVATAGGIO (+1)
+        </div>
+        <div class="item-row">
+          <span class="item-label">Tentativo di salvataggio</span>
+          <button class="btn-check" id="ri_salv" onclick="toggleCheck('ri_salv',1,'ri')" title="+1">○</button>
+        </div>
+        <div id="ri_salv_det" style="display:none;padding-left:12px;margin-bottom:6px">
+          <div class="item-row">
+            <span class="item-label">Ferimento / Ragazzo</span>
+            <button class="btn-check" id="ri_d5" onclick="toggleCheck('ri_d5',0.1,'ri')" title="+0.1" style="font-size:10px">○</button>
+          </div>
+        </div>
+        <div class="score-total">
+          <span class="lbl">P.G. Immediata</span>
+          <span class="val" id="ri_tot">0.0</span>
+        </div>
+      </div>
+
+      <!-- DIFFERITA -->
+      <div class="score-block">
+        <h4>Rievocaz. Differita (20')</h4>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border)">STRARIPAMENTO (+3)</div>
+        <div class="item-row">
+          <span class="item-label">Straripamento</span>
+          <button class="btn-check" id="rd_strap" onclick="toggleCheck('rd_strap',3,'rd')" title="+3">○</button>
+        </div>
+        <div id="rd_strap_det" style="display:none;padding-left:12px;margin-bottom:6px">
+          <div class="item-row">
+            <span class="item-label">Piccola città / Vicino Torino</span>
+            <div class="half-btn">
+              <button class="btn-half" id="rd_d1a" onclick="setHalf('rd_d1a','rd_d1b',0.3,'rd')">0.3</button>
+              <button class="btn-half" id="rd_d1b" onclick="setHalf('rd_d1b','rd_d1a',0.6,'rd')">+0.3</button>
+            </div>
+          </div>
+          <div class="item-row">
+            <span class="item-label">6 Dicembre / Scorsa settimana</span>
+            <div class="half-btn">
+              <button class="btn-half" id="rd_d2a" onclick="setHalf('rd_d2a','rd_d2b',0.3,'rd')">0.3</button>
+              <button class="btn-half" id="rd_d2b" onclick="setHalf('rd_d2b','rd_d2a',0.6,'rd')">+0.3</button>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px">MORTI (+2)</div>
+        <div class="item-row">
+          <span class="item-label">Morti (annegarono)</span>
+          <button class="btn-check" id="rd_mort" onclick="toggleCheck('rd_mort',2,'rd')" title="+2">○</button>
+        </div>
+        <div id="rd_mort_det" style="display:none;padding-left:12px;margin-bottom:6px">
+          <div class="item-row">
+            <span class="item-label">Numero morti (14 ± 5)</span>
+            <button class="btn-check" id="rd_d3" onclick="toggleCheck('rd_d3',0.2,'rd')" title="+0.2" style="font-size:10px">○</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px">AMMALATI (+1)</div>
+        <div class="item-row">
+          <span class="item-label">Ammalati</span>
+          <button class="btn-check" id="rd_amm" onclick="toggleCheck('rd_amm',1,'rd')" title="+1">○</button>
+        </div>
+        <div id="rd_amm_det" style="display:none;padding-left:12px;margin-bottom:6px">
+          <div class="item-row">
+            <span class="item-label">Numero ammalati (600 ± 100)</span>
+            <button class="btn-check" id="rd_d4" onclick="toggleCheck('rd_d4',0.1,'rd')" title="+0.1" style="font-size:10px">○</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);margin-top:4px">SALVATAGGIO (+1)</div>
+        <div class="item-row">
+          <span class="item-label">Tentativo di salvataggio</span>
+          <button class="btn-check" id="rd_salv" onclick="toggleCheck('rd_salv',1,'rd')" title="+1">○</button>
+        </div>
+        <div id="rd_salv_det" style="display:none;padding-left:12px;margin-bottom:6px">
+          <div class="item-row">
+            <span class="item-label">Ferimento / Ragazzo</span>
+            <button class="btn-check" id="rd_d5" onclick="toggleCheck('rd_d5',0.1,'rd')" title="+0.1" style="font-size:10px">○</button>
+          </div>
+        </div>
+        <div class="score-total">
+          <span class="lbl">P.G. Differita</span>
+          <span class="val" id="rd_tot">0.0</span>
+        </div>
+      </div>
+
+      <!-- OBLIO -->
+      <div class="score-block">
+        <h4>Oblio</h4>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">
+          Oblio = P.G. Immediata − P.G. Differita<br>
+          <span style="font-size:11px">(range 0–8; valori positivi = deterioramento)</span>
+        </div>
+        <div class="score-total">
+          <span class="lbl">P.G. Oblio</span>
+          <span class="val" id="obl_tot">0.0</span>
+        </div>
+        <div style="margin-top:16px;font-size:11px;color:var(--text2)">
+          Nota: l'oblio è patologico se &gt; 2.32 (cut-off corretto).<br>
+          Valori negativi (differita &gt; immediata) = 0.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- risultati -->
+  <div class="result-panel" id="result-panel">
+    <div class="card-title">Risultati</div>
+    <div class="res-row">
+      <span class="res-name">Rievocazione Immediata</span>
+      <div class="res-vals">
+        <span class="res-raw" id="out_ri_raw">—</span>
+        <span>→</span>
+        <span class="res-corr" id="out_ri_corr">—</span>
+        <span class="pe-chip" id="out_ri_pe">—</span>
+        <span id="out_ri_badge">—</span>
+      </div>
+    </div>
+    <div class="res-row">
+      <span class="res-name">Rievocazione Differita</span>
+      <div class="res-vals">
+        <span class="res-raw" id="out_rd_raw">—</span>
+        <span>→</span>
+        <span class="res-corr" id="out_rd_corr">—</span>
+        <span class="pe-chip" id="out_rd_pe">—</span>
+        <span id="out_rd_badge">—</span>
+      </div>
+    </div>
+    <div class="res-row">
+      <span class="res-name">Oblio (RI − RD)</span>
+      <div class="res-vals">
+        <span class="res-raw" id="out_obl_raw">—</span>
+        <span>→</span>
+        <span class="res-corr" id="out_obl_corr">—</span>
+        <span class="pe-chip" id="out_obl_pe">—</span>
+        <span id="out_obl_badge">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="warn-nodata" class="warn-box">
+    ⚠ Dati normativi non disponibili per questo profilo demografico (età fuori range 20–90).
+    I bottoni di output sono disabilitati.
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="btn-elenco" onclick="copyOutput('elenco')" disabled>Copia come elenco</button>
+    <button class="btn btn-secondary" id="btn-tabella" onclick="copyOutput('tabella')" disabled>Copia come tabella</button>
+  </div>
+  <pre id="report-output"></pre>
+  <div id="copy-feedback"></div>
+</div>
+
+<script>
+// ============================================================
+// TABELLA CORREZIONI DEMOGRAFICHE
+// Fonte: Carlesimo et al. 2002 (Kit Neuropsicologo Italiano)
+// Fattori di correzione (da sommare al grezzo per ottenere corretto)
+// Righe = età (per decade: 20,25,30,35,40,45,50,55,60,65,70,75,80,85,90)
+// Colonne RD = scolarità (5,8,13,17 anni)
+// RI ha solo correzione per età
+// Oblio: sesso (M/F)
+// ============================================================
+
+// Rievocazione Immediata: correzione SOLO per età
+// Valori dalla tabella Image 2 colonna "Rievocazione Immediata"
+const CorrRI = {
+  20: -0.50, 25: -0.50, 30: -0.40, 35: -0.40, 40: -0.30,
+  45: -0.20, 50: -0.10, 55: 0, 60: 0, 65: 0.10,
+  70: 0.20, 75: 0.40, 80: 0.50, 85: 0.60, 90: 0.80
+};
+
+// Rievocazione Differita: correzione per età E scolarità
+// Dalla tabella Image 2 colonne "Rievocazione Differita Scolarità 5,8,13,17"
+// NB: "/" = dato mancante (età 20, scol 17 non presente)
+const CorrRD = {
+  //età: {scol5, scol8, scol13, scol17}
+  20:  [-0.40, -0.60, -0.80, null],
+  25:  [-0.30, -0.50, -0.80, null],
+  30:  [-0.20, -0.40, -0.70, -0.90],
+  35:  [-0.20, -0.40, -0.60, -0.80],
+  40:  [0,     -0.30, -0.50, -0.70],
+  45:  [0,     -0.20, -0.40, -0.60],
+  50:  [0.10,  0,     -0.30, -0.50],
+  55:  [0.20,  0,     -0.20, -0.40],
+  60:  [0.20,  0.20,  -0.10, -0.20],
+  65:  [0.50,  0.30,  0.10,  -0.10],
+  70:  [0.70,  0.50,  0.20,  0],
+  75:  [0.90,  0.70,  0.50,  0.30],
+  80:  [1.10,  1,     0.70,  0.50],
+  85:  [1.50,  1.30,  1,     0.90],
+  90:  [2,     1.70,  1.50,  1.30]
+};
+
+// Oblio: correzione per sesso (M e F)
+const CorrOBL = {
+  20:  {M: 0.50, F: 0.20},
+  25:  {M: 0.40, F: 0.10},
+  30:  {M: 0.40, F: 0.10},
+  35:  {M: 0.40, F: 0.10},
+  40:  {M: 0.30, F: 0},
+  45:  {M: 0.30, F: 0},
+  50:  {M: 0.20, F: 0},
+  55:  {M: 0.20, F: -0.10},
+  60:  {M: 0.10, F: -0.10},
+  65:  {M: 0,    F: -0.20},
+  70:  {M: 0,    F: -0.20},
+  75:  {M: 0,    F: -0.30},
+  80:  {M: -0.10,F: -0.40},
+  85:  {M: -0.30,F: -0.60},
+  90:  {M: -0.40,F: -0.80}
+};
+
+// ES boundaries (dalla tabella Image 1)
+// RI: < 3.10 → ES0; 3.10–3.86 → ES1; 3.86–5.32 → ES2; 5.33–6.17 → ES3; > 6.17 → ES4
+// RD: < 2.39 → ES0; 2.39–3.76 → ES1; 3.77–5.06 → ES2; 5.07–5.87 → ES3; > 5.87 → ES4
+// Oblio (inversione: alti = peggio): > 2.32 → ES0; 1.03–2.32 → ES1; 0.38–1.02 → ES2; 0.10–0.37 → ES3; < 0.10 → ES4
+const ES_RI  = [{min:-Infinity,max:3.10,es:0},{min:3.10,max:3.87,es:1},{min:3.87,max:5.33,es:2},{min:5.33,max:6.18,es:3},{min:6.18,max:Infinity,es:4}];
+const ES_RD  = [{min:-Infinity,max:2.39,es:0},{min:2.39,max:3.77,es:1},{min:3.77,max:5.07,es:2},{min:5.07,max:5.88,es:3},{min:5.88,max:Infinity,es:4}];
+// Oblio: più alto = peggio (inversione)
+const ES_OBL = [{min:2.32,max:Infinity,es:0},{min:1.03,max:2.32,es:1},{min:0.38,max:1.03,es:2},{min:0.10,max:0.38,es:3},{min:-Infinity,max:0.10,es:4}];
+
+// stato scoring
+let scores = {ri: {}, rd: {}};
+let totals = {ri: 0, rd: 0};
+// valori dettagli
+let detVals = {
+  ri: {d1:0, d2:0, d3:0, d4:0, d5:0},
+  rd: {d1:0, d2:0, d3:0, d4:0, d5:0}
+};
+
+function getAgeKey(eta) {
+  // restituisce la decade più vicina per riga tabella
+  const keys = [20,25,30,35,40,45,50,55,60,65,70,75,80,85,90];
+  if (eta < 17 || eta > 95) return null;
+  // trova il valore più vicino
+  let best = keys[0], bestDiff = Math.abs(eta - keys[0]);
+  for (const k of keys) {
+    const d = Math.abs(eta - k);
+    if (d < bestDiff) { bestDiff = d; best = k; }
+  }
+  return best;
+}
+
+function getScolIdx(scol) {
+  // 0=col scol5, 1=col scol8, 2=col scol13, 3=col scol17
+  if (scol <= 6) return 0;
+  if (scol <= 10) return 1;
+  if (scol <= 14) return 2;
+  return 3;
+}
+
+function calcES(val, table) {
+  for (const row of table) {
+    if (val >= row.min && val < row.max) return row.es;
+  }
+  return null;
+}
+
+function esLabel(es) {
+  if (es === null) return '—';
+  if (es === 0) return 'Patologico';
+  if (es === 4) return 'Normale';
+  return 'Borderline';
+}
+
+function esBadge(es) {
+  if (es === null) return '<span class="badge" style="background:var(--surface2);color:var(--text2)">—</span>';
+  if (es === 0) return '<span class="badge badge-err">Patologico</span>';
+  if (es === 1) return '<span class="badge badge-warn">Borderline</span>';
+  return '<span class="badge badge-ok">Nella norma</span>';
+}
+
+// toggle eventi principali
+function toggleCheck(id, val, pool) {
+  const btn = document.getElementById(id);
+  const isOn = btn.classList.toggle('checked');
+  btn.textContent = isOn ? '✓' : '○';
+
+  // gestione dettagli
+  const detMap = {
+    ri_strap: 'ri_strap_det', ri_mort: 'ri_mort_det',
+    ri_amm: 'ri_amm_det', ri_salv: 'ri_salv_det',
+    rd_strap: 'rd_strap_det', rd_mort: 'rd_mort_det',
+    rd_amm: 'rd_amm_det', rd_salv: 'rd_salv_det'
+  };
+  if (detMap[id]) {
+    const det = document.getElementById(detMap[id]);
+    if (det) det.style.display = isOn ? 'block' : 'none';
+    if (!isOn) {
+      // reset dettagli
+      const prefix = pool + '_';
+      ['d1a','d1b','d2a','d2b','d3','d4','d5'].forEach(k => {
+        const el = document.getElementById(prefix + k);
+        if (el) { el.classList.remove('active','checked'); el.textContent = el.textContent.replace('✓','○'); }
+      });
+      if (pool === 'ri') detVals.ri = {d1:0,d2:0,d3:0,d4:0,d5:0};
+      if (pool === 'rd') detVals.rd = {d1:0,d2:0,d3:0,d4:0,d5:0};
+    }
+  }
+  recalcPool(pool);
+}
+
+function setHalf(activeId, otherPairId, val, pool) {
+  const btn = document.getElementById(activeId);
+  const otherBtn = document.getElementById(otherPairId);
+  const wasActive = btn.classList.contains('active');
+
+  btn.classList.toggle('active', !wasActive);
+  if (otherBtn) otherBtn.classList.remove('active');
+
+  // mappa quale dettaglio è quale
+  const dmap = {
+    ri_d1a: 'd1', ri_d1b: 'd1', ri_d2a: 'd2', ri_d2b: 'd2',
+    rd_d1a: 'd1', rd_d1b: 'd1', rd_d2a: 'd2', rd_d2b: 'd2'
+  };
+  const pairBase = activeId.replace(pool + '_', '').replace('a','').replace('b','');
+  const dKey = 'd' + (activeId.includes('d1') ? 1 : 2);
+
+  if (wasActive) {
+    detVals[pool][dKey] = 0;
+  } else {
+    detVals[pool][dKey] = val;
+  }
+  recalcPool(pool);
+}
+
+function recalcPool(pool) {
+  const p = pool;
+  let tot = 0;
+  // eventi principali
+  const main = p === 'ri'
+    ? ['ri_strap','ri_mort','ri_amm','ri_salv']
+    : ['rd_strap','rd_mort','rd_amm','rd_salv'];
+  const vals = [3, 2, 1, 1];
+  main.forEach((id, i) => {
+    if (document.getElementById(id).classList.contains('checked')) tot += vals[i];
+  });
+  // dettagli checkmark (d3, d4, d5)
+  ['d3','d4','d5'].forEach(dk => {
+    const elId = p + '_' + dk;
+    const el = document.getElementById(elId);
+    if (el && el.classList.contains('checked')) {
+      tot += parseFloat(el.title.replace('+','').replace('-',''));
+    }
+  });
+  // dettagli half (d1, d2)
+  tot += (detVals[p].d1 || 0) + (detVals[p].d2 || 0);
+
+  totals[p] = Math.round(tot * 100) / 100;
+  document.getElementById(p + '_tot').textContent = totals[p].toFixed(1);
+
+  // oblio
+  const obl = Math.max(0, Math.round((totals.ri - totals.rd) * 100) / 100);
+  document.getElementById('obl_tot').textContent = obl.toFixed(1);
+  totals.obl = obl;
+
+  updateResults();
+}
+
+function onDemoChange() {
+  updateResults();
+}
+
+function updateResults() {
+  const eta = parseInt(document.getElementById('p-eta').value);
+  const sesso = document.getElementById('p-sesso').value;
+  const scol = parseInt(document.getElementById('p-scol').value);
+
+  const warnEl = document.getElementById('warn-nodata');
+  const normInfo = document.getElementById('norm-info');
+
+  // validità demografica
+  const ageKey = getAgeKey(eta);
+  const demoOk = ageKey !== null && sesso && !isNaN(scol) && scol >= 0;
+
+  if (!demoOk) {
+    if (!isNaN(eta) && eta > 0 && ageKey === null) {
+      warnEl.style.display = 'block';
+    } else {
+      warnEl.style.display = 'none';
+    }
+    document.getElementById('btn-elenco').disabled = true;
+    document.getElementById('btn-tabella').disabled = true;
+    // mostra comunque grezzo
+    document.getElementById('out_ri_raw').textContent = totals.ri.toFixed(1);
+    document.getElementById('out_rd_raw').textContent = totals.rd.toFixed(1);
+    document.getElementById('out_obl_raw').textContent = totals.obl.toFixed(1);
+    ['out_ri_corr','out_rd_corr','out_obl_corr'].forEach(id => document.getElementById(id).textContent = '—');
+    ['out_ri_pe','out_rd_pe','out_obl_pe'].forEach(id => document.getElementById(id).textContent = '—');
+    ['out_ri_badge','out_rd_badge','out_obl_badge'].forEach(id => document.getElementById(id).innerHTML = '—');
+    normInfo.textContent = '';
+    return;
+  }
+
+  warnEl.style.display = 'none';
+
+  // correzione RI (solo età)
+  const corrRI = CorrRI[ageKey] ?? 0;
+  const riCorr = Math.round((totals.ri + corrRI) * 100) / 100;
+
+  // correzione RD (età + scolarità)
+  const scolIdx = getScolIdx(scol);
+  const corrRDrow = CorrRD[ageKey];
+  let rdCorr = null, rdCorrDisp = '—';
+  if (corrRDrow && corrRDrow[scolIdx] !== null) {
+    const corrRD = corrRDrow[scolIdx];
+    rdCorr = Math.round((totals.rd + corrRD) * 100) / 100;
+    rdCorrDisp = rdCorr.toFixed(2);
+  }
+
+  // correzione Oblio (sesso)
+  const corrOBLrow = CorrOBL[ageKey];
+  let oblCorr = null, oblCorrDisp = '—';
+  if (corrOBLrow && corrOBLrow[sesso] !== undefined) {
+    const c = corrOBLrow[sesso];
+    oblCorr = Math.round((totals.obl + c) * 100) / 100;
+    oblCorrDisp = oblCorr.toFixed(2);
+  }
+
+  // ES
+  const esRI  = riCorr !== null ? calcES(riCorr, ES_RI) : null;
+  const esRD  = rdCorr !== null ? calcES(rdCorr, ES_RD) : null;
+  const esOBL = oblCorr !== null ? calcES(oblCorr, ES_OBL) : null;
+
+  document.getElementById('out_ri_raw').textContent  = totals.ri.toFixed(1);
+  document.getElementById('out_ri_corr').textContent = riCorr.toFixed(2);
+  document.getElementById('out_ri_pe').textContent   = esRI !== null ? 'PE ' + esRI : '—';
+  document.getElementById('out_ri_badge').innerHTML  = esBadge(esRI);
+
+  document.getElementById('out_rd_raw').textContent  = totals.rd.toFixed(1);
+  document.getElementById('out_rd_corr').textContent = rdCorrDisp;
+  document.getElementById('out_rd_pe').textContent   = esRD !== null ? 'PE ' + esRD : '—';
+  document.getElementById('out_rd_badge').innerHTML  = esBadge(esRD);
+
+  document.getElementById('out_obl_raw').textContent  = totals.obl.toFixed(1);
+  document.getElementById('out_obl_corr').textContent = oblCorrDisp;
+  document.getElementById('out_obl_pe').textContent   = esOBL !== null ? 'PE ' + esOBL : '—';
+  document.getElementById('out_obl_badge').innerHTML  = esBadge(esOBL);
+
+  normInfo.textContent = `Fattori correzione → RI: ${corrRI > 0 ? '+' : ''}${corrRI} | ` +
+    `RD (scol≈${[5,8,13,17][scolIdx]}): ${corrRDrow?.[scolIdx] > 0 ? '+':'' }${corrRDrow?.[scolIdx]??'N/D'} | ` +
+    `Oblio (${sesso}): ${corrOBLrow?.[sesso] >= 0 ? '+' : ''}${corrOBLrow?.[sesso]??'N/D'}`;
+
+  document.getElementById('btn-elenco').disabled = false;
+  document.getElementById('btn-tabella').disabled = false;
+}
+
+function getResultData() {
+  const eta  = parseInt(document.getElementById('p-eta').value);
+  const sesso = document.getElementById('p-sesso').value;
+  const scol = parseInt(document.getElementById('p-scol').value);
+  const ageKey = getAgeKey(eta);
+  const scolIdx = getScolIdx(scol);
+
+  const corrRI  = CorrRI[ageKey] ?? 0;
+  const riCorr  = Math.round((totals.ri + corrRI) * 100) / 100;
+  const corrRD  = (CorrRD[ageKey] ?? [])[scolIdx] ?? null;
+  const rdCorr  = corrRD !== null ? Math.round((totals.rd + corrRD) * 100) / 100 : null;
+  const corrOBL = (CorrOBL[ageKey] ?? {})[sesso] ?? null;
+  const oblCorr = corrOBL !== null ? Math.round((totals.obl + corrOBL) * 100) / 100 : null;
+
+  const esRI  = calcES(riCorr, ES_RI);
+  const esRD  = rdCorr !== null ? calcES(rdCorr, ES_RD) : null;
+  const esOBL = oblCorr !== null ? calcES(oblCorr, ES_OBL) : null;
+
+  const asterisco = (val, es, cutoff) => {
+    if (es !== null && es <= 1) return '*';
+    return '';
+  };
+
+  return {
+    riRaw: totals.ri, riCorr, esRI,
+    rdRaw: totals.rd, rdCorr, esRD,
+    oblRaw: totals.obl, oblCorr, esOBL,
+    astRI: asterisco(riCorr, esRI), astRD: asterisco(rdCorr, esRD), astOBL: asterisco(oblCorr, esOBL),
+    coRI: 3.10, coRD: 2.39, coOBL: 2.32
+  };
+}
+
+function buildElenco() {
+  const d = getResultData();
+  const esitoStr = (es) => es === 0 ? 'Patologico' : es === 1 ? 'Borderline' : 'nella norma';
+  const riStr = `${d.riRaw.toFixed(1)} → ${d.riCorr.toFixed(2)}${d.astRI} (PE ${d.esRI??'—'} — ${d.esRI!==null?esitoStr(d.esRI):'—'})`;
+  const rdStr = d.rdCorr !== null ? `${d.rdRaw.toFixed(1)} → ${d.rdCorr.toFixed(2)}${d.astRD} (PE ${d.esRD??'—'} — ${d.esRD!==null?esitoStr(d.esRD):'—'})` : `${d.rdRaw.toFixed(1)} → N/D`;
+  const oblStr = d.oblCorr !== null ? `${d.oblRaw.toFixed(1)} → ${d.oblCorr.toFixed(2)}${d.astOBL} (PE ${d.esOBL??'—'} — ${d.esOBL!==null?esitoStr(d.esOBL):'—'})` : `${d.oblRaw.toFixed(1)} → N/D`;
+  return `Babcock - Memoria di Prosa (Carlesimo et al., 2002):
+  Rievocazione Immediata: ${riStr}
+  Rievocazione Differita: ${rdStr}
+  Oblio: ${oblStr}`;
+}
+
+function buildTabellaHTML() {
+  const d = getResultData();
+  const esitoStr = (es) => es === 0 ? 'Patologico' : es === 1 ? 'Borderline' : 'Nella norma';
+  const ast = (a) => a ? '*' : '';
+  const rows = [
+    ['Rievocazione Immediata', `${d.riRaw.toFixed(1)}${ast(d.astRI)}`, `${d.riCorr.toFixed(2)}${ast(d.astRI)}`, `PE ${d.esRI??'—'}`, `≥ ${d.coRI}`],
+    ['Rievocazione Differita', `${d.rdRaw.toFixed(1)}${ast(d.astRD)}`, d.rdCorr !== null ? `${d.rdCorr.toFixed(2)}${ast(d.astRD)}` : '—', `PE ${d.esRD??'—'}`, `≥ ${d.coRD}`],
+    ['Oblio', `${d.oblRaw.toFixed(1)}${ast(d.astOBL)}`, d.oblCorr !== null ? `${d.oblCorr.toFixed(2)}${ast(d.astOBL)}` : '—', `PE ${d.esOBL??'—'}`, `≤ ${d.coOBL}`],
+  ].map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('');
+  return `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
+  <thead><tr style="background:#d0d8f2"><td colspan="5"><b>Babcock — Memoria di Prosa (Carlesimo et al., 2002)</b></td></tr>
+  <tr style="background:#e8ecf8"><td><b>Misura</b></td><td><b>Punteggio grezzo</b></td><td><b>Punteggio corretto</b></td><td><b>PE (0–4)</b></td><td><b>Cut-off</b></td></tr></thead>
+  <tbody>${rows}</tbody></table>`;
+}
+
+function copyOutput(tipo) {
+  const out = document.getElementById('report-output');
+  const fb  = document.getElementById('copy-feedback');
+  if (tipo === 'elenco') {
+    const t = buildElenco(); out.textContent = t; out.style.display = 'block';
+    navigator.clipboard.writeText(t).then(() => {
+      fb.textContent = '✓ Testo copiato — incolla con Ctrl+V'; setTimeout(() => fb.textContent = '', 4000);
+    }).catch(() => { selOut(out); fb.textContent = '⚠ Seleziona e Ctrl+C'; });
+  } else {
+    const h = buildTabellaHTML();
+    out.textContent = '[Tabella] Babcock Raccontino — 3 misure'; out.style.display = 'block';
+    try {
+      navigator.clipboard.write([new ClipboardItem({'text/html': new Blob([h],{type:'text/html'})})]).then(() => {
+        fb.textContent = '✓ Tabella copiata — incolla in Google Docs con Ctrl+V'; setTimeout(() => fb.textContent = '', 5000);
+      }).catch(() => fallbackHTML(h, fb));
+    } catch(e) { fallbackHTML(h, fb); }
+  }
+}
+function fallbackHTML(h, fb) {
+  const tmp = document.createElement('div'); tmp.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+  tmp.innerHTML = h; document.body.appendChild(tmp);
+  const r = document.createRange(); r.selectNodeContents(tmp);
+  window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
+  try { document.execCommand('copy'); fb.textContent = '✓ Tabella copiata'; }
+  catch(e) { fb.textContent = '⚠ Copia non riuscita'; }
+  window.getSelection().removeAllRanges(); document.body.removeChild(tmp);
+  setTimeout(() => fb.textContent = '', 5000);
+}
+function selOut(el) { const r = document.createRange(); r.selectNodeContents(el); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); }
+
+document.getElementById('p-data').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ekman 60-Faces Test — Dodich et al., 2014</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#222536;
+    --border:#2e3347; --accent:#4f8ef7; --accent-dim:rgba(79,142,247,0.15);
+    --text:#e8eaf0; --text-dim:#8b91a8;
+    --ok:#34d399; --warn:#fbbf24; --bad:#f87171; --bad-dim:rgba(248,113,113,0.15);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:15px; min-height:100vh; padding:32px 20px 60px; }
+  .container { max-width:760px; margin:0 auto; }
+  .test-tag { font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:.12em; text-transform:uppercase; margin-bottom:6px; }
+  h1 { font-size:22px; font-weight:600; }
+  .authors { font-size:13px; color:var(--text-dim); margin-top:4px; margin-bottom:28px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:22px 24px; margin-bottom:16px; }
+  .card-title { font-size:11px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:16px; }
+  label { font-size:12px; color:var(--text-dim); display:block; margin-bottom:5px; }
+  input[type="number"], select { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:'IBM Plex Mono',monospace; font-size:14px; padding:8px 12px; outline:none; transition:border-color .2s; }
+  input:focus, select:focus { border-color:var(--accent); }
+  select option { background:var(--surface2); }
+  .form-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  .score-row { display:flex; align-items:center; gap:14px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .score-row:last-child { border-bottom:none; }
+  .score-label { flex:1; font-size:14px; }
+  .score-label small { display:block; font-size:11px; color:var(--text-dim); margin-top:1px; }
+  .score-input-wrap { width:80px; }
+  .result-block { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 16px; margin-top:8px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .result-label { font-size:12px; color:var(--text-dim); min-width:150px; }
+  .result-values { font-family:'IBM Plex Mono',monospace; font-size:13px; flex:1; }
+  .es-badge { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:600; padding:4px 12px; border-radius:5px; min-width:56px; text-align:center; }
+  .es0 { background:var(--bad-dim); color:var(--bad); border:1px solid var(--bad); }
+  .es1 { background:rgba(251,191,36,.12); color:var(--warn); border:1px solid var(--warn); }
+  .es2 { background:rgba(251,191,36,.08); color:#e9a825; border:1px solid #e9a825; }
+  .es3 { background:rgba(52,211,153,.1); color:var(--ok); border:1px solid var(--ok); }
+  .es4 { background:rgba(52,211,153,.15); color:var(--ok); border:1px solid var(--ok); }
+  .ok   { background:rgba(52,211,153,.15); color:var(--ok); border:1px solid var(--ok); }
+  .patol{ background:var(--bad-dim); color:var(--bad); border:1px solid var(--bad); }
+  .outcome-badge { font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; padding:3px 10px; border-radius:4px; white-space:nowrap; }
+  .separator { height:1px; background:var(--border); margin:6px 0; }
+  .alert-box { background:var(--bad-dim); border:1px solid var(--bad); border-radius:8px; padding:12px 16px; font-size:13px; color:var(--bad); display:none; margin-bottom:10px; }
+  .note { font-size:12px; color:var(--text-dim); line-height:1.6; padding:12px 0 0; border-top:1px solid var(--border); margin-top:14px; }
+  .btn-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  button { font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:500; padding:10px 22px; border-radius:7px; border:none; cursor:pointer; transition:opacity .2s,transform .1s; }
+  button:hover:not(:disabled) { opacity:.85; }
+  button:active:not(:disabled) { transform:scale(.97); }
+  button:disabled { opacity:.35; cursor:not-allowed; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
+  .asterisk { color:var(--bad); font-weight:700; }
+  .emo-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .emo-chip { background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:10px 14px; display:flex; align-items:center; gap:10px; }
+  .emo-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .emo-name { font-size:13px; flex:1; }
+  .emo-score { font-family:'IBM Plex Mono',monospace; font-size:13px; }
+  .emo-cut { font-size:11px; color:var(--text-dim); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="test-tag">Cognizione Sociale · Riconoscimento Emozioni</div>
+  <h1>Ekman 60-Faces Test (EK-60F)</h1>
+  <div class="authors">Dodich, Cerami, Canessa, Crespi, Marcone, Arpone, Realmuto, Cappa (2014) · Neurological Sciences</div>
+
+  <!-- ANAGRAFICA -->
+  <div class="card">
+    <div class="card-title">Dati demografici</div>
+    <div class="form-grid-3">
+      <div>
+        <label>Età (anni) <span style="color:var(--accent)">*</span></label>
+        <input type="number" id="eta" min="20" max="79" placeholder="es. 62" oninput="calcola()">
+      </div>
+      <div>
+        <label>Scolarità (anni) <span style="color:var(--accent)">*</span></label>
+        <input type="number" id="scol" min="5" max="30" placeholder="es. 13" oninput="calcola()">
+      </div>
+      <div>
+        <label>Sesso <span style="color:var(--accent)">*</span></label>
+        <select id="sesso" onchange="calcola()">
+          <option value="">—</option>
+          <option value="F">Femmina (♀)</option>
+          <option value="M">Maschio (♂)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- PUNTEGGI -->
+  <div class="card">
+    <div class="card-title">Punteggi grezzi</div>
+    <div class="score-row">
+      <div class="score-label">Punteggio Globale (GS)<small>Totale risposte corrette (0–60)</small></div>
+      <div class="score-input-wrap"><input type="number" id="gs" min="0" max="60" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:var(--text-dim);margin-bottom:8px">Sottoscale per emozione (0–10 ciascuna) — facoltative:</div>
+    <div class="score-row">
+      <div class="score-label">Sorpresa <small>Cut-off: &lt; 6</small></div>
+      <div class="score-input-wrap"><input type="number" id="e_sor" min="0" max="10" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">Felicità <small>Cut-off: &lt; 9</small></div>
+      <div class="score-input-wrap"><input type="number" id="e_fel" min="0" max="10" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">Paura <small>Cut-off: &lt; 2</small></div>
+      <div class="score-input-wrap"><input type="number" id="e_pau" min="0" max="10" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">Disgusto <small>Cut-off: &lt; 4</small></div>
+      <div class="score-input-wrap"><input type="number" id="e_dis" min="0" max="10" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">Rabbia <small>Cut-off: &lt; 5</small></div>
+      <div class="score-input-wrap"><input type="number" id="e_rab" min="0" max="10" placeholder="—" oninput="calcola()"></div>
+    </div>
+    <div class="score-row">
+      <div class="score-label">Tristezza <small>Cut-off: &lt; 4</small></div>
+      <div class="score-input-wrap"><input type="number" id="e_tri" min="0" max="10" placeholder="—" oninput="calcola()"></div>
+    </div>
+  </div>
+
+  <!-- RISULTATI -->
+  <div class="card">
+    <div class="card-title">Risultati</div>
+    <div id="alert-demo" class="alert-box">⚠ Inserire età, scolarità e sesso per calcolare il punteggio corretto.</div>
+    <div id="results-content" style="display:none">
+      <div id="res_gs"></div>
+      <div id="res_emo" style="margin-top:12px"></div>
+      <div class="note">
+        <strong>Correzione demografica (GS):</strong> Dodich et al. (2014) — 132 soggetti sani.<br>
+        Formula ♀: CS = grezzo + 0.190×(età−51.41) − 0.40×(scolarità−13.26) − 0.19<br>
+        Formula ♂: CS = grezzo + 0.190×(età−51.41) − 0.40×(scolarità−13.26) + 0.19<br>
+        <strong>ES GS:</strong> ES0 ≤ 37.46 · ES1 37.47–41.62 · ES2 41.63–45.79 · ES3 45.80–49.95 · ES4 ≥ 49.96<br>
+        <strong>Sottoscale per emozione:</strong> cut-off non parametrici (5° centile), senza correzione demografica.<br>
+        Sorpresa &lt;6 · Felicità &lt;9 · Paura &lt;2 · Disgusto &lt;4 · Rabbia &lt;5 · Tristezza &lt;4
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary"   id="btn-lista"   disabled onclick="copiaLista()">Copia come elenco</button>
+      <button class="btn-secondary" id="btn-tabella" disabled onclick="copiaTabella()">Copia come tabella</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ES GS (Tabella 5)
+function calcolaES(corr) {
+  if (corr <= 37.46) return 0;
+  if (corr <= 41.62) return 1;
+  if (corr <= 45.79) return 2;
+  if (corr <= 49.95) return 3;
+  return 4;
+}
+
+// Correzione GS
+function corrGS(grezzo, eta, scol, sesso) {
+  const g = sesso === 'F' ? -0.19 : 0.19;
+  return grezzo + 0.190*(eta-51.41) - 0.40*(scol-13.26) + g;
+}
+
+// Cut-off emozioni (Tabella 5) — valore sotto cui = patologico
+const EMO_CUT = { sor:6, fel:9, pau:2, dis:4, rab:5, tri:4 };
+const EMO_NOMI = { sor:'Sorpresa', fel:'Felicità', pau:'Paura', dis:'Disgusto', rab:'Rabbia', tri:'Tristezza' };
+const EMO_COL  = { sor:'#a78bfa', fel:'#fbbf24', pau:'#60a5fa', dis:'#34d399', rab:'#f87171', tri:'#94a3b8' };
+const EMO_IDS  = ['sor','fel','pau','dis','rab','tri'];
+
+let stato = {};
+
+function calcola() {
+  const eta   = parseFloat(document.getElementById('eta').value);
+  const scol  = parseFloat(document.getElementById('scol').value);
+  const sesso = document.getElementById('sesso').value;
+  const gs    = parseFloat(document.getElementById('gs').value);
+
+  const alertBox = document.getElementById('alert-demo');
+  const content  = document.getElementById('results-content');
+
+  if (isNaN(eta) || isNaN(scol) || !sesso) {
+    alertBox.style.display='block'; content.style.display='none';
+    disableButtons(); stato={}; return;
+  }
+  alertBox.style.display='none'; content.style.display='block';
+
+  stato = {};
+  let anyPresent = false;
+
+  // GS
+  const elGS = document.getElementById('res_gs');
+  if (isNaN(gs)) {
+    elGS.innerHTML = `<div class="result-block"><span class="result-label">Punteggio Globale (GS)</span><span style="color:var(--text-dim);font-size:13px;">— in attesa di punteggio —</span></div>`;
+  } else {
+    anyPresent = true;
+    const corr = corrGS(gs, eta, scol, sesso);
+    const es = calcolaES(corr);
+    const alterato = es === 0;
+    const ast = alterato ? '<sup class="asterisk">*</sup>' : '';
+    const esito = es===0?'PATOLOGICO':es===1?'borderline':'normale';
+    elGS.innerHTML = `<div class="result-block">
+      <span class="result-label">Punteggio Globale (GS)</span>
+      <span class="result-values">grezzo ${gs}${ast} → corr. ${corr.toFixed(2)}${ast}</span>
+      <span class="es-badge es${es}">PE ${es} — ${esito}</span>
+    </div>`;
+    stato.gs = { nome:'EK-60F Punteggio Globale', grezzo:gs, corretto:corr, es, alterato, cutoff:'≤37.46 = ES0' };
+  }
+
+  // EMOZIONI
+  const emoRows = EMO_IDS.map(key => {
+    const val = parseFloat(document.getElementById('e_'+key).value);
+    if (isNaN(val)) return null;
+    anyPresent = true;
+    const cut = EMO_CUT[key];
+    const ok = val >= cut;
+    const ast = !ok ? '*' : '';
+    stato['e_'+key] = { nome:'EK-60F '+EMO_NOMI[key], grezzo:val, corretto:null, es:null, alterato:!ok, cutoff:'<'+cut };
+    return `<div class="emo-chip">
+      <div class="emo-dot" style="background:${EMO_COL[key]}"></div>
+      <span class="emo-name">${EMO_NOMI[key]}</span>
+      <span class="emo-score">${val}${ast}/10</span>
+      <span class="emo-cut">cut-off &lt;${cut}</span>
+      <span class="outcome-badge ${ok?'ok':'patol'}">${ok?'OK':'!'}</span>
+    </div>`;
+  }).filter(Boolean);
+
+  document.getElementById('res_emo').innerHTML = emoRows.length
+    ? `<div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">Sottoscale per emozione (cut-off non parametrici, senza correzione demografica)</div>
+       <div class="emo-grid">${emoRows.join('')}</div>`
+    : '';
+
+  document.getElementById('btn-lista').disabled   = !anyPresent;
+  document.getElementById('btn-tabella').disabled = !anyPresent;
+}
+
+function disableButtons() {
+  document.getElementById('btn-lista').disabled   = true;
+  document.getElementById('btn-tabella').disabled = true;
+}
+
+function copiaLista() {
+  const lines = Object.values(stato).map(r => {
+    const ast = r.alterato ? '*' : '';
+    if (r.nome.includes('Globale')) {
+      return `${r.nome} (Dodich et al., 2014): ${r.grezzo}${ast} → ${r.corretto.toFixed(2)}${ast} (PE ${r.es} — ${r.es===0?'PATOLOGICO':r.es===1?'borderline':'normale'})`;
+    } else {
+      return `${r.nome} (Dodich et al., 2014): ${r.grezzo}${ast}/10 (cut-off ${r.cutoff} — ${r.alterato?'PATOLOGICO':'nella norma'})`;
+    }
+  });
+  navigator.clipboard.writeText(lines.join('\n'));
+}
+
+function copiaTabella() {
+  const html = `<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
+<tr style="background:#e8eaf0"><th>Test</th><th>Punteggio grezzo</th><th>Punteggio corretto</th><th>PE</th><th>Cut-off</th></tr>
+${Object.values(stato).map(r=>{
+  const ast = r.alterato ? '*' : '';
+  const corr = r.corretto ? r.corretto.toFixed(2) : '—';
+  const pe = r.es !== null ? 'PE '+r.es : (r.alterato?'PATOLOGICO':'nella norma');
+  return `<tr><td>${r.nome} (Dodich et al., 2014)</td><td>${r.grezzo}${ast}</td><td>${corr}${r.corretto&&r.alterato?ast:''}</td><td>${pe}</td><td>${r.cutoff}</td></tr>`;
+}).join('\n')}
+</table>`;
+  navigator.clipboard.write([new ClipboardItem({'text/html': new Blob([html],{type:'text/html'})})]);
+}
+</script>
+</body>
+</html>
