@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroScore — Indice Test Neuropsicologici</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1117; --surface:#1a1d27; --surface2:#232635;
+  --accent:#4f8ef7; --accent2:#7eb3ff;
+  --text:#e8eaf0; --text2:#9ba3b8; --border:#2e3347;
+  --ok:#4caf82; --warn:#f7a94f; --bad:#f75f5f;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif; font-size:14px; line-height:1.6; min-height:100vh; }
+.container { max-width:1060px; margin:0 auto; padding:32px 20px 60px; }
+h1 { font-size:26px; font-weight:600; color:var(--accent2); margin-bottom:4px; }
+.subtitle { font-size:12px; color:var(--text2); font-family:'IBM Plex Mono',monospace; margin-bottom:28px; }
+.stats { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:26px; }
+.stat { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 20px; text-align:center; min-width:90px; }
+.stat .val { font-size:24px; font-weight:600; font-family:'IBM Plex Mono',monospace; }
+.stat .lbl { font-size:11px; color:var(--text2); margin-top:2px; }
+.controls { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+.search-box { flex:2; min-width:200px; background:var(--surface2); border:1px solid var(--border); color:var(--text);
+  padding:9px 14px; border-radius:7px; font-size:13px; font-family:'IBM Plex Sans',sans-serif; outline:none; transition:border-color .2s; }
+.search-box:focus { border-color:var(--accent); }
+.filter-sel { flex:1; min-width:170px; background:var(--surface2); border:1px solid var(--border); color:var(--text);
+  padding:9px 12px; border-radius:7px; font-size:13px; font-family:'IBM Plex Sans',sans-serif; outline:none; }
+.filter-sel option { background:var(--surface2); }
+.stato-btn { padding:8px 16px; border-radius:6px; border:1px solid var(--border); background:var(--surface2);
+  color:var(--text2); font-size:12px; cursor:pointer; transition:all .15s; font-family:'IBM Plex Sans',sans-serif; }
+.stato-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+#count-display { font-size:12px; color:var(--text2); margin-bottom:12px; font-family:'IBM Plex Mono',monospace; }
+table { width:100%; border-collapse:collapse; }
+thead th { background:var(--surface); border-bottom:2px solid var(--border); padding:10px 14px; text-align:left;
+  font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--text2);
+  cursor:pointer; user-select:none; white-space:nowrap; }
+thead th:hover { color:var(--accent); }
+tbody tr { border-bottom:1px solid var(--border); transition:background .1s; }
+tbody tr:hover { background:var(--surface); }
+td { padding:10px 14px; font-size:13px; vertical-align:middle; }
+td.n { font-family:'IBM Plex Mono',monospace; color:var(--text2); font-size:11px; width:48px; }
+td.nome { font-weight:500; }
+td.autori { color:var(--text2); font-size:12px; }
+.dom-chip { font-size:11px; font-weight:500; font-family:'IBM Plex Mono',monospace; }
+.badge { border-radius:4px; padding:2px 9px; font-size:11px; font-family:'IBM Plex Mono',monospace; white-space:nowrap; }
+.badge-ok   { background:rgba(76,175,130,.15); color:var(--ok);   border:1px solid var(--ok); }
+.badge-wip  { background:rgba(247,169,79,.12);  color:var(--warn); border:1px solid var(--warn); }
+.badge-todo { background:rgba(155,163,184,.1);  color:var(--text2);border:1px solid var(--border); }
+.link-btn { background:var(--accent); color:#fff; border:none; border-radius:5px; padding:5px 14px;
+  font-size:12px; text-decoration:none; cursor:pointer; transition:opacity .15s; white-space:nowrap;
+  font-family:'IBM Plex Sans',sans-serif; display:inline-block; }
+.link-btn:hover { opacity:.8; }
+.link-dis { color:var(--text2); font-size:12px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:6px">
+    <div>
+      <h1>NeuroScore</h1>
+      <div class="subtitle" id="subtitle-line">Indice test neuropsicologici italiani</div>
+    </div>
+    <a href="neuroscore_unified.html" style="background:#4f8ef7;color:#fff;border-radius:8px;padding:12px 24px;text-decoration:none;font-size:14px;font-weight:700;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;margin-top:4px;box-shadow:0 2px 12px rgba(79,142,247,0.4)">⚡ Apri Scheda Unificata</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="val" id="stat-tot">—</div><div class="lbl">Totale</div></div>
+    <div class="stat"><div class="val" style="color:var(--ok)"  id="stat-ok">—</div><div class="lbl">Completati</div></div>
+    <div class="stat"><div class="val" style="color:var(--warn)" id="stat-wip">—</div><div class="lbl">In corso</div></div>
+    <div class="stat"><div class="val" style="color:var(--text2)" id="stat-todo">—</div><div class="lbl">Da fare</div></div>
+  </div>
+
+  <div class="controls">
+    <input class="search-box" id="search" type="text" placeholder="Cerca per nome, autori, dominio…">
+    <select class="filter-sel" id="filter-dom" onchange="applyFilters()">
+      <option value="">Tutti i domini</option>
+    </select>
+    <button class="stato-btn active" id="btn-all"  onclick="setStatoFilter('')">Tutti</button>
+    <button class="stato-btn"        id="btn-ok"   onclick="setStatoFilter('ok')">✓ Completati</button>
+    <button class="stato-btn"        id="btn-todo" onclick="setStatoFilter('todo')">○ Da fare</button>
+  </div>
+  <div id="count-display"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortTable(0)">#</th>
+        <th onclick="sortTable(1)">Nome test</th>
+        <th onclick="sortTable(2)">Autori, anno</th>
+        <th onclick="sortTable(3)">Dominio</th>
+        <th>Stato</th>
+        <th>Apri</th>
+      </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</div>
+
+<script>
+const TESTS = [
+  // n, nome, autori, dominio, file, stato
+  ["01",  "MoCA 8.1",                              "Dapor, 2025",                     "Screening globale",          "test01_MoCA81_dapor2025.html",                        "ok"],
+  ["02",  "TIB",                                   "Colombo, 2002",                   "Premorboso",                 "test02_TIB_colombo2002.html",                         "ok"],
+  ["03",  "Digit Span + Corsi Fwd/Bwd",            "Monaco, 2013",                    "Memoria di lavoro",          "test03_DigitCorsi_monaco2013.html",                   "ok"],
+  ["04",  "WoMAB",                                 "Pasotti, 2021",                   "Memoria di lavoro",          "test04_WoMAB_pasotti2021.html",                       "ok"],
+  ["05",  "Corsi Span + Supraspan",                "Facchin, 2024",                   "Memoria di lavoro",          "test05_CorsiSupraspan_facchin2024.html",              "ok"],
+  ["06",  "LN Riordinamento WAIS-IV",              "Orsini & Pezzuti, 2013",          "Memoria di lavoro",          "test06_LN_riordinamento_lettere_numeri_wais4.html",   "ok"],
+  ["07",  "DC Ricerca di simboli WAIS-IV",         "Orsini & Pezzuti, 2013",          "Velocità di elaborazione",   "test07_DC_wais4.html",                                "ok"],
+  ["08",  "Matrici Attentive",                     "Della Sala, 1992",                "Attenzione",                 "test08_MatriciAttentive_dellasala1992.html",          "ok"],
+  ["09",  "MFTC",                                  "Marra, 2013",                     "Attenzione",                 "test09_MFTC_marra2013.html",                          "ok"],
+  ["10",  "TMT A e B",                             "Siciliano, 2019",                 "Funzioni esecutive",         "test10_TMT_siciliano2019.html",                       "ok"],
+  ["11",  "SDMT orale",                            "Nocentini, 2006",                 "Velocità di elaborazione",   "test11_SDMT_nocentini2006.html",                      "ok"],
+  ["12",  "RS Ricerca di simboli WAIS-IV",         "Orsini & Pezzuti, 2013",          "Velocità di elaborazione",   "test12_RS_wais4.html",                                "ok"],
+  ["13",  "CR Cancellazione stelle WAIS-IV",       "Orsini & Pezzuti, 2013",          "Attenzione",                 "test13_CR_wais4.html",                                "ok"],
+  ["14",  "Babcock Raccontino",                    "Carlesimo et al., 2002",          "Memoria verbale",            "test14_Babcock_carlesimo2002.html",                   "ok"],
+  ["15",  "RAVLT",                                 "Ricci et al., 2022",              "Memoria verbale",            "test15_RAVLT_ricci2022.html",                         "ok"],
+  ["16",  "FCSRT-16",                              "Girtler et al., 2015",            "Memoria verbale",            "test16_FCSRT16_girtler2015.html",                     "ok"],
+  ["17",  "Pantomima d'Uso degli Oggetti",         "De Renzi et al., 1980",           "Prassia",                    "test17_Pantomima_DeRenzi1980.html",                   "ok"],
+  ["18",  "Imitazione di Gesti",                   "De Renzi et al., 1980/1986",      "Prassia",                    "test18_ImitazioneGesti_DeRenzi1980.html",             "ok"],
+  ["19",  "Figura di Rey (ROCF)",                  "Gasparini et al., 2025",          "Memoria visiva",             "test19_ReyFigura_gasparini2025.html",                 "ok"],
+  ["20",  "Figura di Taylor (MTCF)",               "Casarotti et al., 2014",          "Memoria visiva",             "test20_TaylorMTCF_casarotti2014.html",                "ok"],
+  ["21",  "MCST",                                  "Caffarra et al., 2004",           "Funzioni esecutive",         "test21_MCST_caffarra2004.html",                       "ok"],
+  ["22",  "WCST",                                  "Laiacona et al., 2000",           "Funzioni esecutive",         "test22_24_WCST_Weigl_laiacona2000.html",              "ok"],
+  ["23",  "Prove Prassiche ENB-2",                 "Mondini, 2011",                   "Prassia",                    "test23_PrassicheENB2_mondini2011.html",               "ok"],
+  ["24",  "Weigl Sorting Test",                    "Laiacona et al., 2000",           "Funzioni esecutive",         "test22_24_WCST_Weigl_laiacona2000.html",              "ok"],
+  ["25",  "Hayling Test",                          "Appolonio et al., 2002",          "Funzioni esecutive",         "test25_Hayling_appolonio2002.html",                   "ok"],
+  ["26",  "Brixton Test",                          "Appolonio et al., 2002",          "Funzioni esecutive",         "test26_Brixton_appolonio2002.html",                   "ok"],
+  ["27",  "Stroop Breve",                          "Caffarra, 2002",                  "Funzioni esecutive",         "test27_StroopBreve_caffarra2002.html",                "ok"],
+  ["28",  "Stroop 50 item",                        "Luzzi, 2026",                     "Funzioni esecutive",         "test28_Stroop50_luzzi2026.html",                      "ok"],
+  ["29",  "Raven CPM",                             "Caffarra, 2002 / Gasparini, 2025","Ragionamento",               "test29_RavenCPM.html",                                "ok"],
+  ["30",  "COWAT-FAS",                             "Carlesimo, 1996 / Costa, 2014",   "Linguaggio",                 "test30_COWAT-FAS.html",                               "ok"],
+  ["31",  "VRT",                                   "—",                               "Memoria visiva",             "test31_VRT.html",                                     "ok"],
+  ["32",  "SO Sequenza di simboli WAIS-IV",        "Orsini & Pezzuti, 2013",          "Velocità di elaborazione",   "test32_SO_wais4.html",                                "ok"],
+  ["33",  "BAF — Uccelli e Mobili",                "Quaranta et al., 2016",           "Linguaggio",                 "33_BAF_Quaranta2016.html",                            "ok"],
+  ["34",  "Fluenza Fonemica/Semantica/Alternata",  "Costa et al., 2014",              "Linguaggio",                 "34_FluenzaAlternata_Costa2014.html",                  "ok"],
+  ["35a", "COWAT-FAS (Costa 2014)",                "Costa et al., 2014",              "Linguaggio",                 "34_FluenzaAlternata_Costa2014.html",                  "ok"],
+  ["35b", "COWAT-FAS (Gasparini 2025)",            "Gasparini et al., 2025",          "Linguaggio",                 "35b_COWAT-FAS_Gasparini2025.html",                    "ok"],
+  ["36",  "Denominazione Visiva",                  "Sartori et al., 1988/1992",       "Linguaggio",                 "36_DenominazioneVisiva_Sartori.html",                 "ok"],
+  ["FA",  "FAB",                                   "Aiello, 2022",                    "Funzioni esecutive",         "test_FAB_aiello2022.html",                            "ok"],
+  ["SA",  "SAND — Screening Afasia",               "—",                               "Linguaggio",                 "test_SAND_screening_afasia.html",                     "ok"],
+  ["TL",  "Torre di Londra",                       "—",                               "Funzioni esecutive",         "test_Torre_di_Londra.html",                           "ok"],
+  ["TK",  "Tinkertoy",                             "Crippa, 2016",                    "Funzioni esecutive",         "test_Tinkertoy_crippa2016.html",                      "ok"],
+  ["CA",  "Test delle Campanelle",                 "Mancuso et al., 2019",            "Attenzione / Neglect",       "BellsTest_Mancuso2019.html",                          "ok"],
+  ["FA2", "Figure Aggrovigliate (ENB-2)",          "Mondini et al., 2011",            "Percezione visiva",          "FigureAggrovigliate_ENB2.html",                       "ok"],
+  ["OR",  "Test dell'Orologio (ENB-2)",            "Mondini et al., 2011",            "Prassia / Funzioni esecutive","TestOrologio_ENB2.html",                             "ok"],
+  ["BA",  "Batteria per le Agnosie",               "Barletta-Rodolfi, 2011",          "Percezione visiva",          "BatteriaAgnosie_BarletteRodolfi2011.html",            "ok"],
+  ["EK",  "Ekman 60-Faces Test",                   "Dodich et al., 2014",             "Cognizione sociale",         "Ekman60Faces_Dodich2014.html",                        "ok"],
+  ["SET", "Story-Based Empathy Task (SET)",        "Dodich et al., 2015",             "Cognizione sociale",         "SET_StoryEmpathyTask_Dodich2015.html",                "ok"],
+];
+
+const PALETTE = ['#4f8ef7','#4caf82','#f7a94f','#9b6ff7','#f75f5f','#4fd8f7','#f74fa0','#a0f74f','#f7d94f','#4ff7c8','#7eb3ff'];
+const allDomini = [...new Set(TESTS.map(t => t[3]))].sort();
+const DOMINI_COLORS = {};
+allDomini.forEach((d, i) => DOMINI_COLORS[d] = PALETTE[i % PALETTE.length]);
+
+// Popola filtro domini
+const sel = document.getElementById('filter-dom');
+allDomini.forEach(d => {
+  const opt = document.createElement('option');
+  opt.value = d; opt.textContent = d;
+  sel.appendChild(opt);
+});
+
+// Stats
+const ok   = TESTS.filter(t => t[5] === 'ok').length;
+const wip  = TESTS.filter(t => t[5] === 'wip').length;
+const todo = TESTS.filter(t => t[5] === 'todo').length;
+document.getElementById('stat-tot').textContent  = TESTS.length;
+document.getElementById('stat-ok').textContent   = ok;
+document.getElementById('stat-wip').textContent  = wip;
+document.getElementById('stat-todo').textContent = todo;
+document.getElementById('subtitle-line').textContent =
+  `Indice test neuropsicologici italiani — ${TESTS.length} test · ${ok} completati · ${todo} da fare`;
+
+let statoFilter = '';
+let sortCol = 0, sortAsc = true;
+
+function badgeStato(s) {
+  if (s === 'ok')  return '<span class="badge badge-ok">✓ Pronto</span>';
+  if (s === 'wip') return '<span class="badge badge-wip">⚙ In corso</span>';
+  return '<span class="badge badge-todo">○ Da fare</span>';
+}
+
+function renderTable(tests) {
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = tests.map(t => `
+    <tr>
+      <td class="n">#${t[0]}</td>
+      <td class="nome">${t[1]}</td>
+      <td class="autori">${t[2]}</td>
+      <td><span class="dom-chip" style="color:${DOMINI_COLORS[t[3]] || 'var(--text2)'};">${t[3]}</span></td>
+      <td>${badgeStato(t[5])}</td>
+      <td>${t[4] ? `<a class="link-btn" href="${t[4]}" target="_blank">Apri →</a>` : '<span class="link-dis">—</span>'}</td>
+    </tr>`).join('');
+  document.getElementById('count-display').textContent =
+    `Mostrando ${tests.length} di ${TESTS.length} test`;
+}
+
+function applyFilters() {
+  const q   = document.getElementById('search').value.toLowerCase().trim();
+  const dom = document.getElementById('filter-dom').value;
+  const filtered = TESTS.filter(t => {
+    const matchQ     = !q   || t[1].toLowerCase().includes(q) || t[2].toLowerCase().includes(q) || t[3].toLowerCase().includes(q);
+    const matchDom   = !dom || t[3] === dom;
+    const matchStato = !statoFilter || t[5] === statoFilter;
+    return matchQ && matchDom && matchStato;
+  });
+  // riapplica ordinamento
+  const keys = [0,1,2,3];
+  filtered.sort((a, b) => {
+    const av = String(a[keys[sortCol]]), bv = String(b[keys[sortCol]]);
+    return sortAsc ? av.localeCompare(bv,'it',{numeric:true}) : bv.localeCompare(av,'it',{numeric:true});
+  });
+  renderTable(filtered);
+}
+
+function setStatoFilter(s) {
+  statoFilter = s;
+  ['all','ok','todo'].forEach(k => document.getElementById('btn-'+k).classList.remove('active'));
+  document.getElementById('btn-'+(s||'all')).classList.add('active');
+  applyFilters();
+}
+
+function sortTable(col) {
+  if (sortCol === col) sortAsc = !sortAsc; else { sortCol = col; sortAsc = true; }
+  applyFilters();
+}
+
+document.getElementById('search').addEventListener('input', applyFilters);
+applyFilters();
+</script>
+</body>
+</html>
