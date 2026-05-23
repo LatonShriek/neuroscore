@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroScore — Scheda Unificata</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1117; --surface:#1a1d27; --surface2:#222536; --surface3:#2a2e42;
+  --border:#2e3347; --accent:#4f8ef7; --accent-dim:rgba(79,142,247,0.12);
+  --text:#e8eaf0; --text-dim:#8b91a8; --text-faint:#4a5270;
+  --ok:#34d399; --warn:#fbbf24; --bad:#f87171; --bad-dim:rgba(248,113,113,0.12);
+  --pp:#a78bfa; --ne:#64748b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;min-height:100vh}
+
+/* ── HEADER ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.ns-logo{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.08em}
+.topbar-sep{width:1px;height:20px;background:var(--border)}
+.demo-inline{display:flex;align-items:center;gap:10px;flex:1;flex-wrap:wrap}
+.demo-inline label{font-size:11px;color:var(--text-dim);white-space:nowrap}
+.demo-inline input,.demo-inline select{background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 9px;outline:none;transition:border-color .2s;width:70px}
+.demo-inline select{width:110px}
+.demo-inline input:focus,.demo-inline select:focus{border-color:var(--accent)}
+.demo-inline select option{background:var(--surface2)}
+.demo-status{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text-dim);white-space:nowrap}
+.demo-status.ready{color:var(--ok)}
+
+/* ── TABLE ── */
+.page{max-width:1100px;margin:0 auto;padding:20px 16px 100px}
+.section-label{font-size:10px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.12em;color:var(--text-faint);padding:14px 0 6px}
+
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--surface);border-bottom:2px solid var(--border);padding:8px 10px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);white-space:nowrap;position:sticky;top:57px;z-index:50}
+thead th.th-corr{text-align:right}
+thead th.th-interp{text-align:left}
+
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:var(--surface)}
+tbody tr.row-sub{background:rgba(0,0,0,.15)}
+tbody tr.row-sub:hover{background:var(--surface)}
+tbody tr.row-ne td{opacity:.6}
+tbody tr.row-domain-head td{background:var(--surface2);padding:5px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim)}
+
+td{padding:7px 10px;vertical-align:middle}
+td.td-name{font-size:13px;font-weight:500;white-space:nowrap;max-width:280px}
+td.td-name.sub{padding-left:28px;font-size:12px;font-weight:400;color:var(--text-dim)}
+td.td-authors{font-size:11px;color:var(--text-dim);white-space:nowrap}
+td.td-inp{width:90px}
+td.td-ne{width:40px;text-align:center}
+td.td-corr{width:110px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px}
+td.td-interp{width:220px;font-family:'IBM Plex Mono',monospace;font-size:12px}
+
+/* ── INPUTS ── */
+.inp-grezzo{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:5px 8px;outline:none;transition:border-color .2s;text-align:center}
+.inp-grezzo:focus{border-color:var(--accent)}
+.inp-grezzo:disabled{opacity:.4;cursor:not-allowed}
+.ne-check{width:16px;height:16px;cursor:pointer;accent-color:var(--ne)}
+
+/* ── RESULTS ── */
+.corr-val{color:var(--text)}
+.corr-val.altered{color:var(--bad)}
+.asterisk{color:var(--bad);font-weight:700}
+.interp-ok  {color:var(--ok)}
+.interp-warn{color:var(--warn)}
+.interp-bad {color:var(--bad)}
+.interp-pp  {color:var(--pp)}
+.interp-ne  {color:var(--ne);font-style:italic}
+.interp-dim {color:var(--text-dim)}
+
+.es-pill{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:3px;margin-left:4px}
+.es0{background:var(--bad-dim);color:var(--bad);border:1px solid var(--bad)}
+.es1{background:rgba(251,191,36,.1);color:var(--warn);border:1px solid var(--warn)}
+.es2{background:rgba(251,191,36,.06);color:#c8860f;border:1px solid #c8860f}
+.es3{background:rgba(52,211,153,.08);color:var(--ok);border:1px solid var(--ok)}
+.es4{background:rgba(52,211,153,.13);color:var(--ok);border:1px solid var(--ok)}
+.pp-pill{background:rgba(167,139,250,.13);color:var(--pp);border:1px solid var(--pp)}
+
+/* ── STICKY FOOTER ── */
+.footer-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);padding:12px 20px;display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap;z-index:200}
+.footer-info{font-size:11px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;flex:1}
+.btn{font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;padding:8px 18px;border-radius:6px;border:none;cursor:pointer;transition:opacity .2s,transform .1s}
+.btn:hover:not(:disabled){opacity:.82}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-clear{background:transparent;color:var(--text-dim);border:1px solid var(--border);font-size:11px;padding:6px 12px}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="ns-logo">NeuroScore</div>
+  <div class="topbar-sep"></div>
+  <div class="demo-inline">
+    <label>Età</label>
+    <input type="number" id="g_eta"  min="15" max="99" placeholder="—" oninput="onDemo()">
+    <label>Scolarità</label>
+    <input type="number" id="g_scol" min="0"  max="30" placeholder="—" oninput="onDemo()">
+    <label>Sesso</label>
+    <select id="g_sesso" onchange="onDemo()">
+      <option value="">—</option>
+      <option value="F">Femmina</option>
+      <option value="M">Maschio</option>
+    </select>
+  </div>
+  <div class="demo-status" id="demo-status">dati demografici mancanti</div>
+</div>
+
+<div class="page">
+<table id="main-table">
+<thead>
+  <tr>
+    <th style="width:260px">Test</th>
+    <th style="width:140px">Autori, anno</th>
+    <th style="width:90px;text-align:center">Grezzo</th>
+    <th style="width:36px;text-align:center">NE</th>
+    <th class="th-corr">Punteggio corretto</th>
+    <th class="th-interp">Interpretazione</th>
+  </tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<div class="footer-bar">
+  <span class="footer-info" id="footer-info">0 test compilati</span>
+  <button class="btn btn-clear"      onclick="clearAll()">Cancella tutto</button>
+  <button class="btn btn-secondary"  id="btn-lista"   disabled onclick="copiaLista()">Copia elenco</button>
+  <button class="btn btn-primary"    id="btn-tab"     disabled onclick="copiaTab()">Copia tabella</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+const gEta  = ()=> parseFloat(document.getElementById('g_eta').value);
+const gScol = ()=> parseFloat(document.getElementById('g_scol').value);
+const gSex  = ()=> document.getElementById('g_sesso').value;
+const dOk   = ()=> !isNaN(gEta()) && !isNaN(gScol()) && gSex() !== '';
+
+function esLabel(es){ return es===0?'PATOLOGICO':es===1?'borderline':es===2?'borderline':es===3?'nella norma':'nella norma'; }
+function esClass(es){ return es===0?'interp-bad':es===1||es===2?'interp-warn':'interp-ok'; }
+
+function calcES(c, tab){
+  for(const [lim,es] of tab){ if(c<=lim) return es; }
+  return 4;
+}
+
+// ═══════════════════════════════════════════════════════
+// DEFINIZIONE TEST
+// ogni voce: { id, nome, autori, sub(bool), hint, tipo, calc }
+// tipo: 'es' | 'pp' | 'raw' | 'time' | 'errors'
+// calc(g, eta, scol, sex) → { corretto, es, esito, alterato, cutoff, label }
+// ═══════════════════════════════════════════════════════
+const ROWS = [
+  // ── SCREENING ──────────────────────────────────────────
+  {id:'moca',    nome:'MoCA 8.1',              autori:'Dapor, 2025',             hint:'0–30',   tipo:'es',
+    calc(g,e,s,sx){ const c=g; const es=c<=18?0:c<=21?1:c<=24?2:c<=26?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:18,label:'PE'}; }},
+
+  // ── PREMORBOSO ─────────────────────────────────────────
+  {id:'tib',     nome:'TIB',                   autori:'Colombo, 2002',           hint:'QI est.',tipo:'raw',
+    calc(g,e,s,sx){ return{corretto:g,es:null,esito:g>=90?'nella norma':g>=80?'borderline':'basso',alterato:g<80,cutoff:80,label:'QI'}; }},
+
+  // ── MEMORIA DI LAVORO ──────────────────────────────────
+  {id:'ds_fwd',  nome:'Digit Span avanti',     autori:'Monaco, 2013',            hint:'0–9',    tipo:'es',
+    calc(g,e,s,sx){ const c=g; const es=c<=3?0:c<=4?1:c<=5?2:c<=6?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:3,label:'PE'}; }},
+  {id:'ds_bwd',  nome:'Digit Span indietro',   autori:'Monaco, 2013',            hint:'0–8',    tipo:'es', sub:true,
+    calc(g,e,s,sx){ const c=g; const es=c<=2?0:c<=3?1:c<=4?2:c<=5?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:2,label:'PE'}; }},
+  {id:'corsi_fwd',nome:'Corsi avanti',         autori:'Monaco, 2013',            hint:'0–9',    tipo:'es',
+    calc(g,e,s,sx){ const c=g; const es=c<=3?0:c<=4?1:c<=5?2:c<=6?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:3,label:'PE'}; }},
+  {id:'corsi_bwd',nome:'Corsi indietro',       autori:'Monaco, 2013',            hint:'0–8',    tipo:'es', sub:true,
+    calc(g,e,s,sx){ const c=g; const es=c<=2?0:c<=3?1:c<=4?2:c<=5?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:2,label:'PE'}; }},
+  {id:'ln_wais', nome:'LN Riordinamento WAIS-IV',autori:'Orsini & Pezzuti, 2013',hint:'1–19', tipo:'pp',
+    calc(g){ return{corretto:null,es:null,esito:g<=7?'borderline/pat.':'nella norma',alterato:g<=7,cutoff:8,label:'PP'}; }},
+  {id:'womab',   nome:'WoMAB',                 autori:'Pasotti, 2021',           hint:'0–36',   tipo:'es',
+    calc(g,e,s,sx){ const c=g; const es=c<=14?0:c<=18?1:c<=22?2:c<=26?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:14,label:'PE'}; }},
+
+  // ── MEMORIA VERBALE ────────────────────────────────────
+  {id:'bab_imm', nome:'Babcock — Rievoc. immediata', autori:'Carlesimo et al., 2002', hint:'0–23', tipo:'es',
+    calc(g,e,s,sx){
+      const d=-0.167*(e-8.39)+0.107*(sx==='F'?1:0);
+      const c=g+d; const es=c<=6.4?0:c<=8.97?1:c<=11.54?2:c<=14.11?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:6.4,label:'PE'};
+    }},
+  {id:'bab_diff',nome:'Babcock — Rievoc. differita', autori:'Carlesimo et al., 2002', hint:'0–23', tipo:'es', sub:true,
+    calc(g,e,s,sx){
+      const d=-0.182*(e-8.39)+0.145*(sx==='F'?1:0);
+      const c=g+d; const es=c<=5.5?0:c<=8.33?1:c<=11.16?2:c<=14.0?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:5.5,label:'PE'};
+    }},
+  {id:'ravlt_imm',nome:'RAVLT — Apprendimento (A1–A5)', autori:'Ricci et al., 2022', hint:'0–75', tipo:'es',
+    calc(g,e,s,sx){ const c=g; const es=c<=31?0:c<=38?1:c<=45?2:c<=52?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:31,label:'PE'}; }},
+  {id:'ravlt_b',  nome:'RAVLT — Lista B',              autori:'Ricci et al., 2022', hint:'0–15', tipo:'es', sub:true,
+    calc(g,e,s,sx){ const c=g; const es=c<=3?0:c<=4?1:c<=6?2:c<=8?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:3,label:'PE'}; }},
+  {id:'ravlt_a6', nome:'RAVLT — Rievoc. dopo interferenza', autori:'Ricci et al., 2022', hint:'0–15', tipo:'es', sub:true,
+    calc(g,e,s,sx){ const c=g; const es=c<=5?0:c<=7?1:c<=9?2:c<=11?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:5,label:'PE'}; }},
+  {id:'ravlt_diff',nome:'RAVLT — Rievoc. differita',   autori:'Ricci et al., 2022', hint:'0–15', tipo:'es', sub:true,
+    calc(g,e,s,sx){ const c=g; const es=c<=5?0:c<=7?1:c<=9?2:c<=11?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:5,label:'PE'}; }},
+  {id:'ravlt_ric', nome:'RAVLT — Riconoscimento',      autori:'Ricci et al., 2022', hint:'hits−FA', tipo:'es', sub:true,
+    calc(g,e,s,sx){ const c=g; const es=c<=8?0:c<=10?1:c<=12?2:c<=13?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:8,label:'PE'}; }},
+  {id:'fcsrt_fr1',nome:'FCSRT-16 — Rievoc. lib. immediata', autori:'Girtler et al., 2015', hint:'0–48', tipo:'es',
+    calc(g,e,s,sx){ const c=g; const es=c<=23?0:c<=28?1:c<=33?2:c<=38?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:23,label:'PE'}; }},
+  {id:'fcsrt_tot1',nome:'FCSRT-16 — Rievoc. tot. immediata', autori:'Girtler et al., 2015', hint:'0–48', tipo:'es', sub:true,
+    calc(g,e,s,sx){ const c=g; const es=c<=35?0:c<=39?1:c<=43?2:c<=46?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:35,label:'PE'}; }},
+  {id:'fcsrt_diff',nome:'FCSRT-16 — Rievoc. lib. differita', autori:'Girtler et al., 2015', hint:'0–16', tipo:'es', sub:true,
+    calc(g,e,s,sx){ const c=g; const es=c<=6?0:c<=8?1:c<=10?2:c<=12?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:6,label:'PE'}; }},
+
+  // ── MEMORIA VISIVA ─────────────────────────────────────
+  {id:'rey_cop', nome:'Figura di Rey — Copia',        autori:'Gasparini et al., 2025', hint:'0–36', tipo:'es',
+    calc(g,e,s,sx){
+      const eta=gEta();
+      const c=g-(0.007*(e*e-168.79)-4.3e-6*(eta*eta*eta-283949.92));
+      const es=c<=27.19?0:c<=31.0?1:c<=32.59?2:c<=33.75?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:27.19,label:'PE'};
+    }},
+  {id:'rey_ir',  nome:'Figura di Rey — Richiamo imm.', autori:'Gasparini et al., 2025', hint:'0–36', tipo:'es', sub:true,
+    calc(g,e,s,sx){
+      const eta=gEta(); const gF=sx==='F'?1:0;
+      const c=g-(0.3046*(e-12.989)-0.001*(eta*eta-4320.82)+1.985*(gF-0.64));
+      const es=c<=7.75?0:c<=11.19?1:c<=13.75?2:c<=16.01?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:7.75,label:'PE'};
+    }},
+  {id:'rey_dr',  nome:'Figura di Rey — Richiamo diff.', autori:'Gasparini et al., 2025', hint:'0–36', tipo:'es', sub:true,
+    calc(g,e,s,sx){
+      const eta=gEta(); const gF=sx==='F'?1:0;
+      const c=g-(1.886*(Math.sqrt(e)-3.605)-0.146*(eta-65.714)-1.931*(gF-0.64));
+      const es=c<=7.73?0:c<=11.47?1:c<=13.70?2:c<=15.90?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:7.73,label:'PE'};
+    }},
+  {id:'taylor_cop',nome:'Taylor MTCF — Copia',        autori:'Casarotti et al., 2014', hint:'0–36', tipo:'es',
+    calc(g,e,s,sx){ const c=g; const es=c<=18?0:c<=22?1:c<=26?2:c<=30?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:18,label:'PE'}; }},
+  {id:'taylor_dr', nome:'Taylor MTCF — Richiamo diff.', autori:'Casarotti et al., 2014', hint:'0–36', tipo:'es', sub:true,
+    calc(g,e,s,sx){ const c=g; const es=c<=8?0:c<=12?1:c<=16?2:c<=20?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:8,label:'PE'}; }},
+
+  // ── ATTENZIONE ─────────────────────────────────────────
+  {id:'mat_att', nome:'Matrici Attentive',             autori:'Della Sala, 1992',       hint:'0–60',  tipo:'es',
+    calc(g,e,s,sx){ const c=g; const es=c<=41?0:c<=45?1:c<=50?2:c<=54?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:41,label:'PE'}; }},
+  {id:'mftc_fa', nome:'MFTC — Falsi allarmi',         autori:'Marra, 2013',             hint:'0–∞',   tipo:'errors',
+    calc(g,e,s,sx){ const es=g>=8?0:g>=5?1:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:7,label:'PE'}; }},
+  {id:'mftc_acc',nome:'MFTC — Accuratezza',           autori:'Marra, 2013',             hint:'0–60',  tipo:'es', sub:true,
+    calc(g,e,s,sx){ const c=g; const es=c<=40?0:c<=46?1:c<=52?2:c<=56?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:40,label:'PE'}; }},
+  {id:'camp_asym',nome:'Campanelle — Asimmetria',     autori:'Mancuso et al., 2019',    hint:'−15…+15',tipo:'raw',
+    calc(g,e,s,sx){ const ok=Math.abs(g)<3; return{corretto:g,es:ok?4:0,esito:ok?'nella norma':'PATOLOGICO',alterato:!ok,cutoff:'|val|<3',label:'cut-off'}; }},
+  {id:'camp_omis',nome:'Campanelle — Omissioni',      autori:'Mancuso et al., 2019',    hint:'0–35',   tipo:'errors', sub:true,
+    calc(g,e,s,sx){
+      const eta=gEta(),scol=gScol();
+      const exp=-0.83+0.025*eta+(-0.042)*scol;
+      const cut=Math.floor(exp+1.96*1.15)+1;
+      const ok=g<cut; return{corretto:g,es:ok?4:0,esito:ok?'nella norma':'PATOLOGICO',alterato:!ok,cutoff:'<'+cut,label:'cut-off'};
+    }},
+  {id:'camp_t',   nome:'Campanelle — Tempo (s)',      autori:'Mancuso et al., 2019',    hint:'sec',    tipo:'time', sub:true,
+    calc(g,e,s,sx){
+      const max=Math.round(94.03+0.56*gEta()+1.96*48.1);
+      const ok=g<=max; return{corretto:g,es:ok?4:0,esito:ok?'nella norma':'PATOLOGICO',alterato:!ok,cutoff:'≤'+max+' s',label:'cut-off'};
+    }},
+
+  // ── VELOCITÀ DI ELABORAZIONE ───────────────────────────
+  {id:'sdmt',    nome:'SDMT orale',                   autori:'Nocentini, 2006',         hint:'0–110', tipo:'es',
+    calc(g,e,s,sx){
+      const c=g+0.448*(gEta()-54.6)-0.801*(e-9.7);
+      const es=c<=29?0:c<=37?1:c<=45?2:c<=53?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:29,label:'PE'};
+    }},
+  {id:'dc_wais', nome:'DC Ricerca simboli WAIS-IV',   autori:'Orsini & Pezzuti, 2013',  hint:'1–19',  tipo:'pp',
+    calc(g){ return{corretto:null,es:null,esito:g>=8?'nella norma':'borderline/pat.',alterato:g<8,cutoff:8,label:'PP'}; }},
+  {id:'rs_wais', nome:'RS Ricerca simboli WAIS-IV',   autori:'Orsini & Pezzuti, 2013',  hint:'1–19',  tipo:'pp',
+    calc(g){ return{corretto:null,es:null,esito:g>=8?'nella norma':'borderline/pat.',alterato:g<8,cutoff:8,label:'PP'}; }},
+  {id:'so_wais', nome:'SO Sequenza simboli WAIS-IV',  autori:'Orsini & Pezzuti, 2013',  hint:'1–19',  tipo:'pp',
+    calc(g){ return{corretto:null,es:null,esito:g>=8?'nella norma':'borderline/pat.',alterato:g<8,cutoff:8,label:'PP'}; }},
+  {id:'cr_wais', nome:'CR Cancellazione stelle WAIS-IV',autori:'Orsini & Pezzuti, 2013',hint:'1–19',  tipo:'pp',
+    calc(g){ return{corretto:null,es:null,esito:g>=8?'nella norma':'borderline/pat.',alterato:g<8,cutoff:8,label:'PP'}; }},
+
+  // ── FUNZIONI ESECUTIVE ─────────────────────────────────
+  {id:'tmt_a',   nome:'TMT-A (secondi)',               autori:'Siciliano, 2019',         hint:'sec',   tipo:'time',
+    calc(g,e,s,sx){
+      const c=g+0.856*(gEta()-56.8)-2.093*(e-10.7);
+      const es=c>95?0:c>76?1:4;
+      return{corretto:c,es,esito:c>95?'PATOLOGICO':c>76?'borderline':'nella norma',alterato:c>95,cutoff:95,label:'PE'};
+    }},
+  {id:'tmt_b',   nome:'TMT-B (secondi)',               autori:'Siciliano, 2019',         hint:'sec',   tipo:'time', sub:true,
+    calc(g,e,s,sx){
+      const c=g+2.336*(gEta()-56.8)-5.768*(e-10.7);
+      const es=c>282?0:c>213?1:4;
+      return{corretto:c,es,esito:c>282?'PATOLOGICO':c>213?'borderline':'nella norma',alterato:c>282,cutoff:282,label:'PE'};
+    }},
+  {id:'stroop_t', nome:'Stroop Breve — Tempo (s)',     autori:'Caffarra, 2002',          hint:'sec',   tipo:'time',
+    calc(g,e,s,sx){ const es=g>=55?0:g>=40?1:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:54,label:'PE'}; }},
+  {id:'stroop_e', nome:'Stroop Breve — Errori',        autori:'Caffarra, 2002',          hint:'0–10',  tipo:'errors', sub:true,
+    calc(g,e,s,sx){ const es=g>=4?0:g>=2?1:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:3,label:'PE'}; }},
+  {id:'mcst_cat', nome:'MCST — Categorie',             autori:'Caffarra et al., 2004',   hint:'0–6',   tipo:'es',
+    calc(g,e,s,sx){ const es=g<=2?0:g<=3?1:g<=4?2:g<=5?3:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:3,label:'PE'}; }},
+  {id:'mcst_ep',  nome:'MCST — Errori perseverativi',  autori:'Caffarra et al., 2004',   hint:'0–48',  tipo:'errors', sub:true,
+    calc(g,e,s,sx){ const es=g>=18?0:g>=12?1:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:17,label:'PE'}; }},
+  {id:'wcst_cat', nome:'WCST — Categorie',             autori:'Laiacona et al., 2000',   hint:'0–6',   tipo:'es',
+    calc(g,e,s,sx){ const es=g<=2?0:g<=3?1:g<=4?2:g<=5?3:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:3,label:'PE'}; }},
+  {id:'wcst_ep',  nome:'WCST — Errori perseverativi',  autori:'Laiacona et al., 2000',   hint:'0–128', tipo:'errors', sub:true,
+    calc(g,e,s,sx){ const es=g>=25?0:g>=18?1:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:24,label:'PE'}; }},
+  {id:'hayling',  nome:'Hayling Test',                 autori:'Appolonio et al., 2002',  hint:'0–10',  tipo:'es',
+    calc(g,e,s,sx){ const es=g<=2?0:g<=4?1:g<=6?2:g<=8?3:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:3,label:'PE'}; }},
+  {id:'brixton',  nome:'Brixton Test — Errori',        autori:'Appolonio et al., 2002',  hint:'0–54',  tipo:'errors',
+    calc(g,e,s,sx){ const es=g>=30?0:g>=22?1:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:29,label:'PE'}; }},
+  {id:'ln_wais2', nome:'LN Riordinamento WAIS-IV',     autori:'Orsini & Pezzuti, 2013',  hint:'1–19',  tipo:'pp',
+    calc(g){ return{corretto:null,es:null,esito:g>=8?'nella norma':'borderline/pat.',alterato:g<8,cutoff:8,label:'PP'}; }},
+  {id:'fab',      nome:'FAB',                          autori:'Aiello, 2022',            hint:'0–18',  tipo:'es',
+    calc(g,e,s,sx){ const c=g; const es=c<=11?0:c<=13?1:c<=15?2:c<=17?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:12,label:'PE'}; }},
+  {id:'torre',    nome:'Torre di Londra',              autori:'—',                       hint:'',      tipo:'raw',
+    calc(g,e,s,sx){ return{corretto:g,es:null,esito:'',alterato:false,cutoff:'',label:''}; }},
+  {id:'tinkertoy',nome:'Tinkertoy',                   autori:'Crippa, 2016',            hint:'0–34',  tipo:'es',
+    calc(g,e,s,sx){ const c=g; const es=c<=14?0:c<=18?1:c<=22?2:c<=26?3:4; return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:14,label:'PE'}; }},
+
+  // ── LINGUAGGIO ─────────────────────────────────────────
+  {id:'cowat',    nome:'COWAT-FAS',                    autori:'Gasparini et al., 2025',  hint:'0–150', tipo:'es',
+    calc(g,e,s,sx){
+      const c=g-(1.365*(e-12.989));
+      const es=c<=20.98?0:c<=28.52?1:c<=32.52?2:c<=35.52?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:20.98,label:'PE'};
+    }},
+  {id:'baf_tot',  nome:'BAF — Totale',                 autori:'Quaranta et al., 2016',   hint:'0–∞',   tipo:'es',
+    calc(g,e,s,sx){
+      const atteso=19.89-0.107*(gEta()-68.03)+0.416*(e-8.42);
+      const c=g+(16.12-atteso);
+      const es=c<9.28?0:c<11.41?1:c<13.98?2:c<15.85?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:9.28,label:'PE'};
+    }},
+  {id:'baf_ucc',  nome:'BAF — Uccelli',                autori:'Quaranta et al., 2016',   hint:'0–∞',   tipo:'es', sub:true,
+    calc(g,e,s,sx){
+      const gn=sx==='M'?1:0;
+      const atteso=8.05+1.57*gn-0.0005*(gEta()*gEta()-4760.451)+0.177*(e-8.42);
+      const c=g+(8.05-atteso);
+      const es=c<3.17?0:c<4.19?1:c<5.29?2:c<6.96?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:3.17,label:'PE'};
+    }},
+  {id:'baf_mob',  nome:'BAF — Mobili',                 autori:'Quaranta et al., 2016',   hint:'0–∞',   tipo:'es', sub:true,
+    calc(g,e,s,sx){
+      const gn=sx==='M'?1:0;
+      const atteso=8.80-1.39*gn-0.04*(gEta()-68.03)+1.43*(Math.sqrt(e)-2.80);
+      const c=g+(8.09-atteso);
+      const es=c<5.08?0:c<6.25?1:c<7.48?2:c<8.77?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:5.08,label:'PE'};
+    }},
+  {id:'fl_fon',   nome:'Fluenza Fonemica (A+F+S)',     autori:'Costa et al., 2014',      hint:'0–120', tipo:'es',
+    calc(g,e,s,sx){
+      const gv=sx==='F'?-1.59:1.59;
+      const c=g+(33.29-(33.29-1.11*(e-11.88)+gv));
+      const es=c<17.77?0:c<21.07?1:c<26.91?2:c<33.16?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:17.77,label:'PE'};
+    }},
+  {id:'fl_sem',   nome:'Fluenza Semantica',            autori:'Costa et al., 2014',      hint:'0–150', tipo:'es', sub:true,
+    calc(g,e,s,sx){
+      const gv=sx==='F'?-2.19:2.19;
+      const c=g+(41.27-(41.27-0.20*(gEta()-55.95)-0.60*(e-11.88)+gv));
+      const es=c<28.34?0:c<32.10?1:c<35.74?2:c<40.35?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:28.34,label:'PE'};
+    }},
+  {id:'fl_alt',   nome:'Fluenza Alternata',            autori:'Costa et al., 2014',      hint:'0–120', tipo:'es', sub:true,
+    calc(g,e,s,sx){
+      const gv=sx==='F'?-1.75:1.75;
+      const c=g+(28.38-(28.38-0.23*(gEta()-55.95)-0.96*(e-11.88)+gv));
+      const es=c<12.70?0:c<17.89?1:c<22.74?2:c<27.65?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:12.70,label:'PE'};
+    }},
+  {id:'denom',    nome:'Denominazione Visiva',         autori:'Sartori et al., 1992',    hint:'0–64',  tipo:'raw',
+    calc(g,e,s,sx){
+      const eta=gEta(),scol=gScol();
+      const fi=eta<=29?0:eta<=39?1:eta<=49?2:eta<=59?3:eta<=69?4:5;
+      const cuts=scol<=8?[62,61,57,56,56,50]:[62,61,57,56,56,50];
+      const cut=cuts[fi]; const ok=g>=cut;
+      return{corretto:g,es:ok?4:g>=cut-1?1:0,esito:ok?'nella norma':g>=cut-1?'borderline':'PATOLOGICO',alterato:g<cut-1,cutoff:'≥'+cut,label:'cut-off'};
+    }},
+  {id:'sand',     nome:'SAND — Screening Afasia',      autori:'—',                       hint:'',      tipo:'raw',
+    calc(g,e,s,sx){ return{corretto:g,es:null,esito:'',alterato:false,cutoff:'',label:''}; }},
+
+  // ── PRASSIA ────────────────────────────────────────────
+  {id:'pant',     nome:"Pantomima d'Uso",              autori:'De Renzi et al., 1980',   hint:'0–24',  tipo:'es',
+    calc(g,e,s,sx){ const es=g<=14?0:g<=17?1:g<=20?2:g<=22?3:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:15,label:'PE'}; }},
+  {id:'imit',     nome:'Imitazione di Gesti',          autori:'De Renzi et al., 1986',   hint:'0–24',  tipo:'es',
+    calc(g,e,s,sx){ const es=g<=15?0:g<=18?1:g<=21?2:g<=23?3:4; return{corretto:g,es,esito:esLabel(es),alterato:es===0,cutoff:16,label:'PE'}; }},
+  {id:'orol_num', nome:"Test dell'Orologio — Numeri",  autori:'Mondini et al., 2011',    hint:'0–4',   tipo:'raw',
+    calc(g,e,s,sx){ return{corretto:g,es:null,esito:'',alterato:false,cutoff:'',label:''}; }},
+  {id:'orol_dis', nome:"Test dell'Orologio — Disposizione", autori:'Mondini et al., 2011',hint:'0–4',  tipo:'raw', sub:true,
+    calc(g,e,s,sx){ return{corretto:g,es:null,esito:'',alterato:false,cutoff:'',label:''}; }},
+  {id:'orol_lan', nome:"Test dell'Orologio — Lancette", autori:'Mondini et al., 2011',   hint:'0–2',   tipo:'raw', sub:true,
+    calc(g,e,s,sx){ return{corretto:g,es:null,esito:'',alterato:false,cutoff:'',label:''}; }},
+  {id:'pras_enb', nome:'Prove Prassiche ENB-2',        autori:'Mondini et al., 2011',    hint:'0–6',   tipo:'raw',
+    calc(g,e,s,sx){ return{corretto:g,es:null,esito:g<=3?'deficit':'nella norma',alterato:g<=3,cutoff:4,label:'cut-off'}; }},
+
+  // ── PERCEZIONE VISIVA ──────────────────────────────────
+  {id:'fig_agg',  nome:'Figure Aggrovigliate (ENB-2)',  autori:'Mondini et al., 2011',   hint:'0–50',  tipo:'raw',
+    calc(g,e,s,sx){
+      const eta=gEta(),scol=gScol();
+      const fi=eta<=20?0:eta<=30?1:eta<=40?2:eta<=50?3:eta<=60?4:eta<=70?5:eta<=80?6:7;
+      const cutB=[26,31,32,30,25,25,11,9];
+      const cutA=[26,35,35,32,28,27,20,19];
+      const cut=scol<=8?cutB[fi]:cutA[fi];
+      const ok=g>=cut;
+      return{corretto:g,es:ok?4:0,esito:ok?'nella norma':'PATOLOGICO',alterato:!ok,cutoff:'≥'+cut,label:'cut-off'};
+    }},
+
+  // ── COGNIZIONE SOCIALE ─────────────────────────────────
+  {id:'ekman',    nome:'Ekman 60-Faces — Globale',     autori:'Dodich et al., 2014',     hint:'0–60',  tipo:'es',
+    calc(g,e,s,sx){
+      const gv=sx==='F'?-0.19:0.19;
+      const c=g+0.190*(gEta()-51.41)-0.40*(e-13.26)+gv;
+      const es=c<=37.46?0:c<=41.62?1:c<=45.79?2:c<=49.95?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:37.46,label:'PE'};
+    }},
+  {id:'set_gs',   nome:'SET — Globale',                autori:'Dodich et al., 2015',     hint:'0–18',  tipo:'es',
+    calc(g,e,s,sx){
+      const c=g-0.371*(Math.log(100-gEta())-1.679)-0.277*(Math.sqrt(e)-3.619);
+      const es=c<=8.29?0:c<=10.93?1:c<=13.57?2:c<=16.20?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:8.29,label:'PE'};
+    }},
+  {id:'set_ia',   nome:'SET — Intenzioni (IA)',        autori:'Dodich et al., 2015',     hint:'0–6',   tipo:'es', sub:true,
+    calc(g,e,s,sx){
+      const c=g-0.203*(Math.log(100-gEta())-1.679)-0.194*(Math.sqrt(e)-3.619);
+      const es=c<=2.34?0:c<=3.56?1:c<=4.78?2:c<=5.99?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:2.34,label:'PE'};
+    }},
+  {id:'set_ea',   nome:'SET — Emozioni (EA)',          autori:'Dodich et al., 2015',     hint:'0–6',   tipo:'es', sub:true,
+    calc(g,e,s,sx){
+      const c=g-0.317*(Math.log(100-gEta())-1.679)-0.176*(Math.sqrt(e)-3.619);
+      const es=c<=2.20?0:c<=3.43?1:c<=4.66?2:c<=5.88?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:2.20,label:'PE'};
+    }},
+  {id:'set_ci',   nome:'SET — Causale (CI)',           autori:'Dodich et al., 2015',     hint:'0–6',   tipo:'es', sub:true,
+    calc(g,e,s,sx){
+      const c=g-0.332*(Math.log(100-gEta())-1.679)-0.270*(Math.sqrt(e)-3.619);
+      const es=c<=2.41?0:c<=3.35?1:c<=4.28?2:c<=5.22?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:2.41,label:'PE'};
+    }},
+
+  // ── RAGIONAMENTO ───────────────────────────────────────
+  {id:'raven',    nome:'Raven CPM',                    autori:'Gasparini et al., 2025',  hint:'0–36',  tipo:'es',
+    calc(g,e,s,sx){
+      const c=g-(2.95*(Math.sqrt(e)-3.582)+4.42*(Math.log(100-gEta())-3.467));
+      const es=c<=22.53?0:c<=27.05?1:c<=29.79?2:c<=31.35?3:4;
+      return{corretto:c,es,esito:esLabel(es),alterato:es===0,cutoff:22.53,label:'PE'};
+    }},
+];
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function buildTable(){
+  const tbody=document.getElementById('tbody');
+  ROWS.forEach(row=>{
+    const tr=document.createElement('tr');
+    tr.id='tr_'+row.id;
+    if(row.sub) tr.classList.add('row-sub');
+
+    // Nome
+    const tdN=document.createElement('td');
+    tdN.className='td-name'+(row.sub?' sub':'');
+    tdN.textContent=row.nome;
+    tr.appendChild(tdN);
+
+    // Autori
+    const tdA=document.createElement('td');
+    tdA.className='td-authors';
+    tdA.textContent=row.autori;
+    tr.appendChild(tdA);
+
+    // Grezzo
+    const tdI=document.createElement('td');
+    tdI.className='td-inp';
+    const inp=document.createElement('input');
+    inp.type='number'; inp.className='inp-grezzo';
+    inp.placeholder=row.hint||'—'; inp.id='inp_'+row.id;
+    inp.oninput=()=>calc(row.id);
+    tdI.appendChild(inp);
+    tr.appendChild(tdI);
+
+    // NE checkbox
+    const tdNE=document.createElement('td');
+    tdNE.className='td-ne';
+    const chk=document.createElement('input');
+    chk.type='checkbox'; chk.className='ne-check'; chk.id='ne_'+row.id;
+    chk.onchange=()=>toggleNE(row.id);
+    tdNE.appendChild(chk);
+    tr.appendChild(tdNE);
+
+    // Corretto
+    const tdC=document.createElement('td');
+    tdC.className='td-corr'; tdC.id='corr_'+row.id; tdC.textContent='—';
+    tr.appendChild(tdC);
+
+    // Interpretazione
+    const tdInt=document.createElement('td');
+    tdInt.className='td-interp'; tdInt.id='interp_'+row.id; tdInt.textContent='—';
+    tr.appendChild(tdInt);
+
+    tbody.appendChild(tr);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// CALCOLO
+// ═══════════════════════════════════════════════════════
+function toggleNE(id){
+  const chk=document.getElementById('ne_'+id);
+  const inp=document.getElementById('inp_'+id);
+  const tr =document.getElementById('tr_'+id);
+  inp.disabled=chk.checked;
+  if(chk.checked){
+    inp.value='';
+    document.getElementById('corr_'+id).textContent='—';
+    const el=document.getElementById('interp_'+id);
+    el.textContent='NE'; el.className='td-interp interp-ne';
+    tr.classList.add('row-ne');
+  } else {
+    tr.classList.remove('row-ne');
+    document.getElementById('interp_'+id).textContent='—';
+    document.getElementById('interp_'+id).className='td-interp';
+  }
+  updateFooter();
+}
+
+function calc(id){
+  const row=ROWS.find(r=>r.id===id);
+  const inp=document.getElementById('inp_'+id);
+  const tdC=document.getElementById('corr_'+id);
+  const tdI=document.getElementById('interp_'+id);
+  const g=parseFloat(inp.value);
+
+  if(isNaN(g)){ tdC.textContent='—'; tdI.textContent='—'; tdI.className='td-interp'; updateFooter(); return; }
+  if(!dOk()){   tdC.textContent='—'; tdI.textContent='(demo mancante)'; tdI.className='td-interp interp-dim'; return; }
+
+  try{
+    const r=row.calc(g, gScol(), gSex(), gSex());
+    const ast=r.alterato?'*':'';
+
+    // Colonna corretto
+    if(row.tipo==='pp'){
+      tdC.textContent='—';
+    } else if(r.corretto!==null && typeof r.corretto==='number'){
+      tdC.innerHTML=`<span class="${r.alterato?'corr-val altered':'corr-val'}">${r.corretto.toFixed(2)}${r.alterato?'<span class="asterisk">*</span>':''}</span>`;
+    } else {
+      tdC.textContent='—';
+    }
+
+    // Colonna interpretazione
+    if(row.tipo==='pp'){
+      tdI.innerHTML=`PP <span class="es-pill pp-pill">${g}</span> &nbsp; ${r.esito}`;
+      tdI.className='td-interp interp-pp';
+    } else if(r.es!==null){
+      const cls=r.es===0?'interp-bad':r.es<=2?'interp-warn':'interp-ok';
+      tdI.innerHTML=`${r.label} <span class="es-pill es${r.es}">${r.es}</span> &nbsp; <span class="${cls}">${r.esito}</span>`;
+      tdI.className='td-interp';
+    } else if(r.esito){
+      tdI.textContent=r.label ? `${r.label}: ${r.cutoff} — ${r.esito}` : r.esito;
+      tdI.className='td-interp '+(r.alterato?'interp-bad':'interp-ok');
+    } else {
+      tdI.textContent='—'; tdI.className='td-interp';
+    }
+  } catch(e){ tdI.textContent='err'; }
+  updateFooter();
+}
+
+function onDemo(){
+  const ok=dOk();
+  const st=document.getElementById('demo-status');
+  st.textContent=ok?`✓ ${gEta()} anni · ${gScol()} anni scol. · ${gSex()==='F'?'Femmina':'Maschio'}`:'dati demografici mancanti';
+  st.className='demo-status'+(ok?' ready':'');
+  // Ricalcola tutto
+  ROWS.forEach(r=>{ const inp=document.getElementById('inp_'+r.id); if(inp&&!isNaN(parseFloat(inp.value))) calc(r.id); });
+}
+
+// ═══════════════════════════════════════════════════════
+// FOOTER
+// ═══════════════════════════════════════════════════════
+function updateFooter(){
+  const data=getCompiledRows();
+  const n=data.length;
+  document.getElementById('footer-info').textContent=n===0?'0 test compilati':`${n} test compilati`;
+  document.getElementById('btn-lista').disabled=n===0;
+  document.getElementById('btn-tab').disabled=n===0;
+}
+
+function getCompiledRows(){
+  return ROWS.map(row=>{
+    const ne=document.getElementById('ne_'+row.id)?.checked;
+    const inp=document.getElementById('inp_'+row.id);
+    const g=parseFloat(inp?.value);
+    if(!ne && isNaN(g)) return null;
+    if(ne) return {row, g:null, ne:true, r:null};
+    if(!dOk()) return null;
+    try{ return {row, g, ne:false, r:row.calc(g,gScol(),gSex(),gSex())}; }
+    catch{ return null; }
+  }).filter(Boolean);
+}
+
+// ═══════════════════════════════════════════════════════
+// OUTPUT
+// ═══════════════════════════════════════════════════════
+function copiaLista(){
+  const lines=getCompiledRows().map(({row,g,ne,r})=>{
+    if(ne) return `${row.nome} (${row.autori}): NE`;
+    const ast=r.alterato?'*':'';
+    if(row.tipo==='pp') return `${row.nome} (${row.autori}): PP ${g} — ${r.esito}`;
+    const corr=r.corretto!==null&&typeof r.corretto==='number'?r.corretto.toFixed(2):'—';
+    const interp=r.es!==null?`${r.label} ${r.es} — ${r.esito}`:r.esito||'';
+    return `${row.nome} (${row.autori}): ${g}${ast} → ${corr}${ast} (${interp})`;
+  });
+  navigator.clipboard.writeText(lines.join('\n'));
+}
+
+function copiaTab(){
+  const rows=getCompiledRows().map(({row,g,ne,r})=>{
+    if(ne) return `<tr><td>${row.nome} (${row.autori})</td><td colspan="4" style="color:#999;font-style:italic">NE</td></tr>`;
+    const ast=r.alterato?'*':'';
+    const corr=row.tipo==='pp'?'—':(r.corretto!==null&&typeof r.corretto==='number'?r.corretto.toFixed(2)+ast:'—');
+    const grezzo=`${g}${row.tipo!=='pp'?ast:''}`;
+    const pe=row.tipo==='pp'?`PP ${g}`:r.es!==null?`${r.label} ${r.es}`:'—';
+    const esito=r.esito||'—';
+    return `<tr><td>${row.nome} (${row.autori})</td><td>${grezzo}</td><td>${corr}</td><td>${pe}</td><td>${esito}</td></tr>`;
+  });
+  const html=`<table border="1" cellpadding="5" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px">
+<tr style="background:#e8eaf0"><th>Test</th><th>Grezzo</th><th>Corretto</th><th>PE / PP</th><th>Esito</th></tr>
+${rows.join('\n')}
+</table>`;
+  navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'})})]);
+}
+
+function clearAll(){
+  ROWS.forEach(r=>{
+    const inp=document.getElementById('inp_'+r.id);
+    const chk=document.getElementById('ne_'+r.id);
+    const tr=document.getElementById('tr_'+r.id);
+    if(inp){ inp.value=''; inp.disabled=false; }
+    if(chk) chk.checked=false;
+    if(tr) tr.classList.remove('row-ne');
+    const tdC=document.getElementById('corr_'+r.id);
+    const tdI=document.getElementById('interp_'+r.id);
+    if(tdC) tdC.textContent='—';
+    if(tdI){ tdI.textContent='—'; tdI.className='td-interp'; }
+  });
+  updateFooter();
+}
+
+buildTable();
+updateFooter();
+</script>
+</body>
+</html>
